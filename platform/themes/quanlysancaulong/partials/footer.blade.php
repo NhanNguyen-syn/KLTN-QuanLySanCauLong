@@ -69,5 +69,19 @@
         </footer>
 
         {!! Theme::footer() !!}
+        @stack('footer')
+
+
+	    <script>
+	        (function() {
+	            if (typeof window.bootstrap === 'undefined') {
+	                var s = document.createElement('script');
+	                s.src = 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js';
+	                s.defer = true;
+	                document.head.appendChild(s);
+	            }
+	        })();
+	    </script>
+
     </body>
 </html>

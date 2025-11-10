@@ -2,6 +2,7 @@
 
 use Botble\Media\Facades\RvMedia;
 use Botble\Theme\Supports\ThemeSupport;
+use Botble\Theme\Facades\Theme;
 
 register_page_template([
     'default' => __('Default'),
@@ -19,4 +20,7 @@ app()->booted(function () {
     ThemeSupport::registerLazyLoadImages();
     ThemeSupport::registerSocialSharing();
     ThemeSupport::registerSiteLogoHeight();
+
+    // Enqueue compiled Vue (TSX) bundle
+    Theme::asset()->usePath()->add('theme-main', 'js/main.js');
 });
