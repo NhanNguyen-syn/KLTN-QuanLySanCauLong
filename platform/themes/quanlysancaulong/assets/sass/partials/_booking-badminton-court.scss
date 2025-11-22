@@ -1,0 +1,185 @@
+// Styles for Booking Badminton Court shortcode
+.booking-badminton-court {
+  // section spacing can be overridden in inline style via Vue if needed
+  padding-inline: 8px; // small side paddings for mobile
+
+  .container {
+    max-width: 1140px;
+    margin-inline: auto;
+  }
+
+  .bbc-grid {
+    // fallback responsive behavior
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 24px;
+
+    @media (max-width: 1199.98px) {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+    @media (max-width: 991.98px) {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 20px;
+    }
+    @media (max-width: 575.98px) {
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+  }
+
+  // Card base + smooth interaction
+  .bbc-card {
+    position: relative;
+    border-radius: 14px;
+    overflow: hidden;
+    backdrop-filter: saturate(120%);
+    transition: transform .45s cubic-bezier(.22,.61,.36,1), box-shadow .35s ease, filter .35s ease;
+    will-change: transform, box-shadow, filter;
+
+    // subtle interactive border glow
+    &::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      box-shadow: inset 0 0 0 1px rgba(0,0,0,.06);
+      pointer-events: none;
+      transition: box-shadow .3s ease, opacity .3s ease;
+    }
+
+    // subtle gradient hairline on top image (first child div is image box from TSX)
+    > div:first-child {
+      border-top-left-radius: inherit;
+      border-top-right-radius: inherit;
+      overflow: hidden;
+      isolation: isolate; // ensure pseudo elements clip
+
+      &::after { // dark gradient for text legibility
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(180deg, rgba(0,0,0,.0) 35%, rgba(0,0,0,.35) 100%);
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      // shimmer on hover
+      &::before {
+        content: "";
+        position: absolute;
+        top: -100%;
+        left: -50%;
+        width: 60%;
+        height: 300%;
+        transform: rotate(20deg);
+        background: linear-gradient(90deg, rgba(255,255,255,0) 0%, rgba(255,255,255,.22) 50%, rgba(255,255,255,0) 100%);
+        opacity: 0;
+        transition: opacity .3s ease, transform .6s ease;
+        pointer-events: none;
+      }
+    }
+
+    // lift + glow
+    &:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 22px 45px rgba(0,0,0,.14);
+      filter: saturate(1.02);
+
+      &::after {
+        box-shadow: inset 0 0 0 1px rgba(14,107,92,.25), 0 0 0 0 rgba(14,107,92,.0);
+        opacity: 1;
+      }
+
+      > div:first-child::before {
+        opacity: 1;
+        transform: rotate(20deg) translateY(25%);
+      }
+    }
+
+    // focus accessibility
+    &:focus-within {
+      outline: 2px solid rgba(14,107,92,.4);
+      outline-offset: 2px;
+    }
+
+    h3 { font-weight: 700; }
+  }
+
+  // Time pills in image area
+  .bbc-card > div:first-child span {
+    display: inline-flex;
+    align-items: center;
+    height: 28px;
+    padding: 0 10px;
+    border-radius: 999px;
+    background: rgba(241,245,249,.9);
+    box-shadow: 0 1px 0 rgba(0,0,0,.06), 0 6px 18px rgba(0,0,0,.08);
+    backdrop-filter: blur(4px);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  // Price row arrow button interaction
+  .bbc-card a {
+    &.btn-view-all { // bottom CTA outside the card
+      transition: transform .2s ease, filter .2s ease, box-shadow .2s ease;
+      box-shadow: 0 8px 20px rgba(14,107,92,.25);
+
+      &:hover {
+        transform: translateY(-2px);
+        filter: brightness(.98);
+        box-shadow: 0 12px 26px rgba(14,107,92,.3);
+        text-decoration: none;
+      }
+
+      &:focus-visible {
+        outline: 3px solid rgba(14,107,92,.45);
+        outline-offset: 3px;
+      }
+    }
+
+    // round arrow button inside card
+    &[aria-label="Select"] {
+      transition: transform .2s ease, background-color .2s ease, box-shadow .2s ease;
+
+      &:hover { transform: scale(1.06); }
+      &:active { transform: scale(.98); }
+      &:focus-visible { outline: 2px solid rgba(0,0,0,.25); outline-offset: 2px; }
+    }
+  }
+
+  // Image parallax + micro-interactions for a softer feel
+  .bbc-card > div:first-child {
+    transition: transform .6s cubic-bezier(.22,.61,.36,1);
+    will-change: transform;
+  }
+  .bbc-card:hover > div:first-child {
+    transform: scale(1.06) translateY(-2px);
+  }
+
+  // Time pills lift slightly on hover
+  .bbc-card > div:first-child span {
+    transition: transform .25s ease, box-shadow .25s ease, background-color .25s ease;
+  }
+  .bbc-card:hover > div:first-child span {
+    transform: translateY(-2px);
+    background-color: rgba(241,245,249,.95);
+    box-shadow: 0 2px 0 rgba(0,0,0,.06), 0 10px 24px rgba(0,0,0,.12);
+  }
+
+  // Softer springy card motion
+  .bbc-card {
+    transition: transform .45s cubic-bezier(.22,.61,.36,1), box-shadow .35s ease, filter .35s ease;
+  }
+
+  // Reduce motion preference
+  @media (prefers-reduced-motion: reduce) {
+    .bbc-card,
+    .bbc-card a,
+    .bbc-card > div:first-child::before {
+      transition: none !important;
+      animation: none !important;
+    }
+  }
+}
+

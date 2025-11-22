@@ -1,0 +1,215 @@
+// Styles for Select Membership shortcode
+.select-membership {
+  padding: 48px 0; // Slightly tighter section spacing
+  background-color: #f9fafb;
+  text-align: center;
+
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 15px;
+  }
+
+  .sm-title {
+    font-size: 36px;
+    font-weight: 700;
+    color: #0E6B5C;
+    margin-bottom: 12px;
+  }
+
+  .sm-subtitle {
+    font-size: 16px;
+    color: #6c757d;
+    max-width: 600px;
+    margin: 0 auto 40px;
+    line-height: 1.6;
+  }
+
+  .sm-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 30px;
+    text-align: left;
+
+    @media (max-width: 767.98px) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .sm-card {
+    border: 1px solid #e5e7eb;
+    border-radius: 24px;
+    padding: 24px; // Compact padding
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    height: 100%;
+
+
+    &:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.09);
+    }
+
+    &.is-featured {
+      border-color: transparent;
+      color: #fff;
+      box-shadow: 0 10px 25px rgba(14, 107, 92, 0.2);
+
+      &:hover {
+        box-shadow: 0 14px 35px rgba(14, 107, 92, 0.25);
+      }
+
+      .sm-button {
+        background-color: #fff;
+        color: #0E6B5C;
+      }
+    }
+  }
+
+  .featured-badge {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #fff;
+    color: #0E6B5C;
+    padding: 6px 20px;
+    font-size: 12px;
+    font-weight: 600;
+    border-radius: 0 0 12px 12px;
+  }
+
+  .sm-card-header {
+    padding-top: 12px; // Compact when no badge
+    text-align: center;
+    border-bottom: 1px solid #e5e7eb;
+    padding-bottom: 16px;
+    margin-bottom: 20px;
+
+    .price {
+      font-size: 44px;
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+    .title {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    .subtitle {
+      font-size: 14px;
+      color: #6c757d;
+      margin-bottom: 0;
+
+      .is-featured & {
+        color: rgba(255,255,255,0.85);
+      }
+    }
+  }
+
+  // Extra space only when card is featured (has the top badge)
+  .sm-card.is-featured .sm-card-header {
+    padding-top: 28px;
+  }
+
+  .discount-badge-wrap {
+      text-align: center;
+      margin-bottom: 24px;
+  }
+
+  .discount-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      background-color: #e0f2f1;
+      color: #0E6B5C;
+
+  // Make header area and discount area equal height so features list aligns across cards
+  @media (min-width: 768px) {
+    .sm-card-header { min-height: 140px; }
+    .discount-badge-wrap {
+      min-height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+  }
+
+  }
+
+  .features-list {
+    list-style: none;
+    padding: 0;
+    margin: 16px 0 20px; // Tighter spacing to make card shorter
+    flex-grow: 1;
+
+    li {
+      display: flex;
+      align-items: flex-start;
+      font-size: 15px;
+      margin-bottom: 12px;
+      line-height: 1.55;
+
+      svg {
+        margin-top: 2px;
+      }
+
+      .is-featured & {
+        color: rgba(255,255,255,0.95);
+      }
+    }
+  }
+
+  .sm-card-footer {
+    margin-top: auto; // Pushes footer to the bottom
+    padding-top: 16px; // Space above button
+  }
+
+  .sm-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 52px;
+    border-radius: 999px;
+    border: 1px solid #0E6B5C;
+    background-color: #fff;
+    color: #0E6B5C;
+    font-weight: 700;
+    font-size: 15px;
+    text-decoration: none;
+    transition: all 0.25s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+
+    &:hover {
+      background-color: #fdfdfd;
+      border-color: #0c5a4d;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.07);
+    }
+
+    // Default styles for featured button, can be overridden by inline styles
+    .is-featured & {
+        border-color: transparent;
+        background-color: #0E6B5C;
+        color: #fff;
+        box-shadow: 0 4px 12px rgba(14, 107, 92, 0.3);
+
+        &:hover {
+            background-color: #0c5a4d;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(14, 107, 92, 0.35);
+        }
+
+
+
+    }
+  }
+}
+

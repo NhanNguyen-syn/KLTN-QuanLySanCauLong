@@ -10,8 +10,9 @@
     <div class="shortcode-tabs-field-wrapper">
         <div class="mb-3">
             <label class="form-label">{{ __('Quantity') }}</label>
-            {!! Form::customSelect($tabKey ? "{$tabKey}_quantity" : 'quantity', $choices, $current, [
+            {!! Form::customSelect($name = $tabKey ? "{$tabKey}_quantity" : 'quantity', $choices, $current, [
                 'id' => $selector,
+                'name' => $name,
                 'data-max' => $max,
                 'data-key' => $tabKey,
                 'class' => 'shortcode-tabs-quantity-select',

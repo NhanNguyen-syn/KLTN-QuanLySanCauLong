@@ -1,5 +1,5 @@
-const mix = require('laravel-mix')
-const glob = require('glob')
+const mix = require('laravel-mix');
+const glob = require('glob');
 
 mix.options({
     processCssUrls: false,
@@ -8,25 +8,22 @@ mix.options({
         extractComments: false,
     },
     manifest: false,
-})
+});
 
 mix.webpackConfig({
     stats: {
         children: false,
     },
-    externals: {
-        vue: 'Vue',
-    },
-})
+});
 
-mix.disableSuccessNotifications()
+mix.disableSuccessNotifications();
 
-mix.vue()
+mix.vue();
 
-let buildPaths = []
+let buildPaths = [];
 
 function pushToPath(path, type) {
-    buildPaths.push(`${type}/${path === 'true' ? '*' : path}`)
+    buildPaths.push(`${type}/${path === 'true' ? '*' : path}`);
 }
 
 const types = [
@@ -46,20 +43,21 @@ const types = [
         key: 'npm_config_core',
         name: 'core',
     },
-]
+];
 
 for (const assetType of types) {
-    const assetPath = process.env[assetType.key]
+    const assetPath = process.env[assetType.key];
 
-    if (! assetPath) {
-        continue
+    if (!assetPath) {
+        continue;
     }
 
-    pushToPath(assetPath, assetType.name)
+    pushToPath(assetPath, assetType.name);
 }
 
-if (! buildPaths.length) {
-    buildPaths = ['*/*']
+if (!buildPaths.length) {
+    buildPaths = ['*/*'];
 }
 
-buildPaths.forEach(buildPath => glob.sync(`./platform/${buildPath}/webpack.mix.js`).forEach(item => require(__dirname + '/' + item)))
+buildPaths.forEach(buildPath => glob.sync(`./platform/${buildPath}/webpack.mix.js`).forEach(item => require(__dirname + '/' + item)));
+

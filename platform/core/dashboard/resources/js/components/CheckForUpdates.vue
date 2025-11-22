@@ -50,7 +50,8 @@ export default {
                 return
             }
 
-            axios
+            $httpClient
+                .makeWithoutErrorHandler()
                 .get(this.checkUpdateUrl)
                 .then(({ data }) => {
                     // Store the current time as the last check time

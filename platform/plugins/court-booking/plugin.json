@@ -1,0 +1,11 @@
+{
+    "id": "botble/court-booking",
+    "name": "Court Booking",
+    "namespace": "Botble\\CourtBooking\\",
+    "provider": "Botble\\CourtBooking\\Providers\\CourtBookingServiceProvider",
+    "author": "admin",
+    "url": "",
+    "version": "1.0.0",
+    "description": "Plugin for managing badminton court bookings.",
+    "minimum_core_version": "7.5.9"
+}

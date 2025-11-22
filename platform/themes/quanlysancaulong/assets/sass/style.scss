@@ -1,6 +1,21 @@
+@import 'partials/contact-form';
+@import 'partials/why-choose-us';
+
+
+@import 'partials/header';
+
+@import 'partials/banner-for-yard';
+
+@import 'partials/detailed-price';
+@import 'partials/booking-badminton-court';
+@import 'partials/select-membership';
+@import 'partials/asked-questions';
+
 $primaryColor: var(--primary-color);
 $primaryFont: var(--primary-font);
 
+@import 'partials/court-pricing';
+@import 'partials/why-choose';
 * {
     font-family: $primaryFont;
 }
@@ -18,3 +33,18 @@ figcaption {
     text-align: center;
 }
 /* purgecss end ignore */
+
+main {
+    padding: 0 !important;
+}
+
+.page-content {
+    padding: 0 !important;
+}
+
+.hero-banner {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
+}

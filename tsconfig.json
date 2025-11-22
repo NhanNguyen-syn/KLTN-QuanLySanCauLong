@@ -1,0 +1,33 @@
+{
+  "compilerOptions": {
+    "target": "esnext",
+    "module": "esnext",
+    "strict": true,
+    "jsx": "preserve", 
+    "jsxImportSource": "vue",
+    "importHelpers": true,
+    "moduleResolution": "node",
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "sourceMap": true,
+    "baseUrl": ".",
+    "lib": [
+      "esnext",
+      "dom"
+    ],
+    "paths": {
+        "@/*": [
+            "platform/themes/quanlysancaulong/assets/js/*"
+        ]
+    }
+  },
+  "include": [
+    "platform/themes/quanlysancaulong/assets/js/**/*.ts",
+    "platform/themes/quanlysancaulong/assets/js/**/*.tsx"
+  ],
+  "exclude": [
+    "node_modules",
+    "vendor"
+  ]
+}

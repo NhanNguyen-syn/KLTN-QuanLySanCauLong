@@ -8,10 +8,26 @@ const dist = 'public/themes/' + directory
 
 mix
     .sass(source + '/assets/sass/style.scss', dist + '/css')
-    .js(source + '/assets/js/script.js', dist + '/js')
+    .js(source + '/assets/js/main.ts', dist + '/js/main.js') 
+    .vue(3) 
+    .webpackConfig({
+        module: {
+            rules: [
+                {
+                    test: /\.tsx?$/,
+                    loader: 'ts-loader',
+                    options: {
+                        appendTsxSuffixTo: [/\.vue$/],
+                    },
+                    exclude: /node_modules/,
+                },
+            ],
+        },
+        resolve: {
+            extensions: ['*', '.js', '.jsx', '.vue', '.ts', '.tsx'],
+        },
+    });
 
-if (mix.inProduction()) {
-    mix
-        .copy(dist + '/css/style.css', source + '/public/css')
-        .copy(dist + '/js/script.js', source + '/public/js')
-}
+// Luôn copy file build sang thư mục public của theme để Theme::asset()->usePath() dùng được
+mix.copy(dist + '/css/style.css', source + '/public/css')
+   .copy(dist + '/js/main.js', source + '/public/js')
