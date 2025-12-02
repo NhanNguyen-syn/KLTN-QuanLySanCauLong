@@ -4,12 +4,14 @@ import BannerForYard from './components/BannerForYard';
 import CourtPricing from './components/CourtPricing';
 import WhyChoose from './components/WhyChoose';
 import Testimonials from './components/Testimonials';
-import ContactForm from './components/ContactForm';
+
 import WhyChooseUs from './components/WhyChooseUs';
 import DetailedPrice from './components/DetailedPrice';
 import BookingBadmintonCourt from './components/BookingBadmintonCourt';
 import SelectMembership from './components/SelectMembership';
+import ContactUs from './components/ContactUs';
 import AskedQuestions from './components/AskedQuestions';
+import BlogPost from './components/BlogPost';
 
 
 
@@ -111,20 +113,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Contact Form Image
-    const contactFormImageContainers = document.querySelectorAll('[id^="shortcode-contact-form-image-"]');
-    contactFormImageContainers.forEach((container) => {
-        const propsData = (container as HTMLElement).dataset.props;
-        if (propsData) {
-            try {
-                const props = JSON.parse(propsData);
-                const app = createApp(ContactForm, props);
-                app.mount(container);
-            } catch (e) {
-                console.error('Failed to parse contact-form-image props:', e);
-            }
-        }
-    });
+
 
     // Why Choose Us
     const whyChooseUsContainers = document.querySelectorAll('.shortcode-why-choose-us');
@@ -180,6 +169,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 console.error('Failed to parse select-membership props:', e);
             }
         }
+    });
 
     // Asked Questions
     const askedQuestionsContainers = document.querySelectorAll('[id^="shortcode-asked-questions-"]');
@@ -190,13 +180,46 @@ document.addEventListener('DOMContentLoaded', () => {
                 const props = JSON.parse(propsData);
                 const app = createApp(AskedQuestions, props);
                 app.mount(container as Element);
+
+
+
             } catch (e) {
                 console.error('Failed to parse asked-questions props:', e);
             }
         }
     });
 
+    // Blog Post
+    const blogPostContainers = document.querySelectorAll('[id^="shortcode-blog-post-"]');
+    blogPostContainers.forEach((container) => {
+        const propsData = (container as HTMLElement).getAttribute('data-props');
+        if (propsData) {
+            try {
+                const props = JSON.parse(propsData);
+                const app = createApp(BlogPost, props);
+                app.mount(container as Element);
+            } catch (e) {
+                console.error('Failed to parse blog-post props:', e);
+            }
+        }
     });
+
+
+    // Contact Us
+    const contactUsContainers = document.querySelectorAll('[id^="shortcode-contact-us-"]');
+    contactUsContainers.forEach((container) => {
+        const propsData = (container as HTMLElement).getAttribute('data-props');
+        if (propsData) {
+            try {
+                const props = JSON.parse(propsData);
+                const app = createApp(ContactUs, props);
+                app.mount(container as Element);
+            } catch (e) {
+                console.error('Failed to parse contact-us props:', e);
+            }
+        }
+    });
+
 
 });
 

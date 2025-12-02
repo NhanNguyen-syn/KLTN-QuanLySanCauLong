@@ -1,0 +1,114 @@
+// Styles for Contact Us shortcode
+.contact-us-section {
+    padding: 60px 0;
+
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 15px;
+    }
+
+    .contact-us-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 40px;
+        align-items: flex-start;
+
+        @media (max-width: 991.98px) {
+            grid-template-columns: 1fr;
+            gap: 50px;
+        }
+    }
+
+    .contact-form-wrapper,
+    .location-wrapper {
+        h3 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+        p {
+            color: #6c757d;
+            margin-bottom: 24px;
+        }
+    }
+
+    .location-wrapper {
+        background-color: #fff;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+    }
+
+    .google-map-container {
+        position: relative;
+        width: 100%;
+        padding-bottom: 75%; // Aspect ratio 4:3
+        height: 0;
+        overflow: hidden;
+        border-radius: 8px;
+        margin-bottom: 24px;
+
+        iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 0;
+        }
+    }
+
+    .branch-info {
+        margin-bottom: 24px;
+        padding-bottom: 24px;
+        border-bottom: 1px solid #e5e7eb;
+
+        &:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+
+        h4 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        p {
+            margin-bottom: 8px;
+            color: #333;
+            &.address::before,
+            &.phone::before {
+                // Icons can be added here via content property if needed
+                margin-right: 8px;
+            }
+        }
+
+        .directions-link {
+            color: #0E6B5C;
+            font-weight: 600;
+            text-decoration: none;
+            &:hover {
+                text-decoration: underline;
+            }
+        }
+    }
+
+    // Styles for the embedded contact form
+    form.contact-form {
+        margin-top: 20px;
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .btn-primary {
+            background-color: #f57f17;
+            border-color: #f57f17;
+            &:hover {
+                background-color: darken(#f57f17, 5%);
+            }
+        }
+    }
+}
+
