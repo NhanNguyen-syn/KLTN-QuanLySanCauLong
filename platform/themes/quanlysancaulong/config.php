@@ -61,7 +61,8 @@ return [
             );
 
             if (function_exists('shortcode')) {
-                $theme->composer(['page'], function (View $view) {
+                // Enable shortcode parsing for both the default page view and our custom checkout view
+                $theme->composer(['page', 'checkout'], function (View $view) {
                     $view->withShortcodes();
                 });
             }

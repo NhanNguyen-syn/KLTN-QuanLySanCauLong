@@ -1,0 +1,22 @@
+{
+    "name": "botble/court-booking",
+    "description": "Court booking plugin",
+    "type": "package",
+    "autoload": {
+        "psr-4": {
+            "Botble\\CourtBooking\\": "src/"
+        }
+    },
+    "require": {},
+    "extra": {
+        "botble": {
+            "providers": [
+                "Botble\\CourtBooking\\Providers\\CourtBookingServiceProvider"
+            ],
+            "helpers": [
+                "helpers/constants.php"
+            ]
+        }
+    }
+}
+

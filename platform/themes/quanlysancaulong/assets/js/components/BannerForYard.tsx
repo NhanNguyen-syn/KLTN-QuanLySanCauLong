@@ -46,9 +46,28 @@ export default defineComponent<Props>({
     const titleColor = props.titleColor || props.title_color || (hasBg ? '#ffffff' : '#111111');
     const descColor = hasBg ? '#ffffff' : '#444444';
     const btnText = props.buttonText || props.button_text || '';
-    const btnUrl = props.buttonUrl || props.button_url || '/';
+    const btnUrl = props.buttonUrl || props.button_url || '/dat-san';
     const btnBgColor = props.buttonBgColor || props.button_bg_color || '#0d6efd';
     const btnTextColor = props.buttonTextColor || props.button_text_color || '#ffffff';
+
+    const handleCta = (e: MouseEvent) => {
+      // Only intercept if it's a default action (like # or no href)
+      const target = e.currentTarget as HTMLAnchorElement;
+      const href = target.getAttribute('href') || '';
+
+      // If it's a real URL, let it work normally
+      if (href && href !== '#' && !href.startsWith('javascript:')) {
+        return;
+      }
+
+      // Otherwise, prevent default and use the configured URL
+      e.preventDefault();
+      const bookingUrl = (window as any).BOOKING_URL ||
+                        (window as any).App?.bookingUrl ||
+                        btnUrl ||
+                        'http://kltn-quan-ly-san-cau-long.test/san-gia';
+      window.location.assign(bookingUrl);
+    };
 
     return () => (
       <section class="banner-for-yard" style={{ backgroundImage: bg ? `url('${bg}')` : undefined }}>
@@ -64,7 +83,7 @@ export default defineComponent<Props>({
             )}
             {btnText && (
               <div class="banner-for-yard__btn">
-                <a href={btnUrl} class="btn" style={{ backgroundColor: btnBgColor, color: btnTextColor }}>
+                <a href={btnUrl} onClick={handleCta} class="btn" style={{ backgroundColor: btnBgColor, color: btnTextColor }}>
                   {btnText}
                 </a>
               </div>

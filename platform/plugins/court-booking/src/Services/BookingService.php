@@ -149,11 +149,20 @@ class BookingService
 
     public function generateInvoiceNo(): string
     {
-        $prefix = 'INV' . now()->format('ymd');
-        do {
-            $code = $prefix . strtoupper(Str::substr(base_convert(bin2hex(random_bytes(6)), 16, 36), 0, 8));
-        } while (Invoice::where('invoice_no', $code)->exists());
-        return $code;
+        $today = Carbon::now()->format('Ymd');
+        $prefix = 'BD-' . $today . '-';
+
+        $lastInvoice = Invoice::where('invoice_no', 'like', $prefix . '%')
+            ->orderBy('invoice_no', 'desc')
+            ->first();
+
+        $nextNumber = 1;
+        if ($lastInvoice) {
+            $lastNumber = (int) substr($lastInvoice->invoice_no, -3);
+            $nextNumber = $lastNumber + 1;
+        }
+
+        return $prefix . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
     }
 }
 

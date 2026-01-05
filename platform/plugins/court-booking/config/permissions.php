@@ -1,35 +1,40 @@
 <?php
 
 return [
-    // Court bookings (placeholder CRUD)
+    // Courts CRUD
     [
-        'name' => 'Court bookings',
-        'flag' => 'court-booking.index',
+        'name' => 'Courts',
+        'flag' => 'courts.index',
     ],
     [
         'name' => 'Create',
-        'flag' => 'court-booking.create',
-        'parent_flag' => 'court-booking.index',
+        'flag' => 'courts.create',
+        'parent_flag' => 'courts.index',
     ],
     [
         'name' => 'Edit',
-        'flag' => 'court-booking.edit',
-        'parent_flag' => 'court-booking.index',
+        'flag' => 'courts.edit',
+        'parent_flag' => 'courts.index',
     ],
     [
         'name' => 'Delete',
-        'flag' => 'court-booking.destroy',
-        'parent_flag' => 'court-booking.index',
+        'flag' => 'courts.destroy',
+        'parent_flag' => 'courts.index',
     ],
 
-    // Court slots management
+    // Booking List
     [
-        'name' => 'Court slots',
-        'flag' => 'court-slot.index',
+        'name' => 'Danh sách đặt sân',
+        'flag' => 'booking-list.index',
     ],
     [
-        'name' => 'Bulk status',
-        'flag' => 'court-slot.bulk-status',
-        'parent_flag' => 'court-slot.index',
+        'name' => 'Edit',
+        'flag' => 'booking-list.edit',
+        'parent_flag' => 'booking-list.index',
+    ],
+    [
+        'name' => 'Delete',
+        'flag' => 'booking-list.destroy',
+        'parent_flag' => 'booking-list.index',
     ],
 ];

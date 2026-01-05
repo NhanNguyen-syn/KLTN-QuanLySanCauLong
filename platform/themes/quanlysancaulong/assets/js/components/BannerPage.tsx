@@ -1,4 +1,4 @@
-import { defineComponent, PropType, CSSProperties, computed } from 'vue';
+import { defineComponent, CSSProperties } from 'vue';
 
 export default defineComponent({
     name: 'BannerPage',
@@ -110,6 +110,16 @@ export default defineComponent({
 
 
 
+        const handleCta = (e: MouseEvent) => {
+            const text = (props.buttonText || '').toLowerCase();
+            const cta = ['đặt sân', 'dat san', 'đặt sân ngay', 'dat san ngay', 'bắt đầu ngay', 'bat dau ngay'];
+            if (cta.some(t => text.includes(t))) {
+                e.preventDefault();
+                const bookingUrl = (window as any).App?.baseUrl ? `${(window as any).App.baseUrl}/san-gia` : '/san-gia';
+                window.location.href = bookingUrl;
+            }
+        };
+
         return () => (
             <section class="banner-page-shortcode" style={sectionStyle}>
                 <div style={overlayStyle}></div>
@@ -129,7 +139,7 @@ export default defineComponent({
                             </h1>
                         )}
                         {props.buttonText && props.buttonUrl && (
-                            <a href={props.buttonUrl} style={buttonStyle}>
+                            <a href={props.buttonUrl} onClick={handleCta} style={buttonStyle}>
                                 <span>{props.buttonText}</span>
                                 <svg
                                     width="18"

@@ -13,8 +13,7 @@ import ContactUs from './components/ContactUs';
 import AskedQuestions from './components/AskedQuestions';
 import BlogPost from './components/BlogPost';
 
-
-
+// BookingPage was moved to a dedicated entry at assets/js/pages/booking.ts
 
 document.addEventListener('DOMContentLoaded', () => {
     // Banner Page (đang có sẵn)
@@ -219,6 +218,75 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     });
+
+
+    // CTA fallback: ensure CTA navigates to booking page (/dat-san)
+    // - If element already has a valid href, do NOT override
+    // - Otherwise, fallback to BOOKING_URL/App.bookingUrl, and finally /dat-san
+    const ctaTexts = ['đặt sân', 'dat san', 'bắt đầu ngay', 'bat dau ngay'];
+    const ctaButtons = document.querySelectorAll('a, button');
+    console.log(`[Debug] Found ${ctaButtons.length} potential CTA buttons.`);
+
+    const normalizeBookingUrl = (url: string) => {
+        try {
+            // allow relative urls like /dat-san
+            if (url.startsWith('/')) return url;
+            const u = new URL(url, window.location.origin);
+            return u.pathname + u.search + u.hash;
+        } catch {
+            return url;
+        }
+    };
+
+    const defaultBookingUrl = '/dat-san';
+
+    ctaButtons.forEach((el) => {
+        const text = (el.textContent || '').trim().toLowerCase();
+        if (!ctaTexts.some(t => text.includes(t))) return;
+
+        console.log('[Debug] Found CTA button:', el);
+
+        el.addEventListener('click', (e) => {
+            const target = e.currentTarget as HTMLElement;
+
+            // 1) If it's an <a> and has a real href, always respect it (admin-configured link)
+            if (target instanceof HTMLAnchorElement) {
+                const href = (target.getAttribute('href') || '').trim();
+                if (href && href !== '#' && !href.toLowerCase().startsWith('javascript:')) {
+                    return;
+                }
+            }
+
+            // 2) If it's a <button>, try to respect an admin-provided URL stored in common attributes
+            // (shortcodes/builders sometimes render <button> with data-href/data-url)
+            const dataHref =
+                (target.getAttribute('data-href') ||
+                    target.getAttribute('data-url') ||
+                    target.getAttribute('data-link') ||
+                    '')
+                    .trim();
+
+            if (dataHref && dataHref !== '#' && !dataHref.toLowerCase().startsWith('javascript:')) {
+                e.preventDefault();
+                const bookingUrl = normalizeBookingUrl(dataHref);
+                console.log(`[CTA Fallback] Navigating to (data-*): ${bookingUrl}`);
+                window.location.assign(bookingUrl);
+                return;
+            }
+
+            // 3) Otherwise fallback
+            e.preventDefault();
+            const rawBookingUrl =
+                (window as any).BOOKING_URL ||
+                (window as any).App?.bookingUrl ||
+                defaultBookingUrl;
+
+            const bookingUrl = normalizeBookingUrl(String(rawBookingUrl));
+            console.log(`[CTA Fallback] Navigating to (fallback): ${bookingUrl}`);
+            window.location.assign(bookingUrl);
+        });
+    });
+
 
 
 });

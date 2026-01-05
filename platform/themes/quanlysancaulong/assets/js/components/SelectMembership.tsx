@@ -59,6 +59,18 @@ export default defineComponent<Props>({
         </svg>
     );
 
+    const handleCta = (e: MouseEvent, text?: string | null, url?: string | null) => {
+      const ctaTexts = ['đặt sân', 'dat san', 'đặt sân ngay', 'dat san ngay', 'bắt đầu ngay', 'bat dau ngay'];
+      const btnText = (text || '').toLowerCase();
+      if (ctaTexts.some(t => btnText.includes(t))) {
+        e.preventDefault();
+        const bookingUrl = (window as any).App?.baseUrl ? `${(window as any).App.baseUrl}/san-gia` : '/san-gia';
+        window.location.href = bookingUrl;
+      } else if (url) {
+        window.location.href = url;
+      }
+    };
+
     return () => (
       <section class="select-membership">
         <div class="container">
@@ -105,6 +117,7 @@ export default defineComponent<Props>({
                   <a
                     href={card.button_url || '#'}
                     class="sm-button"
+                    onClick={(e) => handleCta(e, card.button_text, card.button_url)}
                     style={{
                       backgroundColor: card.button_bg_color,
                       color: card.button_text_color,

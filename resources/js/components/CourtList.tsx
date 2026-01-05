@@ -1,46 +1,36 @@
-import { defineComponent, ref, reactive, computed } from 'vue';
+import { defineComponent, ref, reactive, computed, onMounted } from 'vue';
+import axios from 'axios';
 
 interface Court {
-  id: number;
+  id: string | number;
   name: string;
-  location: string;
-  pricePerHour: number;
-  status: 'available' | 'occupied' | 'maintenance';
+
+  // Backend field
+  status: 'published' | 'draft' | string;
+
+  // Optional fields (some APIs may include these)
+  location?: string;
+  type?: string;
+  pricePerHour?: number;
+  memberPrice?: number;
 }
 
 export default defineComponent({
   name: 'CourtList',
   setup() {
-    const courts = ref<Court[]>([
-      {
-        id: 1,
-        name: 'Sân 1',
-        location: 'Khu A',
-        pricePerHour: 100000,
-        status: 'available',
-      },
-      {
-        id: 2,
-        name: 'Sân 2',
-        location: 'Khu A',
-        pricePerHour: 120000,
-        status: 'occupied',
-      },
-      {
-        id: 3,
-        name: 'Sân 3',
-        location: 'Khu B',
-        pricePerHour: 150000,
-        status: 'available',
-      },
-      {
-        id: 4,
-        name: 'Sân 4',
-        location: 'Khu B',
-        pricePerHour: 150000,
-        status: 'maintenance',
-      },
-    ]);
+    // Danh sách sân lấy từ API
+    const courts = ref<Court[]>([]);
+
+    // Tải dữ liệu sân khi component mount
+    onMounted(async () => {
+      try {
+        const { data } = await axios.get('/api/court-booking/courts');
+        courts.value = data.data ?? [];
+      } catch (err) {
+        /* eslint-disable no-console */
+        console.error('Failed to fetch courts', err);
+      }
+    });
 
     const filter = reactive({
       status: 'all' as 'all' | Court['status'],

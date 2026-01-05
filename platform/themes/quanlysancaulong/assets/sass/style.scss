@@ -18,6 +18,8 @@ $primaryFont: var(--primary-font);
 
 @import 'partials/court-pricing';
 @import 'partials/why-choose';
+@import 'pages/booking';
+@import '../../../resources/sass/lookup';
 * {
     font-family: $primaryFont;
 }
@@ -50,3 +52,30 @@ main {
     margin: 0;
     padding: 0;
 }
+
+
+/* Footer specific effects (inspired by /d) */
+footer .footer-social {
+    transition: all .2s ease-in-out;
+}
+
+footer .footer-social:hover {
+    background-color: #10b981 !important; /* emerald-500 */
+    color: #ffffff !important;
+    transform: translateY(-2px);
+}
+
+/* Footer link base */
+footer ul li a {
+    transition: color .2s ease;
+}
+
+footer ul li a:hover {
+    color: #10b981 !important;
+}
+
+/* Align footer list with title text */
+footer .col-lg-3 ul {
+    padding-left: calc(4px + .5rem); /* Width of green bar + its margin */
+}
+

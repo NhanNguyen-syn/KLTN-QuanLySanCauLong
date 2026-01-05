@@ -1,0 +1,336 @@
+.lookup-page {
+  background: linear-gradient(135deg, rgba(236, 253, 245, 1), rgba(240, 253, 250, 1), rgba(236, 254, 255, 1));
+}
+
+.lookup-hero {
+  position: relative;
+  padding: 64px 0;
+  color: #fff;
+  background: linear-gradient(90deg, #065f46, #059669, #14b8a6);
+  overflow: hidden;
+}
+
+.lookup-hero__bg {
+  position: absolute;
+  inset: 0;
+  opacity: 0.12;
+  background-image: radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.9) 0, rgba(255, 255, 255, 0) 55%),
+    radial-gradient(circle at 80% 60%, rgba(255, 255, 255, 0.9) 0, rgba(255, 255, 255, 0) 55%);
+}
+
+.lookup-hero__inner {
+  position: relative;
+  max-width: 760px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.lookup-hero__icon {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(8px);
+}
+
+.lookup-hero__title {
+  font-size: 42px;
+  line-height: 1.15;
+  font-weight: 800;
+  margin: 0 0 10px;
+}
+
+.lookup-hero__desc {
+  margin: 0 auto;
+  max-width: 640px;
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.lookup-main {
+  padding: 44px 0 70px;
+}
+
+.lookup-box {
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 22px 40px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(5, 150, 105, 0.15);
+  padding: 26px;
+  margin-top: -64px;
+}
+
+.lookup-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  color: #374151;
+  margin-bottom: 10px;
+}
+
+.lookup-form {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.lookup-input {
+  flex: 1;
+  min-width: 240px;
+  position: relative;
+}
+
+.lookup-input__icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9ca3af;
+}
+
+.lookup-input input {
+  width: 100%;
+  padding: 14px 16px 14px 46px;
+  border: 2px solid #e5e7eb;
+  border-radius: 14px;
+  font-size: 16px;
+  font-weight: 700;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.lookup-input input:focus {
+  border-color: #059669;
+  box-shadow: 0 0 0 4px rgba(5, 150, 105, 0.12);
+}
+
+.lookup-btn {
+  padding: 14px 22px;
+  border: 0;
+  border-radius: 14px;
+  font-weight: 800;
+  color: #fff;
+  background: linear-gradient(90deg, #065f46, #059669);
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+}
+
+.lookup-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.lookup-btn:not(:disabled):hover {
+  transform: translateY(-1px);
+  box-shadow: 0 16px 28px rgba(6, 95, 70, 0.2);
+}
+
+.lookup-hint {
+  margin: 10px 0 0;
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.lookup-result {
+  margin-top: 22px;
+}
+
+.lookup-card {
+  background: #fff;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 22px 40px rgba(0, 0, 0, 0.08);
+  border: 1px solid rgba(5, 150, 105, 0.15);
+}
+
+.lookup-card__head {
+  padding: 22px 26px;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+  color: #fff;
+  background: linear-gradient(90deg, #065f46, #059669, #14b8a6);
+}
+
+.lookup-card__head .code {
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.lookup-card__head .meta {
+  font-size: 12px;
+  opacity: 0.9;
+}
+
+.lookup-card__body {
+  padding: 22px 26px 26px;
+}
+
+.badge {
+  padding: 8px 12px;
+  border-radius: 999px;
+  font-weight: 800;
+  font-size: 12px;
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+  backdrop-filter: blur(10px);
+}
+
+.badge--green {
+  background: rgba(16, 185, 129, 0.2);
+}
+.badge--blue {
+  background: rgba(59, 130, 246, 0.22);
+}
+.badge--red {
+  background: rgba(239, 68, 68, 0.22);
+}
+.badge--amber {
+  background: rgba(245, 158, 11, 0.22);
+}
+.badge--gray {
+  background: rgba(107, 114, 128, 0.22);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  gap: 18px;
+  margin-bottom: 18px;
+}
+
+@media (min-width: 768px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.panel {
+  background: #f0fdf4;
+  border: 1px solid rgba(5, 150, 105, 0.16);
+  border-radius: 14px;
+  padding: 14px;
+}
+
+.panel__title {
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #047857;
+  margin-bottom: 10px;
+}
+
+.kv {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px dashed rgba(5, 150, 105, 0.22);
+}
+
+.kv:last-child {
+  border-bottom: 0;
+}
+
+.kv span:first-child {
+  color: #6b7280;
+  font-weight: 700;
+}
+
+.kv span:last-child {
+  color: #111827;
+  font-weight: 800;
+  text-align: right;
+}
+
+.total__row {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+}
+
+.panel--list {
+  background: linear-gradient(90deg, #ecfdf5, #f0fdfa);
+}
+
+.item-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 12px 0;
+  border-top: 1px solid rgba(15, 23, 42, 0.08);
+}
+
+.item-row:first-child {
+  border-top: 0;
+}
+
+.item-title {
+  font-weight: 900;
+  color: #111827;
+}
+
+.item-sub {
+  font-size: 12px;
+  color: #6b7280;
+  margin-top: 2px;
+}
+
+.item-price {
+  font-weight: 900;
+  color: #065f46;
+  text-align: right;
+}
+
+.item-paid {
+  font-size: 12px;
+  color: #6b7280;
+  text-align: right;
+  margin-top: 2px;
+}
+
+.lookup-card--empty {
+  padding: 42px 22px;
+  text-align: center;
+}
+
+.lookup-card--empty .empty-icon {
+  width: 72px;
+  height: 72px;
+  border-radius: 999px;
+  margin: 0 auto 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #f3f4f6;
+  color: #9ca3af;
+  font-size: 34px;
+  font-weight: 900;
+}
+
+.lookup-card--empty h3 {
+  margin: 0 0 6px;
+  font-weight: 900;
+}
+
+.lookup-card--empty p {
+  margin: 0 0 10px;
+  color: #4b5563;
+}
+
+.lookup-card--empty .empty-hint {
+  display: inline-block;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: #ecfdf5;
+  color: #047857;
+  font-weight: 700;
+  font-size: 13px;
+}
+

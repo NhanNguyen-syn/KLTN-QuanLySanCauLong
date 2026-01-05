@@ -136,13 +136,31 @@ export default defineComponent({
       width: '100%'
     };
 
+    const handleBtnClick = (e: MouseEvent, text?: string, url?: string | null) => {
+      const ctaTexts = ['đặt sân', 'dat san', 'đặt sân ngay', 'dat san ngay', 'bắt đầu ngay', 'bat dau ngay'];
+      const btnText = (text || '').toLowerCase();
+      if (ctaTexts.some(t => btnText.includes(t))) {
+        e.preventDefault();
+        const bookingUrl = (window as any).App?.baseUrl ? `${(window as any).App.baseUrl}/san-gia` : '/san-gia';
+        window.location.href = bookingUrl;
+      } else if (url) {
+        window.location.href = url;
+      } else {
+        e.preventDefault();
+      }
+    };
+
     return () => (
       <div class="detailed-price-section detailed-price-wrapper" style={wrapper}>
         <div class="dp-container" style={container}>
           <h2 class="dp-heading" style={heading}>{props.sectionTitle}</h2>
           <p class="dp-subtitle" style={sub}>{props.sectionSubtitle}</p>
           <div class="dp-grid" style={grid}>
-            {props.plans.map((plan, idx) => (
+            {props.plans.map((plan, idx) => {
+              const ctaTexts = ['đặt sân', 'dat san', 'đặt sân ngay', 'dat san ngay', 'bắt đầu ngay', 'bat dau ngay'];
+              const isCta = ctaTexts.some(t => (plan.buttonText || '').toLowerCase().includes(t));
+              const href = isCta ? '/san-gia' : (plan.buttonUrl || '/');
+              return (
               <div class="dp-card" style={baseCard} key={idx}>
                 <div class="dp-card-header" style={makeHeader(plan)}>
                   {plan.isFeatured && plan.featuredText && plan.featuredText.trim() !== '' && (
@@ -173,13 +191,14 @@ export default defineComponent({
                     </ul>
                   )}
                   <div style={btnContainer}>
-                    <a href={plan.buttonUrl || '/'} class="dp-btn" style={btnSingle}>
+                    <a href={href} class="dp-btn" style={btnSingle}
+                       onClick={(e) => handleBtnClick(e, plan.buttonText || 'Bắt Đầu Ngay', href)}>
                       {plan.buttonText || 'Bắt Đầu Ngay'}
                     </a>
                   </div>
                 </div>
               </div>
-            ))}
+            )})}
           </div>
         </div>
       </div>

@@ -24,7 +24,8 @@
   },
   "include": [
     "platform/themes/quanlysancaulong/assets/js/**/*.ts",
-    "platform/themes/quanlysancaulong/assets/js/**/*.tsx"
+    "platform/themes/quanlysancaulong/assets/js/**/*.tsx",
+    "platform/themes/quanlysancaulong/assets/js/**/*.d.ts"
   ],
   "exclude": [
     "node_modules",
