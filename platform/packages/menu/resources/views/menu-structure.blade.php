@@ -16,6 +16,145 @@
                     do_action(MENU_ACTION_SIDEBAR_OPTIONS);
                 @endphp
 
+                @if (in_array('main-menu', $locations))
+                    <x-core::card>
+                        <x-core::card.header>
+                            <a
+                                class="d-flex justify-content-between w-100 align-items-center text-decoration-none"
+                                data-bs-toggle="collapse"
+                                data-parent="#accordion"
+                                href="#collapseSpecialLink"
+                            >
+                                <x-core::card.title>
+                                    Special Items
+                                </x-core::card.title>
+
+                                <button
+                                    type="button"
+                                    class="btn-action"
+                                >
+                                    <x-core::icon name="ti ti-chevron-down" size="sm" />
+                                </button>
+                            </a>
+                        </x-core::card.header>
+                        <div
+                            id="collapseSpecialLink"
+                            class="box-links-for-menu collapse"
+                        >
+                            <x-core::card.body>
+                                <div class="the-box">
+                                    <div class="node-content" id="special-items-box">
+                                        <div class="d-grid gap-2">
+                                            <x-core::button
+                                                type="button"
+                                                class="btn-add-special"
+                                                :data-url="route('menus.get-node')"
+                                                icon="ti ti-plus"
+                                                data-special="phone"
+                                            >
+                                                Add Phone
+                                            </x-core::button>
+
+                                            <x-core::button
+                                                type="button"
+                                                class="btn-add-special"
+                                                :data-url="route('menus.get-node')"
+                                                icon="ti ti-plus"
+                                                data-special="lookup"
+                                            >
+                                                Add Tra cứu
+                                            </x-core::button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </x-core::card.body>
+
+                            <script>
+                                // No new JS file: reuse existing .btn-add-to-menu handler by populating #menu-node-create-form.
+                                document.addEventListener('click', function (e) {
+                                    const btn = e.target.closest('#special-items-box .btn-add-special[data-special]');
+                                    if (!btn) {
+                                        return;
+                                    }
+
+                                    const special = btn.getAttribute('data-special');
+
+                                    // We don't keep inputs here anymore; user can edit after the item is added.
+                                    // Just add with sensible defaults.
+                                    const payload = {
+                                        menu_id: '{{ $menu->id }}',
+                                        title: '',
+                                        url: '#',
+                                        css_class: '',
+                                        icon_font: '',
+                                        phone: '',
+                                        icon_link: '',
+                                    };
+
+                                    if (special === 'phone') {
+                                        payload.title = 'Phone';
+                                        payload.css_class = 'special-phone';
+                                        payload.icon_font = 'ti ti-phone';
+                                        payload.phone = '0886 264 644';
+                                        payload.icon_link = 'tel:0886264644';
+                                    }
+
+                                    if (special === 'lookup') {
+                                        payload.title = 'Tra cứu';
+                                        payload.url = '/tra-cuu';
+                                        payload.css_class = 'special-lookup';
+                                        payload.icon_font = 'ti ti-file-search';
+                                        payload.icon_link = '/tra-cuu';
+                                    }
+
+                                    const url = btn.getAttribute('data-url');
+
+                                    // Call the same endpoint as core JS: menus.get-node
+                                    const params = new URLSearchParams();
+                                    Object.keys(payload).forEach((key) => {
+                                        params.append('data[' + key + ']', payload[key]);
+                                    });
+
+                                    const token = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+
+                                    fetch(url + '?' + params.toString(), {
+                                        method: 'GET',
+                                        headers: {
+                                            'X-Requested-With': 'XMLHttpRequest',
+                                            'X-CSRF-TOKEN': token || '',
+                                        },
+                                    })
+                                        .then((r) => r.json())
+                                        .then((res) => {
+                                            const html = res?.data?.html;
+                                            if (!html) {
+                                                return;
+                                            }
+
+                                            const wrap = document.createElement('div');
+                                            wrap.innerHTML = html;
+                                            const node = wrap.firstElementChild;
+                                            if (!node) {
+                                                return;
+                                            }
+
+                                            const list = document.querySelector('.nestable-menu > ol.dd-list');
+                                            list?.appendChild(node);
+
+                                            // Re-init media/resources if available
+                                            if (window.Botble?.initResources) {
+                                                window.Botble.initResources();
+                                            }
+                                            if (window.Botble?.initMediaIntegrate) {
+                                                window.Botble.initMediaIntegrate();
+                                            }
+                                        });
+                                });
+                            </script>
+                        </div>
+                    </x-core::card>
+                @endif
+
                 <x-core::card>
                     <x-core::card.header>
                         <a

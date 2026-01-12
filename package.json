@@ -19,7 +19,7 @@
         "hot": "mix watch --hot",
         "prod": "npm run production",
         "production": "mix --production",
-        "format": "npx prettier platform/**/resources/js/**/*.{js,vue} platform/**/resources/sass/*.scss platform/**/resources/views/**/*.blade.php platform/themes/*/{layouts,partials,views,widgets}/**/*.blade.php platform/themes/*/assets/**/*.{js,scss} --write"
+        "format": "npx prettier \"platform/**/resources/js/**/*.{js,vue}\" \"platform/**/resources/sass/**/*.scss\" \"platform/**/public/css/**/*.css\" \"platform/**/assets/**/*.{js,scss,css}\" \"platform/**/resources/views/**/*.blade.php\" \"platform/themes/*/{layouts,partials,views,widgets}/**/*.blade.php\" --write"
     },
     "devDependencies": {
         "@fullhuman/postcss-purgecss": "^6.0.0",

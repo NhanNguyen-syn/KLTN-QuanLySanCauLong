@@ -6,8 +6,12 @@ use Botble\Slug\Facades\SlugHelper;
 use Botble\Page\Repositories\Interfaces\PageInterface;
 use Botble\Page\Models\Page;
 use Botble\Base\Enums\BaseStatusEnum;
+use Botble\CourtBooking\Models\BookingList;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
 
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 // Custom routes
 Theme::registerRoutes(function (): void {
@@ -62,10 +66,144 @@ Theme::registerRoutes(function (): void {
         return Theme::scope('checkout', compact('page'))->render();
     })->name('public.checkout');
 
+    
+    Route::post('ajax/booking/order-code', function (Request $request) {
+        $dateValue = (string) $request->input('date', '');
+        if ($dateValue === '') {
+            return response()->json(['message' => 'Missing date.'], 422);
+        }
 
-    // Trang xác nhận (bước cuối)
-    Route::get('xac-nhan', function () {
-        // Resolve the page by slug (nếu có trang CMS với slug xac-nhan thì inject content)
+        try {
+            $date = Carbon::parse($dateValue);
+        } catch (\Throwable $e) {
+            return response()->json(['message' => 'Invalid date.'], 422);
+        }
+
+        $orderCode = DB::transaction(function () use ($date) {
+            $prefix = 'BD-' . $date->format('Ymd') . '-';
+            $latest = BookingList::query()
+                ->where('order_code', 'like', $prefix . '%')
+                ->lockForUpdate()
+                ->orderBy('order_code', 'desc')
+                ->value('order_code');
+
+            $nextSeq = 1;
+            if ($latest) {
+                $lastSeqStr = substr($latest, strrpos($latest, '-') + 1);
+                $nextSeq = ((int) $lastSeqStr) + 1;
+            }
+
+            return $prefix . str_pad((string) $nextSeq, 3, '0', STR_PAD_LEFT);
+        });
+
+        return response()->json(['order_code' => $orderCode]);
+    })->name('public.booking.order-code');
+
+Route::post('ajax/vnpay/qr', function (Request $request) {
+        $tmnCode = env('vnp_TmnCode', env('VNP_TMN_CODE'));
+        $hashSecret = env('vnp_HashSecret', env('VNP_HASH_SECRET'));
+        $vnpUrl = env('vnp_Url', env('VNP_URL', 'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html'));
+        $ipnUrl = env('vnp_IpnUrl', env('VNP_IPN_URL', ''));
+        $ipnUrl = is_string($ipnUrl) ? trim($ipnUrl) : '';
+        $ipAddr = env('vnp_IpAddr', env('VNP_IP_ADDR', $request->ip()));
+
+        if (! $tmnCode || ! $hashSecret) {
+            return response()->json([
+                'message' => 'VNPAY config missing.',
+            ], 422);
+        }
+
+        $amount = (int) $request->input('amount', 0);
+        if ($amount <= 0) {
+            return response()->json([
+                'message' => 'Invalid amount.',
+            ], 422);
+        }
+
+        $orderCode = (string) $request->input('order_code', '');
+        $txnRef = $orderCode !== '' ? $orderCode : ('BD' . now()->format('YmdHis') . rand(1000, 9999));
+        $orderInfo = (string) ($request->input('order_info') ?: 'Thanh toan dat san');
+
+        $params = [
+            'vnp_Version' => '2.1.0',
+            'vnp_Command' => 'pay',
+            'vnp_TmnCode' => $tmnCode,
+            'vnp_Amount' => $amount * 100,
+            'vnp_CurrCode' => 'VND',
+            'vnp_TxnRef' => $txnRef,
+            'vnp_OrderInfo' => $orderInfo,
+            'vnp_OrderType' => 'other',
+            'vnp_Locale' => 'vn',
+            'vnp_ReturnUrl' => url('/xac-nhan'),
+            'vnp_IpAddr' => $ipAddr,
+            'vnp_CreateDate' => now()->format('YmdHis'),
+        ];
+
+        $isLocalIpn = $ipnUrl !== '' && (str_contains($ipnUrl, 'localhost') || str_contains($ipnUrl, '127.0.0.1') || str_contains($ipnUrl, '.test'));
+        if ($ipnUrl && ! $isLocalIpn) {
+            $params['vnp_IpnUrl'] = $ipnUrl;
+        }
+
+        ksort($params);
+
+        $hashDataParts = [];
+        $queryParts = [];
+        foreach ($params as $key => $value) {
+            $hashDataParts[] = urlencode($key) . '=' . urlencode((string) $value);
+            $queryParts[] = urlencode($key) . '=' . urlencode((string) $value);
+        }
+
+        $hashData = implode('&', $hashDataParts);
+        $query = implode('&', $queryParts);
+        $secureHash = hash_hmac('sha512', $hashData, $hashSecret);
+        $paymentUrl = $vnpUrl . '?' . $query . '&vnp_SecureHash=' . $secureHash;
+        $qrImageUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=' . urlencode($paymentUrl);
+
+        return response()->json([
+            'payment_url' => $paymentUrl,
+            'qr_image_url' => $qrImageUrl,
+            'txn_ref' => $txnRef,
+        ]);
+    })->name('public.vnpay.qr');
+
+
+    // Trang xac-nhan (buoc cuoi)
+    Route::get('xac-nhan', function (Request $request) {
+        $hashSecret = env('vnp_HashSecret', env('VNP_HASH_SECRET'));
+
+        $input = $request->all();
+        if ($hashSecret && isset($input['vnp_SecureHash'])) {
+            $secureHash = $input['vnp_SecureHash'];
+            unset($input['vnp_SecureHash'], $input['vnp_SecureHashType']);
+            ksort($input);
+            $hashData = [];
+            foreach ($input as $key => $value) {
+                $hashData[] = urlencode($key) . '=' . urlencode((string) $value);
+            }
+            $calcHash = hash_hmac('sha512', implode('&', $hashData), $hashSecret);
+
+            if (hash_equals($calcHash, $secureHash)) {
+                $txnRef = $input['vnp_TxnRef'] ?? null;
+                $responseCode = $input['vnp_ResponseCode'] ?? null;
+                $transactionStatus = $input['vnp_TransactionStatus'] ?? null;
+                $isSuccess = $responseCode === '00' && $transactionStatus === '00';
+
+                if (! $isSuccess) {
+                    return redirect()->to(url('/dat-san'));
+                }
+
+                if ($txnRef) {
+                    BookingList::query()
+                        ->where('order_code', $txnRef)
+                        ->update([
+                            'status' => $isSuccess ? 'paid' : 'failed',
+                            'invoice_updated_at' => now(),
+                        ]);
+                }
+            }
+        }
+
+        // Resolve the page by slug (neu co trang CMS voi slug xac-nhan thi inject content)
         $page = null;
         try {
             $slug = SlugHelper::getSlug('xac-nhan', SlugHelper::getPrefix(\Botble\Page\Models\Page::class), \Botble\Page\Models\Page::class);
@@ -77,7 +215,43 @@ Theme::registerRoutes(function (): void {
         return Theme::scope('confirmation', compact('page'))->render();
     })->name('public.confirmation');
 
-// Trang tra-cuu (UI giống folder d) - tra cứu theo mã hóa đơn (order_code)
+    Route::match(['GET', 'POST'], 'vnpay/ipn', function (Request $request) {
+        $hashSecret = env('vnp_HashSecret', env('VNP_HASH_SECRET'));
+        if (! $hashSecret) {
+            return response()->json(['RspCode' => '99', 'Message' => 'Config missing']);
+        }
+
+        $input = $request->all();
+        $secureHash = $input['vnp_SecureHash'] ?? '';
+        unset($input['vnp_SecureHash'], $input['vnp_SecureHashType']);
+        ksort($input);
+        $hashData = [];
+        foreach ($input as $key => $value) {
+            $hashData[] = urlencode($key) . '=' . urlencode((string) $value);
+        }
+        $calcHash = hash_hmac('sha512', implode('&', $hashData), $hashSecret);
+
+        if (! hash_equals($calcHash, $secureHash)) {
+            return response()->json(['RspCode' => '97', 'Message' => 'Invalid signature']);
+        }
+
+        $txnRef = $input['vnp_TxnRef'] ?? null;
+        $responseCode = $input['vnp_ResponseCode'] ?? null;
+        $transactionStatus = $input['vnp_TransactionStatus'] ?? null;
+        $isSuccess = $responseCode === '00' && $transactionStatus === '00';
+
+        if ($txnRef) {
+            BookingList::query()
+                ->where('order_code', $txnRef)
+                ->update([
+                    'status' => $isSuccess ? 'paid' : 'failed',
+                    'invoice_updated_at' => now(),
+                ]);
+        }
+
+        return response()->json(['RspCode' => '00', 'Message' => 'Confirm Success']);
+    })->name('public.vnpay.ipn');
+
     Route::get('tra-cuu', function () {
         Theme::asset()->container('footer')->usePath()->add('lookup-script', 'js/lookup.js');
 
@@ -87,3 +261,10 @@ Theme::registerRoutes(function (): void {
 });
 
 Theme::routes();
+
+
+
+
+
+
+

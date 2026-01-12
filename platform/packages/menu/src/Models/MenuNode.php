@@ -24,6 +24,8 @@ class MenuNode extends BaseModel
         'reference_type',
         'url',
         'icon_font',
+        'phone',
+        'icon_link',
         'title',
         'css_class',
         'target',

@@ -78,6 +78,36 @@ class MenuNodeForm extends FormAbstract
                     ])
             )
             ->add(
+                'icon_link',
+                TextField::class,
+                TextFieldOption::make()
+                    ->label('Icon link')
+                    ->labelAttributes([
+                        'data-update' => 'icon_link',
+                        'for' => 'menu-node-icon-link-' . $id,
+                    ])
+                    ->placeholder('https://...')
+                    ->attributes([
+                        'data-old' => $this->model->icon_link,
+                        'id' => 'menu-node-icon-link-' . $id,
+                    ])
+            )
+            ->add(
+                'phone',
+                TextField::class,
+                TextFieldOption::make()
+                    ->label('Phone')
+                    ->labelAttributes([
+                        'data-update' => 'phone',
+                        'for' => 'menu-node-phone-' . $id,
+                    ])
+                    ->placeholder('0123 456 789')
+                    ->attributes([
+                        'data-old' => $this->model->phone,
+                        'id' => 'menu-node-phone-' . $id,
+                    ])
+            )
+            ->add(
                 'css_class',
                 TextField::class,
                 TextFieldOption::make()

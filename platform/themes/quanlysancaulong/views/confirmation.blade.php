@@ -70,7 +70,7 @@
     </div>
 
     <script>
-    (function(){
+    (async function(){
         const qs=s=>document.querySelector(s);
         const fmt=n=>{try{return Number(n||0).toLocaleString('vi-VN')+'đ'}catch(e){return '0đ'}};
         // Map personalInfo fields: field_1 = name, field_2 = email, field_3 = phone
@@ -133,11 +133,55 @@
             });
             qs('#booking-block').innerHTML=html;
         }
+        const params = new URLSearchParams(window.location.search);
+        const vnpResponseCode = params.get('vnp_ResponseCode');
+        const vnpTransactionStatus = params.get('vnp_TransactionStatus');
+        const vnpIsReturn = vnpResponseCode !== null || vnpTransactionStatus !== null;
+        const vnpSuccess = vnpResponseCode === '00' && vnpTransactionStatus === '00';
+
         // Payment Details from localStorage
         let paymentDetails = null;
         try { paymentDetails = JSON.parse(localStorage.getItem('paymentDetails') || 'null'); } catch(e) {}
 
-        if (paymentDetails) {
+        const bookingTotal = (booking || []).reduce((sum, item) => sum + (Number(item.price) || 0), 0);
+        const fetchOrderCode = async (dateValue) => {
+            if (!dateValue) return null;
+            try {
+                const res = await fetch('{{ url('/ajax/booking/order-code') }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    },
+                    body: JSON.stringify({ date: dateValue })
+                });
+                const data = await res.json().catch(() => null);
+                if (!res.ok || !data || !data.order_code) return null;
+                return data.order_code;
+            } catch(e) {
+                return null;
+            }
+        };
+        const vnpAmountRaw = params.get('vnp_Amount');
+        const vnpAmount = vnpAmountRaw ? Math.round(Number(vnpAmountRaw) / 100) : 0;
+        if (vnpIsReturn && vnpAmount > 0 && (!paymentDetails || paymentDetails.paymentMethod === 'vnpay')) {
+            const inferredType = bookingTotal > 0 && vnpAmount >= bookingTotal ? 'full' : 'deposit';
+            paymentDetails = {
+                totalAmount: bookingTotal,
+                paymentType: inferredType,
+                amountPaid: vnpAmount,
+                amountRemaining: Math.max(bookingTotal - vnpAmount, 0)
+            };
+            try {
+                localStorage.setItem('paymentDetails', JSON.stringify(paymentDetails));
+            } catch(e) {}
+        }
+
+        if (paymentDetails && !paymentDetails.paymentMethod) {
+            paymentDetails.paymentMethod = 'bank-transfer';
+        }
+
+if (paymentDetails) {
             qs('#paid-total').textContent = fmt(paymentDetails.amountPaid);
             if (paymentDetails.paymentType === 'deposit' && paymentDetails.amountRemaining > 0) {
                 qs('#remaining-total').textContent = fmt(paymentDetails.amountRemaining);
@@ -150,12 +194,25 @@
         }
 
         // Persist to server (idempotent) and get invoice/order code BD-YYYYMMDD-XXX
+        let orderCode = localStorage.getItem('order_code') || null;
+        let bookingCreated = localStorage.getItem('booking_created') === '1' && !!orderCode;
+        if (!bookingCreated && localStorage.getItem('booking_created') === '1' && !orderCode) {
+            try { localStorage.removeItem('booking_created'); } catch(e) {}
+        }
+        if (!vnpIsReturn && !bookingCreated) {
+            const dateValue = (booking && booking[0] && (booking[0].date || booking[0].booking_date || booking[0].ngay)) || null;
+            orderCode = await fetchOrderCode(dateValue);
+            if (orderCode) {
+                try { localStorage.setItem('order_code', orderCode); } catch(e) {}
+            }
+        }
         const payload={
-            order_code: localStorage.getItem('order_code') || null,
+            order_code: orderCode || null,
             customer_name: getName(personal) || null,
             contact: getPhone(personal) || getEmail(personal) || null,
             notes: null,
             paid_amount: paymentDetails ? paymentDetails.amountPaid : 0,
+            status: vnpIsReturn ? (vnpSuccess ? ((paymentDetails && paymentDetails.paymentType === 'full') ? 'completed' : 'paid') : 'failed') : 'processing',
             items: (booking||[])
                 .map(it => {
                     const courtId = it.court_id ?? it.courtId ?? it.id ?? null;
@@ -200,7 +257,7 @@
         const placeholderCode = `BD-${String(tmpDate).replace(/-/g,'')}-...`;
         qs('#order-code').textContent = localStorage.getItem('order_code') || placeholderCode;
 
-        if ((payload.items||[]).length){
+        if ((payload.items||[]).length && (!vnpIsReturn ? !bookingCreated : vnpSuccess)){
             // Gọi đúng base URL theo APP_URL để hỗ trợ khi app chạy trong sub-folder
             fetch('{{ url('/api/booking-list') }}', {
               method: 'POST',
@@ -234,6 +291,7 @@
                 console.log('[BOOKING API SUCCESS]', res);
                 if (res.success && res.order_code) {
                     localStorage.setItem('order_code', res.order_code);
+                    localStorage.setItem('booking_created', '1');
                     qs('#order-code').textContent = res.order_code;
                     // Tránh lưu trùng lặp lần sau
                     try { localStorage.removeItem('tempBooking'); } catch(e) {}
@@ -253,4 +311,5 @@
     })();
     </script>
 </section>
+
 

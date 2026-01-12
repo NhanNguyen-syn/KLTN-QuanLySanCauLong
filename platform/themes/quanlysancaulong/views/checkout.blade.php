@@ -1,6 +1,20 @@
 {!! dynamic_sidebar('top_sidebar') !!}
 @if(!empty($page))
-    {!! apply_filters(PAGE_FILTER_FRONT_PAGE_CONTENT, $page->content, $page) !!}
+    @php
+        $pageContent = $page->content;
+        $bankTransferShortcodeFromPage = '';
+        if (preg_match('/\\[(\\[?)bank-transfer-details(?![\\w-])[^\\]]*\\](?:[\\s\\S]*?)\\[\\/bank-transfer-details\\]/s', $pageContent, $matches)) {
+            $bankTransferShortcodeFromPage = $matches[0];
+        } elseif (preg_match('/\\[(\\[?)bank-transfer-details(?![\\w-])[^\\]]*\\/\\]/s', $pageContent, $matches)) {
+            $bankTransferShortcodeFromPage = $matches[0];
+        } elseif (preg_match('/\\[(\\[?)bank-transfer-details(?![\\w-])[^\\]]*\\]/s', $pageContent, $matches)) {
+            $bankTransferShortcodeFromPage = $matches[0];
+        }
+        $pageContent = preg_replace('/\\[(\\[?)bank-transfer-details(?![\\w-])[^\\]]*\\](?:[\\s\\S]*?)\\[\\/bank-transfer-details\\]/s', '', $pageContent);
+        $pageContent = preg_replace('/\\[(\\[?)bank-transfer-details(?![\\w-])[^\\]]*\\/\\]/s', '', $pageContent);
+        $pageContent = preg_replace('/\\[(\\[?)bank-transfer-details(?![\\w-])[^\\]]*\\]/s', '', $pageContent);
+    @endphp
+    {!! apply_filters(PAGE_FILTER_FRONT_PAGE_CONTENT, $pageContent, $page) !!}
 @endif
 
 <section class="checkout-section">
@@ -11,14 +25,14 @@
         @media(min-width:992px){.checkout-grid{grid-template-columns:2fr 1fr}}
         .card{background:#fff;border:1px solid #f0f0f0;border-radius:16px;padding:22px;box-shadow:0 2px 8px rgba(0,0,0,.05); margin-bottom: 30px;}
         .card h3{margin:0 0 14px 0;font-weight:800}
-        .radio-opt{display:block;border:2px solid #e5e7eb;border-radius:12px;padding:16px;cursor:pointer;margin-bottom:12px}
+        .radio-opt{display:block;border:2px solid #e5e7eb;border-radius:14px;padding:16px;cursor:pointer;margin-bottom:12px}
         .radio-opt.is-active{background:linear-gradient(180deg,rgba(16,185,129,.08),rgba(20,184,166,.08));border-color:#10b981}
         .radio-opt:hover{border-color:#10b981}
         .field-title{font-size:14px;color:#6b7280;font-weight:700;text-transform:uppercase}
         .summary{position:sticky;top:24px}
         .row{display:flex;justify-content:space-between;margin:8px 0}
         .total{display:flex;justify-content:space-between;border-top:2px solid #e5e7eb;margin-top:12px;padding-top:12px;font-weight:800}
-        .pay-btn{width:100%;background:linear-gradient(90deg,#0E6B5C,#1DB9A2);color:#fff;border:none;border-radius:12px;padding:14px 18px;font-weight:800}
+        .pay-btn{width:100%;background:linear-gradient(90deg,#0E6B5C,#1DB9A2);color:#fff;border:none;border-radius:14px;padding:14px 18px;font-weight:800}
         .success-wrap{text-align:center;padding:60px 0}
         .success-badge{width:96px;height:96px;border-radius:999px;background:linear-gradient(135deg,#d1fae5,#a7f3d0);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:42px}
         .muted{color:#6b7280}
@@ -88,34 +102,32 @@
                             </div>
                         </label>
                     </div>
-
-                    <div id="bank-detail-card" class="card">
-                        <h3>Chi Tiết Chuyển Khoản</h3>
-                        <div class="card" style="background:linear-gradient(135deg, #f0fdfa, #f0fdfa); border-color:#a7f3d0; padding: 24px;">
-                            <div style="margin-bottom: 16px;">
-                                <div class="field-title">Ngân hàng</div>
-                                <strong style="font-size: 1.125rem;">Vietcombank (VCB)</strong>
-                            </div>
-                            <div style="margin-bottom: 16px;">
-                                <div class="field-title">Số tài khoản</div>
-                                <strong style="font-size: 1.25rem; font-family: ui-monospace, monospace; color: #047857;">0123456789</strong>
-                            </div>
-                            <div style="margin-bottom: 16px;">
-                                <div class="field-title">Chủ tài khoản</div>
-                                <strong style="font-size: 1.125rem;">BADMINTON COURT CENTER</strong>
-                            </div>
-                            <div>
-                                <div class="field-title">Nội dung chuyển khoản</div>
-                                <div style="font-family:ui-monospace,monospace;font-weight:800;background:#fff;padding:12px;border-radius:8px; border: 1px solid #a7f3d0; margin-top: 4px;" id="transfer-note">[TEN BAN] - DAT SAN</div>
-                            </div>
-                        </div>
-                    </div>
+                    @php
+                        $bankTransferShortcode = trim((string) theme_option('bank_transfer_shortcode', ''));
+                        if ($bankTransferShortcode === '' && !empty($bankTransferShortcodeFromPage)) {
+                            $bankTransferShortcode = $bankTransferShortcodeFromPage;
+                        }
+                    @endphp
+                    @if($bankTransferShortcode !== '')
+                        {!! do_shortcode($bankTransferShortcode) !!}
+                    @endif
 
                     <div id="vnpay-card" class="card" style="display:none">
-                        <h3>Thanh Toán VNPay</h3>
+                        <h3>Thanh toán VNPay</h3>
                         <div class="card" style="background:#eef6ff;border-color:#c7ddff">
-                            <p class="muted" style="margin:0 0 8px 0">Bạn sẽ được chuyển đến cổng VNPay để hoàn tất giao dịch an toàn.</p>
-                            <div class="muted" style="font-size:14px">• Bảo mật cao với mã hoá SSL</div>
+                            <p class="muted" style="margin:0 0 10px 0; font-size:16px">Bạn sẽ quét QR VNPay để hoàn tất giao dịch an toàn.</p>
+                            <div class="muted" style="font-size:15px">Bảo mật cao với mã hóa SSL</div>
+                            <div style="margin-top:18px; display:flex; flex-direction:column; align-items:center; gap:12px;">
+                                <div id="vnpay-qr-box" style="width:100%; max-width:420px; aspect-ratio:1; background:#fff; border:2px solid #2563eb; border-radius:14px; display:flex; flex-direction:column; align-items:center; justify-content:space-between; gap:8px; padding:12px;">
+                                    <span class="muted" style="font-size:14px">Đang tải QR...</span>
+                                </div>
+                                <div style="width:100%; text-align:center;">
+                                    <div class="muted" style="font-size:15px; display:flex; align-items:center; justify-content:center; gap:6px; flex-wrap:wrap;">
+                                        <span>Mở app ngân hàng/VNPay để quét mã.</span>
+                                        <a href="#" id="vnpay-pay-link" class="muted" style="font-size:15px; display:none;" target="_blank" rel="noopener noreferrer">Mở tài khoản liên kết</a>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -145,6 +157,27 @@
             const getPhone = p => (p?.field_3 || p?.phone || p?.sdt || p?.so_dien_thoai || p?.mobile || '').toString().trim();
             const getEmail = p => (p?.field_2 || p?.email || p?.mail || '').toString().trim();
 
+            const parseTimeRange = (input) => {
+                if (!input) return [null, null];
+                const raw = String(input).replace(/\s+/g, '');
+                const parts = raw.split(/-|to|den|=>/i);
+                const normalize = (v) => {
+                    if (!v) return null;
+                    if (/^\d{4}$/.test(v)) return v.slice(0, 2) + ':' + v.slice(2);
+                    return v.includes(':') ? v : v;
+                };
+                return [normalize(parts[0] || null), normalize(parts[1] || null)];
+            };
+
+            const normalizeDate = (val) => {
+                if (!val) return null;
+                try {
+                    if (/^\d{4}-\d{2}-\d{2}$/.test(String(val))) return String(val);
+                    const d = new Date(val);
+                    if (!isNaN(d.getTime())) return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+                } catch (e) {}
+                return String(val);
+            };
             const state = { personal:null, booking:[], customer:null, method:'bank-transfer', type:'full' };
             try{ state.personal = JSON.parse(localStorage.getItem('personalInfo')||'null'); }catch(e){}
 
@@ -177,10 +210,192 @@
             const total = calcTotal();
             const deposit = Math.round(total * 0.3);
 
-            // Fill transfer note
-            qs('#transfer-note').textContent = (getName(state.personal)||'[TÊN BẠN]') + ' - ĐẶT SÂN';
+const syncPaymentDetails = () => {
+                const payType = state.type;
+                const showDeposit = payType === 'deposit';
+                const amountPaid = showDeposit ? deposit : total;
+                const amountRemaining = Math.max(total - amountPaid, 0);
 
+                const paymentDetails = {
+                    totalAmount: total,
+                    paymentType: payType,
+                    amountPaid: amountPaid,
+                    amountRemaining: amountRemaining,
+                    paymentMethod: state.method
+                };
+
+                try {
+                    localStorage.setItem('paymentDetails', JSON.stringify(paymentDetails));
+                } catch(e) {}
+            };
+
+            // Fill transfer note if block exists
+            const transferNoteEl = qs('#transfer-note');
+            if (transferNoteEl) {
+                transferNoteEl.textContent = (getName(state.personal)||'[TEN BAN]') + ' - DAT SAN';
+            }
+
+            const vnpayState = { loading: false, lastAmount: null };
+            const buildBookingPayload = () => {
+                const items = (state.booking || []).map(it => {
+                    const courtId = it.court_id ?? it.courtId ?? it.id ?? null;
+                    let st = null;
+                    let et = null;
+
+                    if (it.time && typeof it.time === 'string') {
+                        const timeParts = it.time.split(':').map(Number);
+                        if (timeParts.length === 2) {
+                            const startDate = new Date();
+                            startDate.setHours(timeParts[0], timeParts[1], 0, 0);
+                            const endDate = new Date(startDate.getTime() + 30 * 60000);
+                            st = startDate.toTimeString().slice(0, 5);
+                            et = endDate.toTimeString().slice(0, 5);
+                        }
+                    } else {
+                        const hasRange = (it.start_time || it.startTime) && (it.end_time || it.endTime);
+                        const rangeInput = (typeof it.slot === 'string' ? it.slot : null) || (hasRange ? String(it.start_time || it.startTime) + '-' + String(it.end_time || it.endTime) : null);
+                        const parsed = parseTimeRange(rangeInput);
+                        st = parsed[0];
+                        et = parsed[1];
+                    }
+
+                    return {
+                        court_id: courtId,
+                        court_name: (typeof it.court === 'string' ? it.court : null) || it.court_name || it.courtName || null,
+                        date: normalizeDate(it.date || it.booking_date || it.ngay || null),
+                        start_time: st,
+                        end_time: et,
+                        price: Number(it.price) || 0,
+                    };
+                }).filter(x => x.start_time && x.end_time && x.date);
+
+                return {
+                    order_code: localStorage.getItem('order_code') || null,
+                    customer_name: getName(state.personal) || null,
+                    contact: getPhone(state.personal) || getEmail(state.personal) || null,
+                    notes: null,
+                    paid_amount: getPayAmount(),
+                    items: items,
+                };
+            };
+            const ensureOrderCode = async () => {
+                const existing = localStorage.getItem('order_code');
+                const isLocked = localStorage.getItem('booking_created') === '1';
+                if (existing && isLocked) return existing;
+                if (existing && !isLocked) {
+                    localStorage.removeItem('order_code');
+                }
+
+                const payload = buildBookingPayload();
+                if (!payload.items.length) return null;
+
+                const res = await fetch('{{ url('/ajax/booking/order-code') }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    },
+                    body: JSON.stringify({
+                        date: payload.items[0].date,
+                    }),
+                });
+
+                const data = await res.json().catch(() => null);
+                if (!res.ok || !data || !data.order_code) return null;
+
+                localStorage.setItem('order_code', data.order_code);
+                return data.order_code;
+            };
+            const getPayAmount = () => state.type === 'deposit' ? deposit : total;
+            const setVnpayStatus = (text) => {
+                const box = qs('#vnpay-qr-box');
+                if (!box) return;
+                box.innerHTML = '<span class="muted" style="font-size:14px">' + text + '</span>';
+            };
+            const fetchVnpayQr = async () => {
+                const box = qs('#vnpay-qr-box');
+                if (!box) return;
+                const amount = getPayAmount();
+                const orderCode = await ensureOrderCode();
+                if (!orderCode) {
+                    setVnpayStatus('Khong the tao don.');
+                    vnpayState.loading = false;
+                    return;
+                }
+                if (!amount || amount <= 0 || vnpayState.loading) return;
+                if (vnpayState.lastAmount === amount && box.querySelector('img')) return;
+
+                vnpayState.loading = true;
+                vnpayState.lastAmount = amount;
+                setVnpayStatus('Dang tai QR...');
+
+                const link = qs('#vnpay-pay-link');
+                if (link) {
+                    link.style.display = 'none';
+                    link.setAttribute('href', '#');
+                }
+
+                try {
+                    const res = await fetch('{{ url('/ajax/vnpay/qr') }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        },
+                        body: JSON.stringify({
+                            amount: amount,
+                            order_info: 'Thanh toan dat san',
+                            order_code: orderCode,
+                        }),
+                    });
+
+                    const data = await res.json().catch(() => null);
+                    if (!res.ok || !data || !data.qr_image_url) {
+                        throw new Error(data?.message || 'VNPay error');
+                    }
+
+                    const img = document.createElement('img');
+                    img.src = data.qr_image_url;
+                    img.alt = 'VNPay QR';
+                    img.style.width = '100%';
+                    img.style.height = 'auto';
+                    img.style.maxWidth = '100%';
+                    img.style.maxHeight = 'calc(100% - 60px)';
+                    img.style.objectFit = 'contain';
+                    img.style.flex = '1';
+                    img.style.borderRadius = '6px';
+
+                    const labelTop = document.createElement('img');
+                    labelTop.src = "{{ asset('themes/quanlysancaulong/Logo-VNPAY-QR.png') }}";
+                    labelTop.alt = 'VNPAY QR';
+                    labelTop.style.height = '24px';
+                    labelTop.style.width = 'auto';
+                    labelTop.style.marginTop = '2px';
+
+                    const labelBottom = document.createElement('div');
+                    labelBottom.textContent = 'Scan to Pay';
+                    labelBottom.style.fontWeight = '700';
+                    labelBottom.style.color = '#1d4ed8';
+                    labelBottom.style.fontSize = '13px';
+
+                    box.innerHTML = '';
+                    box.appendChild(labelTop);
+                    box.appendChild(img);
+                    box.appendChild(labelBottom);
+
+                    if (link && data.payment_url) {
+                        link.textContent = 'Mở tài khoản liên kết';
+                        link.style.display = 'inline';
+                        link.setAttribute('href', data.payment_url);
+                    }
+                } catch (err) {
+                    setVnpayStatus('Khong the tao QR.');
+                } finally {
+                    vnpayState.loading = false;
+                }
+            };
             const updateSummary = ()=>{
+                syncPaymentDetails();
                 qs('#sum-total').textContent = fmt(total);
                 const payType = state.type;
                 const showDeposit = payType === 'deposit';
@@ -254,7 +469,13 @@
                 }
             };
 
-            // Radio interactions
+            if (state.method === 'bank-transfer') {
+                try { localStorage.removeItem('booking_created'); } catch(e) {}
+                try { localStorage.removeItem('order_code'); } catch(e) {}
+                syncPaymentDetails();
+            }
+
+// Radio interactions
             qsa('.radio-opt[data-method]').forEach(el=>{
                 el.addEventListener('click',()=>{
                     qsa('.radio-opt[data-method]').forEach(i=>i.classList.remove('is-active'));
@@ -262,9 +483,24 @@
                     const val = el.getAttribute('data-method');
                     state.method = val;
                     qs('input[name="paymentMethod"][value="'+val+'"]').checked = true;
-                    qs('#bank-detail-card').style.display = val==='bank-transfer'?'block':'none';
+                    const bankDetailCard = qs('#bank-detail-card');
+                    if (bankDetailCard) {
+                        bankDetailCard.style.display = val==='bank-transfer'?'block':'none';
+                    }
                     qs('#vnpay-card').style.display = val==='vnpay'?'block':'none';
-                    qs('#pay-btn').textContent = val==='vnpay'?'Thanh Toán Với VNPay':'Xác Nhận Thanh Toán';
+                    if (val === 'vnpay') {
+                        try { localStorage.removeItem('booking_created'); } catch(e) {}
+                        syncPaymentDetails();
+                        fetchVnpayQr();
+                    } else {
+                        try { localStorage.removeItem('booking_created'); } catch(e) {}
+                        try { localStorage.removeItem('order_code'); } catch(e) {}
+                        syncPaymentDetails();
+                    }
+                    const payBtn = qs('#pay-btn');
+                    if (payBtn) {
+                        payBtn.style.display = val === 'vnpay' ? 'none' : 'block';
+                    }
                 });
             });
             qsa('.radio-opt[data-type]').forEach(el=>{
@@ -272,7 +508,14 @@
                     qsa('.radio-opt[data-type]').forEach(i=>i.classList.remove('is-active'));
                     el.classList.add('is-active');
                     const val = el.getAttribute('data-type');
-                    state.type = val; qs('input[name="paymentType"][value="'+val+'"]').checked = true; updateSummary();
+                    state.type = val;
+                    qs('input[name="paymentType"][value="'+val+'"]').checked = true;
+                    updateSummary();
+                    if (state.method === 'vnpay') {
+                        vnpayState.lastAmount = null;
+                        setVnpayStatus('Dang tai QR...');
+                        fetchVnpayQr();
+                    }
                 });
             });
 
@@ -305,4 +548,32 @@
         })();
     </script>
 </section>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 

@@ -30,6 +30,7 @@ class BookingListController extends BaseController
             'contact'            => 'nullable|string',
             'notes'              => 'nullable|string',
             'paid_amount'        => 'nullable|numeric',
+            'status'             => 'nullable|in:processing,paid,failed,completed',
         ]);
 
         if ($validator->fails()) {
@@ -47,17 +48,95 @@ class BookingListController extends BaseController
         try {
             $items = $validator->validated()['items'];
 
+            $requestedOrderCode = trim((string) $request->input('order_code', ''));
+            if ($requestedOrderCode !== '') {
+                $existingRows = BookingList::query()
+                    ->where('order_code', $requestedOrderCode)
+                    ->get(['court_id', 'court_name', 'date', 'start_time', 'end_time', 'price', 'status']);
+
+                if ($existingRows->isNotEmpty()) {
+                    $normalizeItem = function (array $item): array {
+                        return [
+                            'court_id' => $item['court_id'] ?? null,
+                            'court_name' => $item['court_name'] ?? null,
+                            'date' => (string) ($item['date'] ?? ''),
+                            'start_time' => (string) ($item['start_time'] ?? ''),
+                            'end_time' => (string) ($item['end_time'] ?? ''),
+                            'price' => (float) ($item['price'] ?? 0),
+                        ];
+                    };
+
+                    $normalizeRow = function (BookingList $row): array {
+                        return [
+                            'court_id' => $row->court_id,
+                            'court_name' => $row->court_name,
+                            'date' => (string) $row->date,
+                            'start_time' => (string) $row->start_time,
+                            'end_time' => (string) $row->end_time,
+                            'price' => (float) ($row->price ?? 0),
+                        ];
+                    };
+
+                    $incoming = array_map($normalizeItem, $items);
+                    $stored = $existingRows->map($normalizeRow)->toArray();
+
+                    $makeKey = function (array $item): string {
+                        return implode('|', [
+                            (string) ($item['court_id'] ?? ''),
+                            (string) ($item['court_name'] ?? ''),
+                            (string) ($item['date'] ?? ''),
+                            (string) ($item['start_time'] ?? ''),
+                            (string) ($item['end_time'] ?? ''),
+                            number_format((float) ($item['price'] ?? 0), 2, '.', ''),
+                        ]);
+                    };
+
+                    $incomingKeys = array_map($makeKey, $incoming);
+                    $storedKeys = array_map($makeKey, $stored);
+                    sort($incomingKeys);
+                    sort($storedKeys);
+
+                    $hasFinalStatus = $existingRows->contains(function (BookingList $row): bool {
+                        return in_array($row->status, ['paid', 'failed', 'completed'], true);
+                    });
+
+                    if ($incomingKeys === $storedKeys && ! $hasFinalStatus) {
+                        return response()->json([
+                            'success' => true,
+                            'order_code' => $requestedOrderCode,
+                            'exists' => true,
+                        ]);
+                    }
+                }
+            }
+
             // Bắt đầu transaction TRƯỚC khi tạo mã để lockForUpdate có hiệu lực
             DB::beginTransaction();
+            $orderCode = '';
+            $requestedOrderCode = trim((string) $request->input('order_code', ''));
+            if ($requestedOrderCode !== '') {
+                $exists = BookingList::query()
+                    ->where('order_code', $requestedOrderCode)
+                    ->lockForUpdate()
+                    ->exists();
 
-            // Lấy ngày của đơn hàng (theo item đầu tiên) để tạo mã BD-YYYYMMDD-XXX
-            $dateForOrder = Carbon::parse($items[0]['date']);
-            $orderCode = $this->generateSequentialOrderCodeForDate($dateForOrder);
+                if (! $exists) {
+                    $orderCode = $requestedOrderCode;
+                }
+            }
+
+            if ($orderCode === '') {
+                // Lấy ngày của đơn hàng (theo item đầu tiên) để tạo mã BD-YYYYMMDD-XXX
+                $dateForOrder = Carbon::parse($items[0]['date']);
+                $orderCode = $this->generateSequentialOrderCodeForDate($dateForOrder);
+            }
 
             // TÍNH PHÂN BỔ TIỀN CỌC THEO TỶ LỆ GIÁ TRỊ TỪNG MỤC
             $totalPrice = collect($items)->sum(fn($it) => (float)($it['price'] ?? 0));
             $totalPaid  = (float) $request->input('paid_amount', 0);
             $allocatedSoFar = 0.0;
+
+            $status = $request->input('status') ?: 'processing';
 
             foreach ($items as $idx => $item) {
                 $price = (float) ($item['price'] ?? 0);
@@ -78,7 +157,7 @@ class BookingListController extends BaseController
                     'date'            => $item['date'],
                     'start_time'      => $item['start_time'],
                     'end_time'        => $item['end_time'],
-                    'status'          => 'processing',
+                    'status'          => $status,
                     'customer_name'   => $request->input('customer_name'),
                     'contact'         => $request->input('contact'),
                     'price'           => $price,
@@ -133,4 +212,3 @@ class BookingListController extends BaseController
         return $prefix . str_pad((string) $nextSeq, 3, '0', STR_PAD_LEFT);
     }
 }
-

@@ -20,6 +20,12 @@
                @endif>
                 {!! $row->icon_html !!}
                 {{ $row->title }}
+
+                @if (! empty($location) && $location === 'main-menu')
+                    @if ($row->phone)
+                        <span class="menu-phone ms-2">{{ $row->phone }}</span>
+                    @endif
+                @endif
             </a>
 
             @if ($row->has_child)
