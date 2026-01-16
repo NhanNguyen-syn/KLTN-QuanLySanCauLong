@@ -1,3 +1,6 @@
+@php
+    $selectedValues = $multiple ? (array) $value : [$value];
+@endphp
 <select
     class="select-full"
     name="{{ $field }}"
@@ -6,7 +9,7 @@
     @foreach ($options as $key => $label)
         <option
             value="{{ $key }}"
-            @selected(in_array($key, $value))
+            @selected(in_array($key, $selectedValues, true))
         >{{ $label }}</option>
     @endforeach
 </select>

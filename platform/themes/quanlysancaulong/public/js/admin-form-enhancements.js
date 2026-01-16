@@ -3,14 +3,12 @@
  * Thêm color picker và toggle cho admin form
  */
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     // Initialize color pickers
     initColorPickers();
-    
+
     // Initialize toggles
     initToggles();
-    
-
 });
 
 /**
@@ -18,7 +16,7 @@ document.addEventListener('DOMContentLoaded', function() {
  */
 function initColorPickers() {
     const colorInputs = document.querySelectorAll('[data-color-picker="true"]');
-    
+
     colorInputs.forEach(input => {
         // Create color picker wrapper
         const wrapper = document.createElement('div');
@@ -26,7 +24,7 @@ function initColorPickers() {
         wrapper.style.display = 'flex';
         wrapper.style.gap = '10px';
         wrapper.style.alignItems = 'center';
-        
+
         // Create native color input
         const colorInput = document.createElement('input');
         colorInput.type = 'color';
@@ -36,7 +34,7 @@ function initColorPickers() {
         colorInput.style.cursor = 'pointer';
         colorInput.style.border = '1px solid #ddd';
         colorInput.style.borderRadius = '4px';
-        
+
         // Create hex text input
         const hexInput = document.createElement('input');
         hexInput.type = 'text';
@@ -47,20 +45,20 @@ function initColorPickers() {
         hexInput.style.border = '1px solid #ddd';
         hexInput.style.borderRadius = '4px';
         hexInput.style.fontFamily = 'monospace';
-        
+
         // Sync color input and hex input
-        colorInput.addEventListener('input', function() {
+        colorInput.addEventListener('input', function () {
             hexInput.value = this.value;
             input.value = this.value;
         });
-        
-        hexInput.addEventListener('input', function() {
+
+        hexInput.addEventListener('input', function () {
             if (/^#[0-9A-F]{6}$/i.test(this.value)) {
                 colorInput.value = this.value;
                 input.value = this.value;
             }
         });
-        
+
         // Insert after original input
         input.style.display = 'none';
         input.parentNode.insertBefore(wrapper, input.nextSibling);
@@ -74,18 +72,18 @@ function initColorPickers() {
  */
 function initToggles() {
     const toggleInputs = document.querySelectorAll('[data-toggle="true"]');
-    
+
     toggleInputs.forEach(input => {
         const onText = input.dataset.on || 'Có';
         const offText = input.dataset.off || 'Không';
-        
+
         // Create toggle wrapper
         const wrapper = document.createElement('div');
         wrapper.className = 'toggle-wrapper';
         wrapper.style.display = 'flex';
         wrapper.style.gap = '10px';
         wrapper.style.alignItems = 'center';
-        
+
         // Create toggle button
         const toggle = document.createElement('button');
         toggle.type = 'button';
@@ -99,13 +97,13 @@ function initToggles() {
         toggle.style.fontWeight = '600';
         toggle.style.transition = 'all 0.3s';
         toggle.textContent = input.value === '1' ? onText : offText;
-        
+
         // Toggle click handler
-        toggle.addEventListener('click', function(e) {
+        toggle.addEventListener('click', function (e) {
             e.preventDefault();
             const isOn = input.value === '1';
             input.value = isOn ? '0' : '1';
-            
+
             // Update button style
             if (input.value === '1') {
                 toggle.style.backgroundColor = '#4CAF50';
@@ -117,13 +115,10 @@ function initToggles() {
                 toggle.textContent = offText;
             }
         });
-        
+
         // Insert after original input
         input.style.display = 'none';
         input.parentNode.insertBefore(wrapper, input.nextSibling);
         wrapper.appendChild(toggle);
     });
 }
-
-
-

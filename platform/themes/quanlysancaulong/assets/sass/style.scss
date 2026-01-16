@@ -60,9 +60,9 @@ footer .footer-social {
 }
 
 footer .footer-social:hover {
-    background-color: #10b981 !important; /* emerald-500 */
-    color: #ffffff !important;
-    transform: translateY(-2px);
+    background-color: transparent;
+    color: inherit;
+    transform: none;
 }
 
 /* Footer link base */
@@ -78,4 +78,3 @@ footer ul li a:hover {
 footer .col-lg-3 ul {
     padding-left: calc(4px + .5rem); /* Width of green bar + its margin */
 }
-

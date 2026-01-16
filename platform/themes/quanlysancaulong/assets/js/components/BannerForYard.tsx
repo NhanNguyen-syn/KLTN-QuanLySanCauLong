@@ -5,6 +5,8 @@ type Props = {
   title_color?: string; // from shortcode raw
   titleColor?: string;  // normalized
   description?: string;
+  text_align?: string;
+  textAlign?: string;
   background_image?: string; // raw id/url
   backgroundImage?: string;  // normalized url
   button_text?: string;
@@ -26,6 +28,8 @@ export default defineComponent<Props>({
     title_color: String,
     titleColor: String,
     description: String,
+    text_align: String,
+    textAlign: String,
     background_image: String,
     backgroundImage: String,
     button_text: String,
@@ -47,8 +51,17 @@ export default defineComponent<Props>({
     const descColor = hasBg ? '#ffffff' : '#444444';
     const btnText = props.buttonText || props.button_text || '';
     const btnUrl = props.buttonUrl || props.button_url || '/dat-san';
-    const btnBgColor = props.buttonBgColor || props.button_bg_color || '#0d6efd';
+    const btnBgColor = props.buttonBgColor || props.button_bg_color || '#065e45';
     const btnTextColor = props.buttonTextColor || props.button_text_color || '#ffffff';
+    const rawAlign = (props.textAlign || props.text_align || 'center').toLowerCase();
+    const textAlign = rawAlign === 'left' || rawAlign === 'right' || rawAlign === 'center' ? rawAlign : 'center';
+    const justifyContent = textAlign === 'left' ? 'flex-start' : textAlign === 'right' ? 'flex-end' : 'center';
+    const descMargin =
+      textAlign === 'center'
+        ? '16px auto 0'
+        : textAlign === 'right'
+          ? '16px 0 0 auto'
+          : '16px auto 0 0';
 
     const handleCta = (e: MouseEvent) => {
       // Only intercept if it's a default action (like # or no href)
@@ -72,14 +85,19 @@ export default defineComponent<Props>({
     return () => (
       <section class="banner-for-yard" style={{ backgroundImage: bg ? `url('${bg}')` : undefined }}>
         <div class="banner-for-yard__overlay" style={{ background: overlay }}></div>
-        <div class="banner-for-yard__inner container">
-          <div>
+        <div class="banner-for-yard__inner container" style={{ justifyContent }}>
+          <div style={{ textAlign, width: '100%' }}>
             {props.title && (
-              <h2 class="banner-for-yard__title" style={{ color: titleColor, fontSize: '48px' }}
+              <h2
+                class="banner-for-yard__title"
+                style={{ color: titleColor, fontSize: '48px', textAlign }}
                 innerHTML={props.title}></h2>
             )}
             {props.description && (
-              <p class="banner-for-yard__desc" style={{ color: descColor, fontSize: '20px' }} innerHTML={props.description}></p>
+              <p
+                class="banner-for-yard__desc"
+                style={{ color: descColor, fontSize: '20px', textAlign, margin: descMargin }}
+                innerHTML={props.description}></p>
             )}
             {btnText && (
               <div class="banner-for-yard__btn">
@@ -94,4 +112,3 @@ export default defineComponent<Props>({
     );
   },
 });
-

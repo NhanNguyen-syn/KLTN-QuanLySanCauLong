@@ -68,16 +68,6 @@ export default defineComponent({
 
     return () => (
       <div class="personal-info-page">
-        <section class="hero-section">
-          <div class="hero-grid-overlay"></div>
-          <div class="container">
-            <div class="hero-content">
-              <h1 class="hero-title">{props.title}</h1>
-              <p class="hero-subtitle">{props.subtitle}</p>
-            </div>
-          </div>
-        </section>
-
         <div class="container" style={{maxWidth: '1000px', margin: '0 auto'}}>
           <div class="card" style={{marginTop: '24px'}}>
             <div class="card-header"><strong>Thông tin liên hệ</strong></div>

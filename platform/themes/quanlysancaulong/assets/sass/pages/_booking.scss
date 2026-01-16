@@ -315,45 +315,7 @@ $text-muted-foreground: #6b7280;
     background: linear-gradient(to bottom, $background, rgba($muted, 0.2));
 }
 
-// Hero Section
-.hero-section {
-    position: relative;
-    background: linear-gradient(to bottom right, $primary, lighten($primary, 5%), $accent);
-    color: white;
-    padding: 4rem 0; // py-16
-    overflow: hidden;
-    @media (min-width: 768px) { padding: 5rem 0; } // md:py-20
 
-    .hero-grid-overlay {
-        position: absolute;
-        inset: 0;
-        background-image: url('/grid.svg');
-        opacity: 0.1;
-    }
-
-    .hero-content {
-        position: relative;
-        max-width: 56rem; // max-w-3xl
-    }
-
-    .hero-title {
-        font-size: 2.25rem; // text-4xl
-        font-family: serif;
-        font-weight: 700;
-        margin-bottom: 1rem; // mb-4
-        line-height: 1.1;
-        @media (min-width: 768px) { font-size: 3rem; } // md:text-5xl
-        @media (min-width: 1024px) { font-size: 3.75rem; } // lg:text-6xl
-    }
-
-    .hero-subtitle {
-        font-size: 1.125rem; // text-lg
-        color: rgba(255, 255, 255, 0.9);
-        max-width: 42rem; // max-w-2xl
-        line-height: 1.75;
-        @media (min-width: 768px) { font-size: 1.25rem; } // md:text-xl
-    }
-}
 
 // Sticky Controls Section
 .sticky-controls-section {

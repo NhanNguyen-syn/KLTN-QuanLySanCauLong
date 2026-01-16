@@ -1,8 +1,10 @@
 <?php
 
 use Botble\Base\Forms\FieldOptions\InputFieldOption;
+use Botble\Base\Forms\FieldOptions\SelectFieldOption;
 use Botble\Base\Forms\FieldOptions\TextareaFieldOption;
 use Botble\Base\Forms\FieldOptions\TextFieldOption;
+use Botble\Base\Forms\Fields\SelectField;
 use Botble\Base\Forms\Fields\TextareaField;
 use Botble\Base\Forms\Fields\TextField;
 use Botble\Shortcode\Compilers\Shortcode as ShortcodeCompiler;
@@ -25,6 +27,8 @@ Shortcode::register('banner-for-yard', __('Banner for yard'), __('Banner for yar
 // ============================================================================
 
 Shortcode::setAdminConfig('banner-for-yard', function (array $attributes) {
+    $textAlign = $attributes['text_align'] ?? null;
+
     return ShortcodeForm::createFromArray($attributes)
         ->withLazyLoading()
         // Content Settings
@@ -52,6 +56,20 @@ Shortcode::setAdminConfig('banner-for-yard', function (array $attributes) {
                 ->label(__('Description'))
                 ->rows(3)
                 ->placeholder(__('Mô tả ngắn nằm dưới tiêu đề'))
+                ->toArray()
+        )
+        ->add(
+            'text_align',
+            SelectField::class,
+            SelectFieldOption::make()
+                ->label(__('Text alignment'))
+                ->choices([
+                    'left' => __('Left'),
+                    'center' => __('Center'),
+                    'right' => __('Right'),
+                ])
+                ->selected($textAlign)
+                ->defaultValue('center')
                 ->toArray()
         )
         // Background Settings
@@ -92,7 +110,7 @@ Shortcode::setAdminConfig('banner-for-yard', function (array $attributes) {
             ShortcodeColorField::class,
             InputFieldOption::make()
                 ->label(__('Button background color'))
-                ->defaultValue('#0d6efd')
+                ->defaultValue('#065e45')
                 ->toArray()
         )
         ->add(

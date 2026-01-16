@@ -17,6 +17,16 @@ use Illuminate\Support\Facades\DB;
 Theme::registerRoutes(function (): void {
     // Trang đặt sân cho khách hàng
     Route::get('dat-san', function () {
+        $page = null;
+        try {
+            $slug = SlugHelper::getSlug('dat-san', SlugHelper::getPrefix(Page::class), Page::class);
+            if ($slug && $slug->reference_id) {
+                $page = app(PageInterface::class)->getFirstBy([
+                    'id' => $slug->reference_id,
+                    'status' => BaseStatusEnum::PUBLISHED,
+                ]);
+            }
+        } catch (\Throwable $e) {}
         // Lấy danh sách sân đã publish để đổ sẵn ra trang (fallback nếu API lỗi)
         $query = \Botble\CourtBooking\Models\Court::query()->with('type');
 
@@ -45,9 +55,42 @@ Theme::registerRoutes(function (): void {
         // Chỉ nạp bundle booking cho trang này
         Theme::asset()->container('footer')->usePath()->add('booking-script', 'js/booking.js');
 
-        return Theme::scope('booking', compact('courts'))->render();
+        return Theme::scope('booking', compact('courts', 'page'))->render();
     })->name('public.booking');
 
+// Static content pages cloned from Next.js d/ folder
+        Route::get('chinh-sach-huy-doi-hoan', function () {
+            $page = null;
+            try {
+                $slug = SlugHelper::getSlug('chinh-sach-huy-doi-hoan', SlugHelper::getPrefix(Page::class), Page::class);
+                if ($slug && $slug->reference_id) {
+                    $page = app(PageInterface::class)->getFirstBy(['id' => $slug->reference_id, 'status' => BaseStatusEnum::PUBLISHED]);
+                }
+            } catch (\Throwable $e) {}
+            return Theme::scope('policy', compact('page'))->render();
+        })->name('public.policy');
+
+        Route::get('tieu-chuan-dich-vu', function () {
+            $page = null;
+            try {
+                $slug = SlugHelper::getSlug('tieu-chuan-dich-vu', SlugHelper::getPrefix(Page::class), Page::class);
+                if ($slug && $slug->reference_id) {
+                    $page = app(PageInterface::class)->getFirstBy(['id' => $slug->reference_id, 'status' => BaseStatusEnum::PUBLISHED]);
+                }
+            } catch (\Throwable $e) {}
+            return Theme::scope('service-standard', compact('page'))->render();
+        })->name('public.service-standard');
+
+        Route::get('ve-chung-toi', function () {
+            $page = null;
+            try {
+                $slug = SlugHelper::getSlug('ve-chung-toi', SlugHelper::getPrefix(Page::class), Page::class);
+                if ($slug && $slug->reference_id) {
+                    $page = app(PageInterface::class)->getFirstBy(['id' => $slug->reference_id, 'status' => BaseStatusEnum::PUBLISHED]);
+                }
+            } catch (\Throwable $e) {}
+            return Theme::scope('about', compact('page'))->render();
+        })->name('public.about');
 
     // Trang thanh toán (bước 3)
     Route::get('thanh-toan', function () {
@@ -66,7 +109,7 @@ Theme::registerRoutes(function (): void {
         return Theme::scope('checkout', compact('page'))->render();
     })->name('public.checkout');
 
-    
+
     Route::post('ajax/booking/order-code', function (Request $request) {
         $dateValue = (string) $request->input('date', '');
         if ($dateValue === '') {
@@ -261,6 +304,7 @@ Route::post('ajax/vnpay/qr', function (Request $request) {
 });
 
 Theme::routes();
+
 
 
 

@@ -10,6 +10,24 @@ foreach (glob(__DIR__ . '/shortcodes/*.php') as $filename) {
     include_once $filename;
 }
 
+// Load theme widgets
+if (file_exists($widgetFile = theme_path('widgets/register-widgets.php'))) {
+    require_once $widgetFile;
+}
+
+// Register footer widget areas
+register_sidebar([
+    'id' => 'footer_sidebar',
+    'name' => __('Footer Sidebar'),
+    'description' => __('Main footer widget area - widgets display horizontally'),
+]);
+
+register_sidebar([
+    'id' => 'footer_bottom_bar',
+    'name' => __('Footer Bottom Bar'),
+    'description' => __('Footer copyright and links area (below main footer)'),
+]);
+
 
 
 register_page_template([

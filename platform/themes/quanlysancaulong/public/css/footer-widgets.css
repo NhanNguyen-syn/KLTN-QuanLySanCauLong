@@ -1,0 +1,41 @@
+/* Footer Widget Styling */
+.footer-widget-col {
+    flex: 1 1 auto;
+    min-width: 200px;
+    padding: 0 15px;
+}
+
+.footer-widget-title {
+    color: #fff;
+    font-size: 1.125rem;
+    margin-bottom: 1.5rem;
+}
+
+.footer-widget-content a {
+    transition: color 0.2s ease;
+}
+
+.footer-widget-content a:hover {
+    color: #10b981 !important;
+}
+
+.footer-brand a:hover {
+    opacity: 0.9;
+}
+
+.social-icon:hover {
+    background: rgba(16, 185, 129, 0.2) !important;
+    color: #10b981 !important;
+}
+
+.contact-icon {
+    flex-shrink: 0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .footer-widget-col {
+        flex: 1 1 100%;
+        margin-bottom: 2rem;
+    }
+}

@@ -4,6 +4,7 @@
         'title' => $shortcode->title,
         'titleColor' => $shortcode->title_color,
         'description' => $shortcode->description,
+        'textAlign' => $shortcode->text_align,
         'backgroundImage' => $shortcode->background_image ? RvMedia::getImageUrl($shortcode->background_image) : null,
         'buttonText' => $shortcode->button_text,
         'buttonUrl' => $shortcode->button_url,
@@ -14,4 +15,3 @@
 @endphp
 
 <div id="{{ $containerId }}" data-props='@json($props)'></div>
-

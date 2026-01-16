@@ -151,16 +151,6 @@ export default defineComponent({
 
     return () => (
       <div class="page-booking">
-                <section class="hero-section">
-                    <div class="hero-grid-overlay"></div>
-                    <div class="container">
-                        <div class="hero-content">
-                            <h1 class="hero-title">Đặt Sân Cầu Lông</h1>
-                            <p class="hero-subtitle">Chọn sân và khung giờ phù hợp. Hệ thống đặt sân linh hoạt với khung giờ 30 phút.</p>
-                        </div>
-                    </div>
-                </section>
-
                 <section class="sticky-controls-section">
                     <div class="container">
                         <div class="controls-wrapper">
@@ -236,4 +226,3 @@ export default defineComponent({
     )
   },
 })
-

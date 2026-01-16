@@ -19,7 +19,7 @@
                    target="{{ $row->target }}"
                @endif>
                 {!! $row->icon_html !!}
-                {{ $row->title }}
+                {{ $row->title ?: ($row->name ?? '') }}
 
                 @if (! empty($location) && $location === 'main-menu')
                     @if ($row->phone)
@@ -39,4 +39,3 @@
         </li>
     @endforeach
 </ul>
-

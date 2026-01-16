@@ -1063,10 +1063,10 @@
     width: 100%;
 }
 .court-booking-table .table-header-row {
-    background: linear-gradient(90deg, #4f46e5, #645ce8, #f59e0b);
+    background: linear-gradient(90deg, #065e45 0%, #0b6f52 30%, #138262 60%, #1b9a76 80%, #26b98f 100%);
 }
 .court-booking-table .court-header-cell {
-    background-color: #4f46e5;
+    background-color: #065e45;
     border-right: 2px solid hsla(0, 0%, 100%, 0.3);
     color: #fff;
     font-size: 1rem;
@@ -1079,6 +1079,7 @@
     z-index: 20;
 }
 .court-booking-table .time-header-cell {
+    background-color: transparent;
     border-right: 1px solid hsla(0, 0%, 100%, 0.1);
     color: #fff;
     font-weight: 600;
@@ -1252,7 +1253,7 @@
 }
 .booking-summary-bar {
     backdrop-filter: blur(16px);
-    background: linear-gradient(90deg, #4f46e5, #645ce8, #f59e0b);
+    background: linear-gradient(90deg, #065e45 0%, #0b6f52 30%, #138262 60%, #1b9a76 80%, #26b98f 100%);
     border-top: 4px solid #10b981;
     bottom: 0;
     box-shadow: 0 -25px 50px -12px rgba(0, 0, 0, 0.25);
@@ -1378,58 +1379,9 @@
     height: 8rem;
 }
 .page-booking {
-    background: linear-gradient(180deg, #f8fafc, rgba(241, 245, 249, 0.2));
+    background-color: #f7faf5;
 }
-.hero-section {
-    background: linear-gradient(to bottom right, #4f46e5, #645ce8, #f59e0b);
-    color: #fff;
-    overflow: hidden;
-    padding: 4rem 0;
-    position: relative;
-}
-@media (min-width: 768px) {
-    .hero-section {
-        padding: 5rem 0;
-    }
-}
-.hero-section .hero-grid-overlay {
-    background-image: url(/grid.svg);
-    inset: 0;
-    opacity: 0.1;
-    position: absolute;
-}
-.hero-section .hero-content {
-    max-width: 56rem;
-    position: relative;
-}
-.hero-section .hero-title {
-    font-family: serif;
-    font-size: 2.25rem;
-    font-weight: 700;
-    line-height: 1.1;
-    margin-bottom: 1rem;
-}
-@media (min-width: 768px) {
-    .hero-section .hero-title {
-        font-size: 3rem;
-    }
-}
-@media (min-width: 1024px) {
-    .hero-section .hero-title {
-        font-size: 3.75rem;
-    }
-}
-.hero-section .hero-subtitle {
-    color: hsla(0, 0%, 100%, 0.9);
-    font-size: 1.125rem;
-    line-height: 1.75;
-    max-width: 42rem;
-}
-@media (min-width: 768px) {
-    .hero-section .hero-subtitle {
-        font-size: 1.25rem;
-    }
-}
+
 .sticky-controls-section {
     backdrop-filter: blur(4px);
     background-color: hsla(0, 0%, 100%, 0.8);
@@ -1592,7 +1544,7 @@
     text-align: center;
 }
 .lookup-page {
-    background: linear-gradient(135deg, #ecfdf5, #f0fdfa, #ecfeff);
+    background: #f7faf5;
 }
 .lookup-hero {
     background: linear-gradient(90deg, #065f46, #059669, #14b8a6);
@@ -1639,6 +1591,7 @@
     max-width: 640px;
 }
 .lookup-main {
+    background-color: #f7faf5;
     padding: 44px 0 70px;
 }
 .lookup-box {
@@ -1912,9 +1865,9 @@ footer .footer-social {
     transition: all 0.2s ease-in-out;
 }
 footer .footer-social:hover {
-    background-color: #10b981 !important;
-    color: #fff !important;
-    transform: translateY(-2px);
+    background-color: transparent;
+    color: inherit;
+    transform: none;
 }
 footer ul li a {
     transition: color 0.2s ease;
