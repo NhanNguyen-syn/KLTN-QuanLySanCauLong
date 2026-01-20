@@ -1,0 +1,1470 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "KLTN Quan Ly San Cau Long API",
+        "description": "API documentation for Court Booking Management System",
+        "contact": {
+            "email": "admin@example.com"
+        },
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://kltn-quan-ly-san-cau-long.test",
+            "description": "Development Server (Laragon)"
+        }
+    ],
+    "paths": {
+        "/api/court-booking/courts": {
+            "get": {
+                "tags": [
+                    "Courts"
+                ],
+                "summary": "Lấy danh sách tất cả sân",
+                "description": "Trả về danh sách tất cả các sân cầu lông đang hoạt động",
+                "operationId": "c0b30c72b9e17700e99a626ea5f134b1",
+                "responses": {
+                    "200": {
+                        "description": "Thành công",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "string",
+                                                        "example": "1"
+                                                    },
+                                                    "name": {
+                                                        "type": "string",
+                                                        "example": "Sân 1"
+                                                    },
+                                                    "price": {
+                                                        "type": "integer",
+                                                        "example": 150000
+                                                    },
+                                                    "memberPrice": {
+                                                        "type": "integer",
+                                                        "example": 120000
+                                                    },
+                                                    "type": {
+                                                        "type": "string",
+                                                        "example": "Sân tiêu chuẩn"
+                                                    },
+                                                    "status": {
+                                                        "type": "string",
+                                                        "example": "published"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Courts"
+                ],
+                "summary": "Tạo sân mới (Admin)",
+                "description": "Tạo một sân cầu lông mới. Cần quyền admin.",
+                "operationId": "93b10bc4ea49e9e892cb7868563831c2",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Sân 5"
+                                    },
+                                    "court_type_id": {
+                                        "type": "integer",
+                                        "example": 1,
+                                        "nullable": true
+                                    },
+                                    "status_id": {
+                                        "type": "integer",
+                                        "example": 1,
+                                        "nullable": true
+                                    },
+                                    "location": {
+                                        "type": "string",
+                                        "example": "Tầng 2",
+                                        "nullable": true
+                                    },
+                                    "note": {
+                                        "type": "string",
+                                        "example": "Sân VIP",
+                                        "nullable": true
+                                    },
+                                    "order": {
+                                        "type": "integer",
+                                        "example": 5,
+                                        "nullable": true
+                                    },
+                                    "status": {
+                                        "type": "string",
+                                        "enum": [
+                                            "published",
+                                            "draft"
+                                        ],
+                                        "example": "published"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Tạo thành công"
+                    },
+                    "401": {
+                        "description": "Chưa xác thực"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                }
+            }
+        },
+        "/api/court-booking/courts/{id}": {
+            "put": {
+                "tags": [
+                    "Courts"
+                ],
+                "summary": "Cập nhật sân (Admin)",
+                "description": "Cập nhật thông tin sân. Cần quyền admin.",
+                "operationId": "1d20f38ecd24a7ede489676feb2cc34b",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID của sân",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Sân 1 - VIP"
+                                    },
+                                    "court_type_id": {
+                                        "type": "integer",
+                                        "example": 1,
+                                        "nullable": true
+                                    },
+                                    "status_id": {
+                                        "type": "integer",
+                                        "example": 1,
+                                        "nullable": true
+                                    },
+                                    "location": {
+                                        "type": "string",
+                                        "nullable": true
+                                    },
+                                    "note": {
+                                        "type": "string",
+                                        "nullable": true
+                                    },
+                                    "order": {
+                                        "type": "integer",
+                                        "nullable": true
+                                    },
+                                    "status": {
+                                        "type": "string",
+                                        "enum": [
+                                            "published",
+                                            "draft"
+                                        ]
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Cập nhật thành công"
+                    },
+                    "401": {
+                        "description": "Chưa xác thực"
+                    },
+                    "404": {
+                        "description": "Không tìm thấy sân"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Courts"
+                ],
+                "summary": "Xóa sân (Admin)",
+                "description": "Xóa một sân khỏi hệ thống. Cần quyền admin.",
+                "operationId": "3440ba6d151a6373c4900ac1f1cdbd2b",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID của sân",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Xóa thành công"
+                    },
+                    "401": {
+                        "description": "Chưa xác thực"
+                    },
+                    "404": {
+                        "description": "Không tìm thấy sân"
+                    }
+                }
+            }
+        },
+        "/api/court-booking/availability": {
+            "get": {
+                "tags": [
+                    "Availability"
+                ],
+                "summary": "Lấy lịch trống theo ngày",
+                "description": "Trả về danh sách các slot thời gian và trạng thái (available/booked) cho tất cả các sân trong ngày được chọn",
+                "operationId": "44c9ada3928eb202bf51a42c542ea7f8",
+                "parameters": [
+                    {
+                        "name": "date",
+                        "in": "query",
+                        "description": "Ngày cần kiểm tra (format: YYYY-MM-DD)",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "date",
+                            "example": "2026-01-20"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Thành công",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "court_id": {
+                                                        "type": "integer",
+                                                        "example": 1
+                                                    },
+                                                    "date": {
+                                                        "type": "string",
+                                                        "example": "2026-01-20"
+                                                    },
+                                                    "start_time": {
+                                                        "type": "string",
+                                                        "example": "08:00"
+                                                    },
+                                                    "end_time": {
+                                                        "type": "string",
+                                                        "example": "08:30"
+                                                    },
+                                                    "status": {
+                                                        "type": "string",
+                                                        "enum": [
+                                                            "available",
+                                                            "booked"
+                                                        ],
+                                                        "example": "available"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/court-booking/bookings/hold": {
+            "post": {
+                "tags": [
+                    "Bookings"
+                ],
+                "summary": "Giữ chỗ (Hold) các slot",
+                "description": "Giữ tạm các slot trước khi thanh toán. TTL mặc định 15 phút.",
+                "operationId": "0b55a70f8a3d4f98ecf44b7857c8f1d5",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "slot_ids"
+                                ],
+                                "properties": {
+                                    "slot_ids": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "integer"
+                                        },
+                                        "example": [
+                                            1,
+                                            2,
+                                            3
+                                        ]
+                                    },
+                                    "user_id": {
+                                        "type": "integer",
+                                        "example": 1,
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Giữ chỗ thành công",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "booking": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error hoặc slot đã bị đặt"
+                    }
+                }
+            }
+        },
+        "/api/court-booking/bookings/{id}/pay": {
+            "post": {
+                "tags": [
+                    "Bookings"
+                ],
+                "summary": "Thanh toán booking",
+                "description": "Xác nhận thanh toán cho booking đã hold",
+                "operationId": "0fdcd4a4350cea423e5303c9e7f06259",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID của booking",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "provider",
+                                    "amount"
+                                ],
+                                "properties": {
+                                    "provider": {
+                                        "type": "string",
+                                        "enum": [
+                                            "vnpay",
+                                            "momo"
+                                        ],
+                                        "example": "vnpay"
+                                    },
+                                    "amount": {
+                                        "type": "number",
+                                        "example": 300000
+                                    },
+                                    "meta": {
+                                        "type": "object",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Thanh toán thành công"
+                    },
+                    "422": {
+                        "description": "Lỗi thanh toán"
+                    }
+                }
+            }
+        },
+        "/api/court-booking/bookings/{id}/cancel": {
+            "post": {
+                "tags": [
+                    "Bookings"
+                ],
+                "summary": "Hủy booking",
+                "description": "Hủy booking đang ở trạng thái pending",
+                "operationId": "bcd97d91038a21268cb80e42291fd428",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID của booking",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Hủy thành công"
+                    }
+                }
+            }
+        },
+        "/api/court-booking/bookings/{id}": {
+            "get": {
+                "tags": [
+                    "Bookings"
+                ],
+                "summary": "Xem chi tiết booking",
+                "description": "Lấy thông tin chi tiết của một booking",
+                "operationId": "66669e8abc5d0138fb01238130311a96",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID của booking",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Thành công"
+                    },
+                    "404": {
+                        "description": "Không tìm thấy booking"
+                    }
+                }
+            }
+        },
+        "/api/court-booking/booking-list": {
+            "post": {
+                "tags": [
+                    "Bookings"
+                ],
+                "summary": "Tạo đơn đặt sân mới",
+                "description": "Lưu thông tin đặt sân sau khi xác nhận (thông tin khách hàng, slots đã chọn)",
+                "operationId": "dffd679736307022532e84266ce31941",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "customer_name",
+                                    "contact",
+                                    "slots"
+                                ],
+                                "properties": {
+                                    "customer_name": {
+                                        "type": "string",
+                                        "example": "Nguyễn Văn A"
+                                    },
+                                    "contact": {
+                                        "type": "string",
+                                        "example": "0901234567"
+                                    },
+                                    "notes": {
+                                        "type": "string",
+                                        "example": "Ghi chú đặc biệt",
+                                        "nullable": true
+                                    },
+                                    "slots": {
+                                        "type": "array",
+                                        "items": {
+                                            "properties": {
+                                                "court_id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "court_name": {
+                                                    "type": "string",
+                                                    "example": "Sân 1"
+                                                },
+                                                "date": {
+                                                    "type": "string",
+                                                    "example": "2026-01-20"
+                                                },
+                                                "start_time": {
+                                                    "type": "string",
+                                                    "example": "08:00"
+                                                },
+                                                "end_time": {
+                                                    "type": "string",
+                                                    "example": "08:30"
+                                                },
+                                                "price": {
+                                                    "type": "number",
+                                                    "example": 150000
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Tạo đơn thành công",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "order_code": {
+                                            "type": "string",
+                                            "example": "BD-20260120-001"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                }
+            }
+        },
+        "/api/court-booking/lookup": {
+            "get": {
+                "tags": [
+                    "Lookup"
+                ],
+                "summary": "Tra cứu đơn hàng theo mã",
+                "description": "Tra cứu thông tin đơn đặt sân bằng mã đơn hàng (order_code)",
+                "operationId": "ba1886c885f6845535772993b15c5769",
+                "parameters": [
+                    {
+                        "name": "order_code",
+                        "in": "query",
+                        "description": "Mã đơn hàng (VD: BD-20260120-001)",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "BD-20260120-001"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Tìm thấy đơn hàng",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "order_code": {
+                                                    "type": "string"
+                                                },
+                                                "status": {
+                                                    "type": "string"
+                                                },
+                                                "customer_name": {
+                                                    "type": "string"
+                                                },
+                                                "contact": {
+                                                    "type": "string"
+                                                },
+                                                "total_price": {
+                                                    "type": "number"
+                                                },
+                                                "items": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "object"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Không tìm thấy đơn hàng"
+                    },
+                    "422": {
+                        "description": "Thiếu mã đơn hàng"
+                    }
+                }
+            }
+        },
+        "/api/court-booking/booking-list/{orderCode}": {
+            "put": {
+                "tags": [
+                    "Bookings"
+                ],
+                "summary": "Cập nhật đơn đặt sân (Admin)",
+                "description": "Cập nhật trạng thái, tiền cọc, ghi chú cho đơn. Cần quyền admin.",
+                "operationId": "0690d2eec2f5f42094bdc20d705ac627",
+                "parameters": [
+                    {
+                        "name": "orderCode",
+                        "in": "path",
+                        "description": "Mã đơn hàng",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "BD-20260120-001"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "status": {
+                                        "type": "string",
+                                        "enum": [
+                                            "pending",
+                                            "processing",
+                                            "paid",
+                                            "completed",
+                                            "cancelled"
+                                        ],
+                                        "example": "paid",
+                                        "nullable": true
+                                    },
+                                    "paid_amount_total": {
+                                        "description": "Tổng tiền đã thanh toán (phân bổ tự động cho các slot)",
+                                        "type": "number",
+                                        "example": 300000,
+                                        "nullable": true
+                                    },
+                                    "notes": {
+                                        "type": "string",
+                                        "example": "Khách VIP",
+                                        "nullable": true
+                                    },
+                                    "apply_to_order": {
+                                        "type": "boolean",
+                                        "example": true,
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Cập nhật thành công"
+                    },
+                    "401": {
+                        "description": "Chưa xác thực"
+                    },
+                    "404": {
+                        "description": "Không tìm thấy đơn"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Bookings"
+                ],
+                "summary": "Xóa đơn đặt sân (Admin)",
+                "description": "Xóa toàn bộ đơn theo mã. Cần quyền admin.",
+                "operationId": "0074ea825902be9850bf73ad71f4de2d",
+                "parameters": [
+                    {
+                        "name": "orderCode",
+                        "in": "path",
+                        "description": "Mã đơn hàng",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "BD-20260120-001"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Xóa thành công"
+                    },
+                    "401": {
+                        "description": "Chưa xác thực"
+                    },
+                    "404": {
+                        "description": "Không tìm thấy đơn"
+                    }
+                }
+            }
+        },
+        "/api/v1/posts": {
+            "get": {
+                "tags": [
+                    "Blog"
+                ],
+                "summary": "Danh sách bài viết",
+                "description": "Lấy danh sách tất cả bài viết đã xuất bản",
+                "operationId": "1c301b5358d7ba5da440eb21f9bf7283",
+                "parameters": [
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Số lượng item trên mỗi trang (mặc định: 10)",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 10
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Số trang hiện tại (mặc định: 1)",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Thành công"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Blog"
+                ],
+                "summary": "Tạo bài viết mới (Admin)",
+                "description": "Tạo bài viết mới. Cần quyền admin.",
+                "operationId": "7b598e2e53eaf2b975fafa9e51c2be39",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Bài viết mới"
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "example": "Mô tả ngắn",
+                                        "nullable": true
+                                    },
+                                    "content": {
+                                        "type": "string",
+                                        "example": "Nội dung chi tiết",
+                                        "nullable": true
+                                    },
+                                    "status": {
+                                        "type": "string",
+                                        "enum": [
+                                            "published",
+                                            "draft",
+                                            "pending"
+                                        ],
+                                        "example": "published",
+                                        "nullable": true
+                                    },
+                                    "image": {
+                                        "type": "string",
+                                        "nullable": true
+                                    },
+                                    "categories": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "integer"
+                                        },
+                                        "example": [
+                                            1,
+                                            2
+                                        ],
+                                        "nullable": true
+                                    },
+                                    "tags": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "integer"
+                                        },
+                                        "example": [
+                                            1,
+                                            2
+                                        ],
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Tạo thành công"
+                    },
+                    "401": {
+                        "description": "Chưa xác thực"
+                    }
+                }
+            }
+        },
+        "/api/v1/posts/{slug}": {
+            "get": {
+                "tags": [
+                    "Blog"
+                ],
+                "summary": "Chi tiết bài viết",
+                "description": "Lấy thông tin chi tiết bài viết theo slug",
+                "operationId": "68180fec940c10194e56df657ca9dc29",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug của bài viết",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "sample-post"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Thành công"
+                    },
+                    "404": {
+                        "description": "Không tìm thấy bài viết"
+                    }
+                }
+            }
+        },
+        "/api/v1/search": {
+            "get": {
+                "tags": [
+                    "Blog"
+                ],
+                "summary": "Tìm kiếm bài viết",
+                "description": "Tìm kiếm bài viết theo từ khóa",
+                "operationId": "448cc65ec415d5794254b78177628312",
+                "parameters": [
+                    {
+                        "name": "q",
+                        "in": "query",
+                        "description": "Từ khóa tìm kiếm",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "cầu lông"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Thành công"
+                    },
+                    "400": {
+                        "description": "Không tìm thấy kết quả"
+                    }
+                }
+            }
+        },
+        "/api/v1/categories": {
+            "get": {
+                "tags": [
+                    "Blog"
+                ],
+                "summary": "Danh sách danh mục",
+                "description": "Lấy danh sách tất cả danh mục bài viết",
+                "operationId": "f611db3e654cb551d9283064f5817cf4",
+                "parameters": [
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Số lượng item trên mỗi trang",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 10
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Thành công"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Blog"
+                ],
+                "summary": "Tạo danh mục mới (Admin)",
+                "description": "Tạo danh mục bài viết mới. Cần quyền admin.",
+                "operationId": "6453d2716ab96afd5c52b7350479d410",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Tin tức"
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "nullable": true
+                                    },
+                                    "status": {
+                                        "type": "string",
+                                        "enum": [
+                                            "published",
+                                            "draft"
+                                        ],
+                                        "nullable": true
+                                    },
+                                    "parent_id": {
+                                        "description": "ID danh mục cha",
+                                        "type": "integer",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Tạo thành công"
+                    }
+                }
+            }
+        },
+        "/api/v1/categories/{slug}": {
+            "get": {
+                "tags": [
+                    "Blog"
+                ],
+                "summary": "Chi tiết danh mục",
+                "description": "Lấy thông tin chi tiết danh mục theo slug",
+                "operationId": "03102cd56f0c0c60f8dc48593a9cd986",
+                "parameters": [
+                    {
+                        "name": "slug",
+                        "in": "path",
+                        "description": "Slug của danh mục",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "tin-tuc"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Thành công"
+                    },
+                    "404": {
+                        "description": "Không tìm thấy danh mục"
+                    }
+                }
+            }
+        },
+        "/api/v1/tags": {
+            "get": {
+                "tags": [
+                    "Blog"
+                ],
+                "summary": "Danh sách thẻ tag",
+                "description": "Lấy danh sách tất cả các tag",
+                "operationId": "3144b9eae433efcbefe5a00c2917b1f1",
+                "responses": {
+                    "200": {
+                        "description": "Thành công"
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Blog"
+                ],
+                "summary": "Tạo tag mới (Admin)",
+                "description": "Tạo tag mới. Cần quyền admin.",
+                "operationId": "9aee146767e7d218609b5d671161d159",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "example": "Cầu lông"
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "nullable": true
+                                    },
+                                    "status": {
+                                        "type": "string",
+                                        "enum": [
+                                            "published",
+                                            "draft"
+                                        ],
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Tạo thành công"
+                    }
+                }
+            }
+        },
+        "/api/v1/posts/{id}": {
+            "put": {
+                "tags": [
+                    "Blog"
+                ],
+                "summary": "Cập nhật bài viết (Admin)",
+                "description": "Cập nhật thông tin bài viết. Cần quyền admin.",
+                "operationId": "ed2e2c6a75d5a9398c9b32051fb68bfa",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID của bài viết",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "nullable": true
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "nullable": true
+                                    },
+                                    "content": {
+                                        "type": "string",
+                                        "nullable": true
+                                    },
+                                    "status": {
+                                        "type": "string",
+                                        "enum": [
+                                            "published",
+                                            "draft",
+                                            "pending"
+                                        ],
+                                        "nullable": true
+                                    },
+                                    "image": {
+                                        "type": "string",
+                                        "nullable": true
+                                    },
+                                    "categories": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "integer"
+                                        },
+                                        "nullable": true
+                                    },
+                                    "tags": {
+                                        "type": "array",
+                                        "items": {
+                                            "type": "integer"
+                                        },
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Cập nhật thành công"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Blog"
+                ],
+                "summary": "Xóa bài viết (Admin)",
+                "description": "Xóa bài viết. Cần quyền admin.",
+                "operationId": "ba1be2722bcf7a96bfad17cf2d4bbae8",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID của bài viết",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Xóa thành công"
+                    }
+                }
+            }
+        },
+        "/api/v1/categories/{id}": {
+            "put": {
+                "tags": [
+                    "Blog"
+                ],
+                "summary": "Cập nhật danh mục (Admin)",
+                "description": "Cập nhật thông tin danh mục. Cần quyền admin.",
+                "operationId": "463f65663aca3abea61177db2b74eb98",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "nullable": true
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "nullable": true
+                                    },
+                                    "status": {
+                                        "type": "string",
+                                        "enum": [
+                                            "published",
+                                            "draft"
+                                        ],
+                                        "nullable": true
+                                    },
+                                    "parent_id": {
+                                        "type": "integer",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Cập nhật thành công"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Blog"
+                ],
+                "summary": "Xóa danh mục (Admin)",
+                "description": "Xóa danh mục. Cần quyền admin.",
+                "operationId": "c59e0e0b0fce0edf686041550732c81a",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Xóa thành công"
+                    }
+                }
+            }
+        },
+        "/api/v1/tags/{id}": {
+            "put": {
+                "tags": [
+                    "Blog"
+                ],
+                "summary": "Cập nhật tag (Admin)",
+                "description": "Cập nhật thông tin tag. Cần quyền admin.",
+                "operationId": "db0a82089d6dfbb963137f4299cd54d2",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "nullable": true
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "nullable": true
+                                    },
+                                    "status": {
+                                        "type": "string",
+                                        "enum": [
+                                            "published",
+                                            "draft"
+                                        ],
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Cập nhật thành công"
+                    }
+                }
+            },
+            "delete": {
+                "tags": [
+                    "Blog"
+                ],
+                "summary": "Xóa tag (Admin)",
+                "description": "Xóa tag. Cần quyền admin.",
+                "operationId": "090a65e32576b110e0e663fac3d67029",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Xóa thành công"
+                    }
+                }
+            }
+        },
+        "/api/v1/pages": {
+            "get": {
+                "tags": [
+                    "Pages"
+                ],
+                "summary": "Danh sách trang",
+                "description": "Lấy danh sách tất cả các trang đã xuất bản",
+                "operationId": "a869f92ad5e8246b4fe2544246e37c41",
+                "parameters": [
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Số lượng item trên mỗi trang (mặc định: 10)",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 10
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Thành công"
+                    }
+                }
+            }
+        },
+        "/api/v1/pages/{id}": {
+            "get": {
+                "tags": [
+                    "Pages"
+                ],
+                "summary": "Chi tiết trang",
+                "description": "Lấy thông tin chi tiết trang theo ID",
+                "operationId": "db2136fe0fa02d952337fc58596f7d4e",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID của trang",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Thành công"
+                    },
+                    "404": {
+                        "description": "Không tìm thấy trang"
+                    }
+                }
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Courts",
+            "description": "API quản lý sân cầu lông"
+        },
+        {
+            "name": "Availability",
+            "description": "API kiểm tra lịch trống"
+        },
+        {
+            "name": "Bookings",
+            "description": "API đặt sân"
+        },
+        {
+            "name": "Lookup",
+            "description": "API tra cứu đơn hàng"
+        },
+        {
+            "name": "Blog",
+            "description": "API quản lý bài viết"
+        },
+        {
+            "name": "Pages",
+            "description": "API quản lý trang"
+        }
+    ]
+}

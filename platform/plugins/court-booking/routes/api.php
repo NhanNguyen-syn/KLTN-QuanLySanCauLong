@@ -4,17 +4,29 @@ use Illuminate\Support\Facades\Route;
 use Botble\CourtBooking\Http\Controllers\API\AvailabilityController;
 use Botble\CourtBooking\Http\Controllers\API\BookingController;
 use Botble\CourtBooking\Http\Controllers\API\CourtController;
+use Botble\CourtBooking\Http\Controllers\API\CourtManageController;
 use Botble\CourtBooking\Http\Controllers\API\BookingListController;
+use Botble\CourtBooking\Http\Controllers\API\BookingListManageController;
 use Botble\CourtBooking\Http\Controllers\API\LookupController;
 
 // Prefix all API endpoints for this plugin with /api/court-booking
 Route::middleware('api')->prefix('api')->group(function () {
     Route::prefix('court-booking')->group(function () {
+        // Public endpoints
         Route::get('courts', [CourtController::class, 'index']);
         Route::get('availability', [AvailabilityController::class, 'index']);
 
+        // Court Management (Admin) - TODO: Add auth middleware
+        Route::post('courts', [CourtManageController::class, 'store']);
+        Route::put('courts/{id}', [CourtManageController::class, 'update']);
+        Route::delete('courts/{id}', [CourtManageController::class, 'destroy']);
+
         // Lookup by order_code (mã hóa đơn)
         Route::get('lookup', [LookupController::class, 'showByOrderCode']);
+
+        // Booking List Management (Admin) - TODO: Add auth middleware
+        Route::put('booking-list/{orderCode}', [BookingListManageController::class, 'update']);
+        Route::delete('booking-list/{orderCode}', [BookingListManageController::class, 'destroy']);
 
         Route::prefix('bookings')->group(function () {
             Route::post('hold', [BookingController::class, 'hold']);
