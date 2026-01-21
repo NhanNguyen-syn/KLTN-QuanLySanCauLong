@@ -72,11 +72,24 @@ add_action('init', function () {
             ]);
         }
 
-        $courts = Court::query()
+        // Kiểm tra xem bảng court_slots có tồn tại không
+        $hasSlotsTable = \Illuminate\Support\Facades\Schema::hasTable('court_slots');
+        
+        $courtsQuery = Court::query()
             ->whereIn('id', $selectedCourtIds)
-            ->where('status', 'published')
-            ->get(['id', 'name', 'image'])
-            ->keyBy('id');
+            ->where('status', 'published');
+            
+        // Chỉ eager load slots nếu bảng tồn tại
+        if ($hasSlotsTable) {
+            $courtsQuery->with(['slots' => function ($query) {
+                $query->where('status', 'available')
+                    ->whereDate('start_at', today())
+                    ->orderBy('start_at')
+                    ->limit(2);
+            }]);
+        }
+        
+        $courts = $courtsQuery->get();
 
         $items = [];
         $seen = [];
@@ -87,27 +100,46 @@ add_action('init', function () {
             }
             $seen[$courtId] = true;
 
-            $court = $courts->get($courtId);
+            $court = $courts->firstWhere('id', $courtId);
             if (! $court) {
                 continue;
             }
 
+            // Get time slots từ field time_display (admin nhập) thay vì từ database
+            $timeSlot1 = '';
+            $timeSlot2 = '';
+            
+            if (!empty($court->time_display)) {
+                // Parse time_display: "08:00-09:00, 12:00-13:00"
+                $timeSlots = array_map('trim', explode(',', $court->time_display));
+                $timeSlot1 = $timeSlots[0] ?? '';
+                $timeSlot2 = $timeSlots[1] ?? '';
+            }
+
+            // Format price - chỉ hiển thị giá bắt đầu từ
+            $defaultPrice = $court->default_price ?? 150000;
+            $priceLabel = 'Giá bắt đầu từ';
+            $priceValue = number_format($defaultPrice) . 'đ/giờ';
+
+            // Get booking URL
+            $bookingUrl = $court->booking_url ?? '/dat-san';
+
             $items[] = [
                 'court_id' => $court->id,
                 'title' => $court->name,
-                'description' => '',
-                'time_1' => '',
-                'time_2' => '',
+                'description' => $court->address ?: $court->location ?: '',
+                'time_1' => $timeSlot1,
+                'time_2' => $timeSlot2,
                 'bg_color' => '',
                 'text_color' => '',
                 'image' => $court->image ? RvMedia::getImageUrl($court->image) : '',
-                'price_label' => '',
-                'price_value' => '',
-                'price_label_color' => '',
-                'price_value_color' => '',
-                'button_url' => '',
-                'button_bg_color' => '',
-                'button_text_color' => '',
+                'price_label' => $priceLabel,
+                'price_value' => $priceValue,
+                'price_label_color' => '#6b7280',
+                'price_value_color' => '#111827',
+                'button_url' => $bookingUrl,
+                'button_bg_color' => 'rgba(5, 150, 105, 0.1)',
+                'button_text_color' => '#059669',
             ];
         }
 

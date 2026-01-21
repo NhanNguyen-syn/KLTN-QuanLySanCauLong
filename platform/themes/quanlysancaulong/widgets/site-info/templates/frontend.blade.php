@@ -10,7 +10,7 @@
             @endif
             <div>
                 <span class="fw-bold fs-5 d-block">{{ theme_option('site_title', 'BadmintonPro') }}</span>
-                <span class="small text-white-50" style="font-size: 0.813rem;">{{ __('Sân cầu lông chuyên nghiệp') }}</span>
+                <span class="small text-white-50" style="font-size: 0.813rem;">{{ __('Sân cầu lông Niên Thời') }}</span>
             </div>
         </a>
     </div>

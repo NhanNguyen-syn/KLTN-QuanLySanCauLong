@@ -14,6 +14,7 @@ Route::middleware('api')->prefix('api')->group(function () {
     Route::prefix('court-booking')->group(function () {
         // Public endpoints
         Route::get('courts', [CourtController::class, 'index']);
+        Route::get('time-slots', [\Botble\CourtBooking\Http\Controllers\API\TimeSlotController::class, 'index']);
         Route::get('availability', [AvailabilityController::class, 'index']);
 
         // Court Management (Admin) - TODO: Add auth middleware

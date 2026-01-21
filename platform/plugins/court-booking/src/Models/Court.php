@@ -10,7 +10,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Court extends BaseModel
 {
     protected $fillable = [
-        'name', 'image', 'court_type_id', 'status_id', 'location', 'note', 'order', 'status'
+        'name', 'image', 'court_type_id', 'status_id', 'location', 'note', 'order', 'status',
+        'default_price', 'member_price', 'address', 'booking_url', 'time_display'
     ];
 
     protected $casts = [

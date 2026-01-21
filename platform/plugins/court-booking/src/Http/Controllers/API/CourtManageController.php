@@ -23,6 +23,11 @@ class CourtManageController extends BaseApiController
             'note' => 'nullable|string',
             'order' => 'nullable|integer',
             'status' => 'nullable|in:published,draft',
+            'default_price' => 'nullable|numeric|min:0',
+            'member_price' => 'nullable|numeric|min:0',
+            'address' => 'nullable|string|max:500',
+            'booking_url' => 'nullable|string|max:255',
+            'image' => 'nullable|string',
         ]);
 
         $court = Court::create($data);
@@ -43,13 +48,18 @@ class CourtManageController extends BaseApiController
         $court = Court::findOrFail($id);
 
         $data = $request->validate([
-            'name' => 'sometimes|string|max:255',
+            'name' => 'required|string|max:255',
             'court_type_id' => 'nullable|integer|exists:court_types,id',
             'status_id' => 'nullable|integer|exists:court_statuses,id',
             'location' => 'nullable|string',
             'note' => 'nullable|string',
             'order' => 'nullable|integer',
             'status' => 'nullable|in:published,draft',
+            'default_price' => 'nullable|numeric|min:0',
+            'member_price' => 'nullable|numeric|min:0',
+            'address' => 'nullable|string|max:500',
+            'booking_url' => 'nullable|string|max:255',
+            'image' => 'nullable|string',
         ]);
 
         $court->update($data);

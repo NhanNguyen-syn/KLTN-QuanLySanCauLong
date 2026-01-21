@@ -3,9 +3,11 @@
 namespace Botble\CourtBooking\Http\Controllers\API;
 
 use Botble\CourtBooking\Models\Court;
+use Botble\CourtBooking\Models\TimeSlot;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Support\Facades\Schema;
+use RvMedia;
 
 class CourtController extends BaseController
 {
@@ -27,22 +29,47 @@ class CourtController extends BaseController
             $query->orderBy('order', 'asc');
         }
 
+        // Lấy time slots để hiển thị
+        $timeSlots = TimeSlot::query()->orderBy('start_time')->get();
+
         $courts = $query
             ->orderBy('id', 'asc')
             ->get()
-            ->map(function (Court $court) {
+            ->map(function (Court $court) use ($timeSlots) {
+                // Lấy image URL nếu có
+                $imageUrl = null;
+                if ($court->image) {
+                    $imageUrl = class_exists('RvMedia') 
+                        ? RvMedia::getImageUrl($court->image) 
+                        : asset('storage/' . $court->image);
+                }
+
                 return [
                     'id' => (string) $court->getKey(),
                     'name' => $court->name,
-                    // Giá hiển thị mặc định; giá thực tính khi đặt
-                    'price' => 150000,
-                    'memberPrice' => 120000,
+                    // Lấy giá từ database thay vì hardcode
+                    'price' => (float) ($court->default_price ?? 150000),
+                    'memberPrice' => (float) ($court->member_price ?? 120000),
                     'type' => optional($court->type)->name ?? 'Sân tiêu chuẩn',
                     'icon' => '🏸',
                     'features' => [],
                     'capacity' => 4,
                     'status' => $court->status ?? 'published',
-                    'court_status' => optional($court->courtStatus)->name, // active/maintenance/closed
+                    'court_status' => optional($court->courtStatus)->name,
+                    // Thêm các fields mới
+                    'location' => $court->location,
+                    'address' => $court->address ?? $court->location,
+                    'image' => $imageUrl,
+                    'booking_url' => $court->booking_url ?? '/dat-san',
+                    // Trả về time slots
+                    'time_slots' => $timeSlots->map(function ($slot) {
+                        return [
+                            'id' => $slot->id,
+                            'label' => $slot->label,
+                            'start_time' => $slot->start_time,
+                            'end_time' => $slot->end_time,
+                        ];
+                    })->take(2)->values(), // Chỉ lấy 2 slots đầu để hiển thị trên card
                 ];
             });
 

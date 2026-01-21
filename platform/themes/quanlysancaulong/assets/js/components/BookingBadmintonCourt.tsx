@@ -141,7 +141,17 @@ export default defineComponent<Props>({
       transition: 'color .2s ease',
     } as any;
 
-    const descStyle = { margin: 0, opacity: 0.8, fontSize: '14px', color: '#6b7280' } as any;
+    const descStyle = {
+      margin: 0,
+      opacity: 0.8,
+      fontSize: '14px',
+      color: '#6b7280',
+      minHeight: '40px', // Đảm bảo chiều cao tối thiểu dù không có text
+      display: '-webkit-box',
+      WebkitLineClamp: 2,
+      WebkitBoxOrient: 'vertical' as const,
+      overflow: 'hidden',
+    } as any;
 
     const bottomRow = {
       marginTop: '14px',
