@@ -1,0 +1,75 @@
+.revenue-dashboard {
+    padding: 1rem;
+}
+
+.revenue-dashboard .card {
+    border: none;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.revenue-dashboard .card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.revenue-dashboard .card.bg-primary,
+.revenue-dashboard .card.bg-success,
+.revenue-dashboard .card.bg-danger,
+.revenue-dashboard .card.bg-info {
+    border-radius: 0.75rem;
+}
+
+.revenue-dashboard .card-title {
+    font-weight: 700;
+}
+
+.revenue-dashboard .card-subtitle {
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.revenue-dashboard .table th {
+    font-weight: 600;
+    color: #6c757d;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.revenue-dashboard .table td {
+    vertical-align: middle;
+}
+
+.revenue-dashboard .badge {
+    font-size: 0.875rem;
+    padding: 0.5em 0.75em;
+}
+
+.revenue-dashboard #revenue-chart,
+.revenue-dashboard #court-chart {
+    max-height: 300px;
+}
+
+.revenue-dashboard .btn-group-sm .btn {
+    padding: 0.25rem 0.75rem;
+    font-size: 0.8rem;
+}
+
+.revenue-dashboard .opacity-50 {
+    opacity: 0.5;
+}
+
+.revenue-dashboard .opacity-75 {
+    opacity: 0.75;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .revenue-dashboard .row > [class*="col-md-"] {
+        margin-bottom: 1rem;
+    }
+    
+    .revenue-dashboard .card-title {
+        font-size: 1.25rem;
+    }
+}

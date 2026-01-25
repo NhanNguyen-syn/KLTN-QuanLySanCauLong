@@ -11,6 +11,7 @@ use Botble\CourtBooking\Forms\BookingListForm;
 use Botble\CourtBooking\Http\Requests\BookingListRequest;
 use Botble\CourtBooking\Models\BookingList;
 use Botble\CourtBooking\Tables\BookingListTable;
+use Botble\CourtBooking\Services\InvoicePdfService;
 use Exception;
 use Illuminate\Http\Request;
 
@@ -36,7 +37,7 @@ class BookingListController extends BaseController
             ->get();
 
         // Prefer the row that actually has customer info; fallback to the first row
-        $orderInfo = $siblings->firstWhere(fn ($item) => ! empty($item->customer_name) || ! empty($item->contact))
+        $orderInfo = $siblings->firstWhere(fn($item) => !empty($item->customer_name) || !empty($item->contact))
             ?: $siblings->first()
             ?: $bookingList;
 
@@ -73,8 +74,10 @@ class BookingListController extends BaseController
 
                 $it->paid_amount = $alloc;
                 // Đồng bộ status & notes nếu được cung cấp
-                if ($request->filled('status')) $it->status = $request->input('status');
-                if ($request->filled('notes')) $it->notes = $request->input('notes');
+                if ($request->filled('status'))
+                    $it->status = $request->input('status');
+                if ($request->filled('notes'))
+                    $it->notes = $request->input('notes');
                 $it->save();
             }
 
@@ -121,5 +124,40 @@ class BookingListController extends BaseController
                 ->setMessage($exception->getMessage());
         }
     }
-}
 
+    /**
+     * Print invoice as PDF
+     */
+    public function printInvoice(BookingList $bookingList, InvoicePdfService $invoiceService)
+    {
+        return $invoiceService->streamPdf($bookingList);
+    }
+
+    /**
+     * Download invoice as PDF
+     */
+    public function downloadInvoice(BookingList $bookingList, InvoicePdfService $invoiceService)
+    {
+        return $invoiceService->downloadPdf($bookingList);
+    }
+
+    /**
+     * Send invoice via email
+     */
+    public function sendInvoiceEmail(BookingList $bookingList, Request $request, InvoicePdfService $invoiceService, BaseHttpResponse $response)
+    {
+        $email = $request->input('email', $bookingList->contact);
+
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            return $response->setError()->setMessage('Email không hợp lệ.');
+        }
+
+        $sent = $invoiceService->sendEmail($bookingList, $email);
+
+        if ($sent) {
+            return $response->setMessage('Đã gửi hóa đơn đến ' . $email);
+        } else {
+            return $response->setError()->setMessage('Không thể gửi email. Vui lòng thử lại.');
+        }
+    }
+}

@@ -1,0 +1,14 @@
+{
+    "name": "botble/revenue-statistics",
+    "description": "Revenue statistics plugin for Botble CMS",
+    "require": {
+        "botble/platform": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "Botble\\RevenueStatistics\\": "src/"
+        }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}

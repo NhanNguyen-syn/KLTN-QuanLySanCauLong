@@ -37,4 +37,27 @@ return [
         'flag' => 'booking-list.destroy',
         'parent_flag' => 'booking-list.index',
     ],
+
+    // Services
+    [
+        'name' => 'Dịch vụ & Sản phẩm',
+        'flag' => 'services.index',
+    ],
+    [
+        'name' => 'Tạo mới',
+        'flag' => 'services.create',
+        'parent_flag' => 'services.index',
+    ],
+    [
+        'name' => 'Chỉnh sửa',
+        'flag' => 'services.edit',
+        'parent_flag' => 'services.index',
+    ],
+    [
+        'name' => 'Xóa',
+        'flag' => 'services.destroy',
+        'parent_flag' => 'services.index',
+    ],
+
+    // Revenue Dashboard - đã chuyển sang plugin revenue-statistics
 ];

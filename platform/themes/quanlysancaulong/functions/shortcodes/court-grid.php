@@ -1,14 +1,16 @@
 <?php
 
 use Botble\Shortcode\Compilers\Shortcode;
+use Botble\Shortcode\Forms\ShortcodeForm;
 use Botble\CourtBooking\Models\Court;
 use Botble\Theme\Facades\Theme;
+use Botble\Base\Enums\BaseStatusEnum;
 
 add_shortcode('court-grid', __('Court Grid'), __('Display available badminton courts in a grid layout'), function (Shortcode $shortcode) {
     // Fetch courts from database
     $courts = Court::query()
         ->with(['type', 'courtStatus'])
-        ->where('status', 'published')
+        ->where('status', BaseStatusEnum::PUBLISHED)
         ->orderBy('order', 'asc')
         ->orderBy('id', 'asc')
         ->get();
@@ -17,5 +19,6 @@ add_shortcode('court-grid', __('Court Grid'), __('Display available badminton co
 });
 
 shortcode()->setAdminConfig('court-grid', function ($attributes) {
-    return view('plugins/shortcode::forms.court-grid', compact('attributes'))->render();
+    // Simple admin form - no configuration needed for this shortcode
+    return ShortcodeForm::createFromArray($attributes);
 });

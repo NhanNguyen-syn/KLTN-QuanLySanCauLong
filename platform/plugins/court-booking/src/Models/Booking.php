@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Booking extends Model
 {
-    protected $fillable = ['user_id', 'code', 'status', 'total_amount', 'notes', 'held_until'];
+    protected $fillable = ['user_id', 'code', 'status', 'total_amount', 'notes', 'held_until', 'booking_type'];
 
     public function user(): BelongsTo
     {

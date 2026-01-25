@@ -148,19 +148,19 @@ export default defineComponent({
 
                                     <div class="card-footer" style={{ padding: '0 2rem 2rem 2rem' }}>
                                         <a href={href}
-                                           onClick={(e) => handleButtonClick(e, href, card.button_text)}
-                                           style={{
-                                            display: 'block',
-                                            width: '100%',
-                                            padding: '1rem',
-                                            backgroundColor: card.button_bg_color || '#0E6B5C',
-                                            color: card.button_text_color || '#fff',
-                                            textAlign: 'center',
-                                            textDecoration: 'none',
-                                            borderRadius: '8px',
-                                            fontWeight: 'bold',
-                                            transition: 'opacity 0.3s',
-                                        }}>
+                                            onClick={(e) => handleButtonClick(e, href, card.button_text)}
+                                            style={{
+                                                display: 'block',
+                                                width: '100%',
+                                                padding: '1rem',
+                                                backgroundColor: card.button_bg_color || '#0E6B5C',
+                                                color: card.button_text_color || '#fff',
+                                                textAlign: 'center',
+                                                textDecoration: 'none',
+                                                borderRadius: '8px',
+                                                fontWeight: 'bold',
+                                                transition: 'opacity 0.3s',
+                                            }}>
                                             {card.button_text}
                                         </a>
                                     </div>

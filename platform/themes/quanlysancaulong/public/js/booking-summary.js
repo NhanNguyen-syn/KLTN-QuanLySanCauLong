@@ -12,26 +12,25 @@
         }
 
         if (!card || !body) {
-            // Prefer to inject right after the personal info form if exists
+            // Only inject on pages with specific anchors - NOT on general pages
             var anchor =
                 document.querySelector('#booking-summary-anchor') ||
-                document.querySelector('.personal-info-form') ||
-                document.querySelector('form') ||
-                document.querySelector('.form-wrapper') ||
-                document.querySelector('.container') ||
-                document.querySelector('main');
+                document.querySelector('.personal-info-form');
 
-            if (anchor) {
-                card = document.createElement('div');
-                card.id = 'booking-summary-card';
-                card.className = 'card';
-                card.style.marginTop = '24px';
-                card.innerHTML =
-                    '<div class="card-header"><strong>Thông tin đặt sân</strong></div>' +
-                    '<div class="card-body" id="booking-summary-body">Chưa có khung giờ nào được chọn. <a href="/dat-san">Quay lại đặt sân</a></div>';
-                insertAfter(anchor, card);
-                body = card.querySelector('#booking-summary-body');
+            // If no specific anchor found, don't create the card at all
+            if (!anchor) {
+                return { card: null, body: null };
             }
+
+            card = document.createElement('div');
+            card.id = 'booking-summary-card';
+            card.className = 'card';
+            card.style.marginTop = '24px';
+            card.innerHTML =
+                '<div class="card-header"><strong>Thông tin đặt sân</strong></div>' +
+                '<div class="card-body" id="booking-summary-body">Chưa có khung giờ nào được chọn. <a href="/dat-san">Quay lại đặt sân</a></div>';
+            insertAfter(anchor, card);
+            body = card.querySelector('#booking-summary-body');
         }
 
         return { card: card, body: body };

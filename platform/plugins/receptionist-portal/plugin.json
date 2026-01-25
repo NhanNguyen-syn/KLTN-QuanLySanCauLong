@@ -1,0 +1,12 @@
+{
+    "name": "receptionist-portal",
+    "namespace": "Botble\\ReceptionistPortal\\",
+    "provider": "Botble\\ReceptionistPortal\\Providers\\ReceptionistPortalServiceProvider",
+    "author": "Botble Technologies",
+    "url": "https://botble.com",
+    "version": "1.0.0",
+    "description": "Cổng thông tin Lễ tân - Dashboard cho thao tác hàng ngày tại quầy",
+    "dependencies": [
+        "court-booking"
+    ]
+}

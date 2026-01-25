@@ -7,6 +7,7 @@ use Botble\CourtBooking\Models\TimeSlot;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Support\Facades\Schema;
+use Botble\Base\Enums\BaseStatusEnum;
 use RvMedia;
 
 class CourtController extends BaseController
@@ -22,7 +23,7 @@ class CourtController extends BaseController
 
         // Tránh lỗi SQL khi thiếu cột do môi trường chưa chạy hết migration
         if (Schema::hasColumn('courts', 'status')) {
-            $query->where('status', 'published');
+            $query->where('status', BaseStatusEnum::PUBLISHED);
         }
 
         if (Schema::hasColumn('courts', 'order')) {
@@ -39,8 +40,8 @@ class CourtController extends BaseController
                 // Lấy image URL nếu có
                 $imageUrl = null;
                 if ($court->image) {
-                    $imageUrl = class_exists('RvMedia') 
-                        ? RvMedia::getImageUrl($court->image) 
+                    $imageUrl = class_exists('RvMedia')
+                        ? RvMedia::getImageUrl($court->image)
                         : asset('storage/' . $court->image);
                 }
 

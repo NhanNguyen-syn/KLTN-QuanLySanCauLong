@@ -76,9 +76,9 @@ export default defineComponent<Props>({
       // Otherwise, prevent default and use the configured URL
       e.preventDefault();
       const bookingUrl = (window as any).BOOKING_URL ||
-                        (window as any).App?.bookingUrl ||
-                        btnUrl ||
-                        'http://kltn-quan-ly-san-cau-long.test/san-gia';
+        (window as any).App?.bookingUrl ||
+        btnUrl ||
+        'http://kltn-quan-ly-san-cau-long.test/san-gia';
       window.location.assign(bookingUrl);
     };
 

@@ -1,0 +1,112 @@
+# Phân tích Chức năng còn thiếu & Kế hoạch Triển khai
+
+## Phân tích Khoảng trống (Bảng Chức năng còn thiếu)
+
+Dựa trên yêu cầu của bạn, đây là bảng các chức năng còn thiếu và các yêu cầu nghiệp vụ cần thiết để hoàn thiện hệ thống:
+
+| # | Chức năng | Trạng thái Hiện tại | Yêu cầu Nghiệp vụ |
+|---|---|---|---|
+| 1 | **Xử lý Xung đột** | Chỉ kiểm tra cơ bản. Chưa chặn được "Đặt sân trùng lặp" triệt để. | **QUAN TRỌNG**: Ngăn chặn đặt trùng giờ. Xử lý tình huống tranh chấp giữa "Khách đến trực tiếp" và "Khách đặt Online". |
+| 2 | **Dịch vụ & Sản phẩm** | **CÒN THIẾU**. Chưa có mô hình "Dịch vụ". | Thêm các dịch vụ chuyên nghiệp (Căng vợt, Huấn luyện). |
+| 3 | **Cổng Lễ tân (Receptionist)** | **CÒN THIẾU**. Giao diện Admin chung chung. | Dashboard riêng cho Lễ tân: Xem lịch check-in/out trong ngày, Xử lý thanh toán nhanh, In hóa đơn. |
+| 4 | **Hóa đơn & Thanh toán** | Đã có model Invoice nhưng chức năng chưa hoàn thiện. | Xuất Hóa đơn PDF. Gửi email hóa đơn cho khách. Chức năng in hóa đơn tại quầy cho Lễ tân. |
+| 5 | **Ưu tiên Khách hàng** | **CÒN THIẾU**. Chưa phân biệt logic "Vãng lai" vs "Cố định". | Định nghĩa quy tắc: Khách vãng lai thanh toán ngay, Khách cố định thanh toán theo tháng/tuần. |
+| 6 | **Phân quyền Vai trò** | Đã có ACL cơ bản. | Tinh chỉnh quyền hạn: Lễ tân không được xóa lịch sử, chỉ Admin mới được chỉnh giá. |
+| 7 | **AI Smart Assistant** | **MỚI**. Chưa có. | Chatbot gợi ý đặt sân, đề xuất giờ "Vàng", ghép cặp đấu thủ. |
+
+---
+
+## Các chức năng AI & Thông minh (Mới bổ sung)
+
+### 1. AI Chatbot Đặt sân (Guest-Based)
+*Trợ lý ảo thông minh chạy trên Web/Messenger:*
+-   **Gợi ý Lịch trống**: Khách chỉ cần nhập tên/sđt, bot tự tìm giờ trống.
+-   **Đề xuất "Sân Đẹp"**: Dựa trên dữ liệu đặt sân chung (Anonymous Data).
+
+### 2. Hệ thống "Săn Giờ Vàng" & Hàng Chờ Thông Minh (Smart Waitlist)
+*Kết hợp 2 trong 1: Ưu tiên thông báo cho khách đã để lại thông tin.*
+-   **Cơ chế**: Khách để lại Email/SĐT để đăng ký nhận tin.
+-   **Logic Ưu Tiên**:
+    -   Khi có **Giờ Vàng** (Giờ đẹp, Sân đẹp) bị hủy hoặc trống đột xuất:
+    -   Hệ thống **quét danh sách chờ** (SĐT/Email).
+    -   Gửi thông báo **ƯU TIÊN** cho những người này trước khi mở công khai lên Web.
+-   **Thông báo Đa kênh**:
+    -   Gửi Zalo/SMS/Email tự động.
+    -   Báo cho Lễ tân gọi điện chốt đơn ngay (nếu cần gấp).
+
+---
+
+## Chi tiết Dịch vụ theo Đối tượng (Quản lý bởi Lễ Tân)
+
+### 1. Khách Hàng Thân Thiết (VIP/Member Offline)
+*Do không có tài khoản online, Lễ tân sẽ đánh dấu khách VIP qua Số Điện Thoại:*
+-   **Quyền lợi**: Hệ thống tự động giảm giá khi nhập đúng SĐT khách VIP.
+-   **Đặt sân Ưu tiên**: Lễ tân ưu tiên giữ chỗ cho các SĐT này.
+-   **Công nợ**: Cho phép ghi nợ (Paid Later) gán vào SĐT.
+
+### 2. Khách Vãng Lai (Guest)
+-   Thanh toán ngay khi đặt (Chuyển khoản/Tiền mặt).
+-   Không được ghi nợ.
+
+*Nâng cấp trải nghiệm người chơi:*
+-   **Căng vợt (Stringing)**: Dịch vụ căng lưới vợt lấy ngay hoặc hẹn giờ (quản lý loại cước, số kg).
+-   **Huấn luyện (Coaching)**: Đặt lịch Huấn luyện viên (1-1 hoặc nhóm).
+-   **Tổ chức Giải đấu (Tournament)**: Hỗ trợ tạo bảng đấu, xếp lịch thi đấu cho nhóm/CLB.
+
+### 3. Dịch vụ Tiện ích cơ bản
+-   **Pro Shop**: Bán vợt, giày, quần áo, quấn cán, phụ kiện cầu lông chính hãng.
+-   **F&B**: Nước uống thể thao, Đồ ăn nhẹ bổ sung năng lượng.
+
+---
+
+## Kế hoạch Triển khai Kỹ thuật
+
+### 1. Module Dịch vụ & Sản phẩm
+**Mục tiêu**: Cho phép đặt kèm các mặt hàng (nước, khăn, thuê vợt).
+- **Cơ sở dữ liệu**:
+    - Tạo bảng `services` (tên, giá, tồn kho, hình ảnh).
+    - Tạo bảng trung gian `booking_services` (booking_id, service_id, số lượng, đơn giá).
+- **Models**:
+    - Tạo model `Service`.
+    - Cập nhật model [Booking](file:///c:/laragon/www/kltn-quan-ly-san-cau-long/platform/plugins/court-booking/src/Models/Booking.php#10-24) để có quan hệ `hasMany` với services.
+
+### 2. Cơ chế Xử lý Xung đột (Conflict Resolution)
+**Mục tiêu**: Logic thời gian chặt chẽ để ngăn trùng lịch.
+- **Logic**:
+    - Tạo class `BookingService` với hàm `checkAvailability(court_id, start, end, exclude_booking_id)`.
+    - **Công thức**: [(StartA < EndB) && (EndA > StartB)](file:///c:/laragon/www/kltn-quan-ly-san-cau-long/platform/plugins/court-booking/src/Models/Booking.php#14-18).
+- **Xử lý tranh chấp (Race Condition)**:
+    - Sử dụng Database Transactions (`DB::transaction`).
+    - Khóa dòng dữ liệu (Row Lock) khi kiểm tra `count(*)` hoặc dùng `lockForUpdate`.
+
+### 3. Cổng thông tin Lễ tân
+**Mục tiêu**: Giao diện tối ưu cho thao tác hàng ngày tại quầy.
+- **Giao diện (UI)**:
+    - Tạo trang "Receptionist Dashboard" mới trong Admin Panel.
+    - Các cột chính: "Check-in Hôm nay", "Chờ thanh toán", "Đặt sân nhanh".
+- **Quyền hạn**:
+    - Tạo role `receptionist` trong hệ thống phân quyền (ACL).
+    - Giới hạn quyền truy cập vào Cài đặt hệ thống.
+
+### 4. Hệ thống Hóa đơn
+**Mục tiêu**: Hóa đơn chuyên nghiệp.
+- **Thư viện**: `barryvdh/laravel-dompdf`.
+- **Luồng xử lý**:
+    - Khi `BookingStatus` chuyên sang `completed` hoặc `paid`:
+    - Tạo file PDF.
+    - Gửi Email (sử dụng Laravel Notification/Mailable).
+    - Hiển thị nút "In hóa đơn" trên giao diện Lễ tân.
+
+## Kế hoạch Kiểm thử (Verification)
+
+### Kiểm thử Tự động (Automated Tests)
+- **Unit Tests**:
+    - Test hàm `checkAvailability` với các khoảng thời gian chồng chéo.
+    - Test tính toán tiền `Service` (Giá * Số lượng).
+- **Integration Tests**:
+    - Giả lập 2 yêu cầu đặt sân cùng lúc (1 Offline, 1 Online) để kiểm tra cơ chế khóa (lock).
+
+### Kiểm thử Thủ công (Manual Verification)
+1.  **Đặt trùng**: Thử đặt Sân A (10:00-11:00). Sau đó thử đặt lại Sân A (10:30-11:30) từ tab khác. Kiểm tra lỗi trả về.
+2.  **Dịch vụ**: Tạo đơn đặt sân, thêm 2 chai nước và 1 vợt. Kiểm tra Tổng tiền = Tiền sân + Tiền dịch vụ.
+3.  **PDF**: Hoàn tất đơn hàng. Kiểm tra email xem có file PDF đính kèm không.

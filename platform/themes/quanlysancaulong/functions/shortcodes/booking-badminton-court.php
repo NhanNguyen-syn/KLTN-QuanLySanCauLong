@@ -6,6 +6,7 @@ use Botble\Base\Forms\Fields\ColorField;
 use Botble\Base\Forms\Fields\SelectField;
 use Botble\Base\Forms\Fields\TextField;
 use Botble\CourtBooking\Models\Court;
+use Botble\Base\Enums\BaseStatusEnum;
 use Botble\Media\Facades\RvMedia;
 use Botble\Shortcode\Compilers\Shortcode as ShortcodeCompiler;
 use Botble\Shortcode\Facades\Shortcode;
@@ -13,7 +14,7 @@ use Botble\Shortcode\Forms\ShortcodeForm;
 use Botble\Theme\Facades\Theme;
 use Illuminate\Support\Arr;
 
-if (! function_exists('qlscl_parse_shortcode_ids')) {
+if (!function_exists('qlscl_parse_shortcode_ids')) {
 
     function qlscl_parse_shortcode_ids($value): array
     {
@@ -40,7 +41,7 @@ if (! function_exists('qlscl_parse_shortcode_ids')) {
         $seen = [];
         $unique = [];
         foreach ($ids as $id) {
-            if ($id > 0 && ! isset($seen[$id])) {
+            if ($id > 0 && !isset($seen[$id])) {
                 $seen[$id] = true;
                 $unique[] = $id;
             }
@@ -74,21 +75,23 @@ add_action('init', function () {
 
         // Kiểm tra xem bảng court_slots có tồn tại không
         $hasSlotsTable = \Illuminate\Support\Facades\Schema::hasTable('court_slots');
-        
+
         $courtsQuery = Court::query()
             ->whereIn('id', $selectedCourtIds)
-            ->where('status', 'published');
-            
+            ->where('status', BaseStatusEnum::PUBLISHED);
+
         // Chỉ eager load slots nếu bảng tồn tại
         if ($hasSlotsTable) {
-            $courtsQuery->with(['slots' => function ($query) {
-                $query->where('status', 'available')
-                    ->whereDate('start_at', today())
-                    ->orderBy('start_at')
-                    ->limit(2);
-            }]);
+            $courtsQuery->with([
+                'slots' => function ($query) {
+                    $query->where('status', 'available')
+                        ->whereDate('start_at', today())
+                        ->orderBy('start_at')
+                        ->limit(2);
+                }
+            ]);
         }
-        
+
         $courts = $courtsQuery->get();
 
         $items = [];
@@ -101,14 +104,14 @@ add_action('init', function () {
             $seen[$courtId] = true;
 
             $court = $courts->firstWhere('id', $courtId);
-            if (! $court) {
+            if (!$court) {
                 continue;
             }
 
             // Get time slots từ field time_display (admin nhập) thay vì từ database
             $timeSlot1 = '';
             $timeSlot2 = '';
-            
+
             if (!empty($court->time_display)) {
                 // Parse time_display: "08:00-09:00, 12:00-13:00"
                 $timeSlots = array_map('trim', explode(',', $court->time_display));
@@ -161,7 +164,7 @@ add_action('init', function () {
     Shortcode::setAdminConfig('booking-badminton-court', function (array $attributes) {
 
         $courtOptions = Court::query()
-            ->where('status', 'published')
+            ->where('status', BaseStatusEnum::PUBLISHED)
             ->orderByRaw('COALESCE(`order`, 0) ASC')
             ->orderBy('id')
             ->pluck('name', 'id')
