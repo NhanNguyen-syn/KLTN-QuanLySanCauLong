@@ -51,15 +51,16 @@ class ReceptionistPortalServiceProvider extends ServiceProvider
                 'permissions' => ['receptionist.quick-booking'],
             ]);
 
-            DashboardMenu::registerItem([
-                'id' => 'cms-plugins-receptionist-vip',
-                'priority' => 3,
-                'parent_id' => 'cms-plugins-receptionist',
-                'name' => 'Khách VIP',
-                'icon' => 'ti ti-star',
-                'url' => route('receptionist.vip.index'),
-                'permissions' => ['receptionist.vip'],
-            ]);
+            // Khách VIP - Tạm ẩn vì dự án tập trung khách vãng lai và cố định
+            // DashboardMenu::registerItem([
+            //     'id' => 'cms-plugins-receptionist-vip',
+            //     'priority' => 3,
+            //     'parent_id' => 'cms-plugins-receptionist',
+            //     'name' => 'Khách VIP',
+            //     'icon' => 'ti ti-star',
+            //     'url' => route('receptionist.vip.index'),
+            //     'permissions' => ['receptionist.vip'],
+            // ]);
         });
     }
 }

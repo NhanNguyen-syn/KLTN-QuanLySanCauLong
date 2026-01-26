@@ -17,37 +17,116 @@ class QuickBookingController extends BaseController
 {
     protected BookingService $bookingService;
 
+    // Slot interval in minutes
+    const SLOT_INTERVAL = 30;
+
+    // Operating hours
+    const OPEN_HOUR = 5;  // 5:00 AM
+    const CLOSE_HOUR = 23; // 11:00 PM
+
     public function __construct(BookingService $bookingService)
     {
         $this->bookingService = $bookingService;
     }
 
     /**
-     * Show quick booking form
+     * Show quick booking with time slot grid
      */
     public function index(Request $request)
     {
         $this->pageTitle('Đặt sân nhanh');
 
-        Assets::addScriptsDirectly('vendor/core/plugins/receptionist-portal/js/quick-booking.js')
-            ->addStylesDirectly('vendor/core/plugins/receptionist-portal/css/dashboard.css');
+        $date = $request->input('date', Carbon::today()->format('Y-m-d'));
 
         $courts = Court::where('status', 'published')
             ->orderBy('name')
-            ->get(['id', 'name']);
+            ->get();
 
-        $services = Service::active()
+        // Generate time slots
+        $timeSlots = $this->generateTimeSlots();
+
+        // Get booked slots for the date
+        $bookedSlots = $this->getBookedSlots($date);
+
+        $services = Service::query()
+            ->where('is_active', true)
             ->orderBy('category')
             ->orderBy('sort_order')
             ->get();
 
-        $today = Carbon::today()->format('Y-m-d');
-
         return view('plugins/receptionist-portal::quick-booking', compact(
             'courts',
+            'timeSlots',
+            'bookedSlots',
             'services',
-            'today'
+            'date'
         ));
+    }
+
+    /**
+     * Generate time slots based on interval
+     */
+    private function generateTimeSlots(): array
+    {
+        $slots = [];
+        $start = Carbon::createFromTime(self::OPEN_HOUR, 0);
+        $end = Carbon::createFromTime(self::CLOSE_HOUR, 0);
+
+        while ($start < $end) {
+            $slots[] = $start->format('H:i');
+            $start->addMinutes(self::SLOT_INTERVAL);
+        }
+
+        return $slots;
+    }
+
+    /**
+     * Get booked slots for a specific date
+     */
+    private function getBookedSlots(string $date): array
+    {
+        $bookings = BookingList::whereDate('date', $date)
+            ->whereNotIn('status', ['cancelled', 'canceled'])
+            ->get(['court_id', 'start_time', 'end_time', 'customer_name', 'status']);
+
+        $bookedSlots = [];
+
+        foreach ($bookings as $booking) {
+            $courtId = $booking->court_id;
+            $start = Carbon::createFromFormat('H:i:s', $booking->start_time);
+            $end = Carbon::createFromFormat('H:i:s', $booking->end_time);
+
+            // Mark all slots within the booking range
+            $current = clone $start;
+            while ($current < $end) {
+                $slotKey = $current->format('H:i');
+                if (!isset($bookedSlots[$courtId])) {
+                    $bookedSlots[$courtId] = [];
+                }
+                $bookedSlots[$courtId][$slotKey] = [
+                    'status' => $booking->status,
+                    'customer' => $booking->customer_name,
+                ];
+                $current->addMinutes(self::SLOT_INTERVAL);
+            }
+        }
+
+        return $bookedSlots;
+    }
+
+    /**
+     * Get slots for a date via AJAX
+     */
+    public function getSlots(Request $request): JsonResponse
+    {
+        $date = $request->input('date', Carbon::today()->format('Y-m-d'));
+        $bookedSlots = $this->getBookedSlots($date);
+
+        return response()->json([
+            'success' => true,
+            'date' => $date,
+            'bookedSlots' => $bookedSlots,
+        ]);
     }
 
     /**
@@ -58,8 +137,8 @@ class QuickBookingController extends BaseController
         $request->validate([
             'court_id' => 'required|exists:courts,id',
             'date' => 'required|date',
-            'start_time' => 'required|date_format:H:i',
-            'end_time' => 'required|date_format:H:i|after:start_time',
+            'start_time' => 'required',
+            'end_time' => 'required',
         ]);
 
         $result = $this->bookingService->checkBookingListAvailability(
@@ -84,34 +163,41 @@ class QuickBookingController extends BaseController
         $request->validate([
             'court_id' => 'required|exists:courts,id',
             'date' => 'required|date',
-            'start_time' => 'required|date_format:H:i',
-            'end_time' => 'required|date_format:H:i|after:start_time',
+            'slots' => 'required|array|min:1',
             'customer_name' => 'required|string|max:255',
             'contact' => 'required|string|max:20',
-            'price' => 'required|numeric|min:0',
             'paid_amount' => 'nullable|numeric|min:0',
             'services' => 'nullable|array',
-            'services.*.id' => 'exists:services,id',
-            'services.*.quantity' => 'integer|min:1',
         ]);
+
+        $court = Court::find($request->court_id);
+        $slots = collect($request->slots)->sort()->values();
+
+        // Calculate start and end time from selected slots
+        $startTime = $slots->first();
+        $lastSlot = Carbon::createFromFormat('H:i', $slots->last());
+        $endTime = $lastSlot->addMinutes(self::SLOT_INTERVAL)->format('H:i');
 
         // Check availability again (race condition protection)
         $availability = $this->bookingService->checkBookingListAvailability(
             (int) $request->court_id,
             $request->date,
-            $request->start_time,
-            $request->end_time
+            $startTime,
+            $endTime
         );
 
         if (!$availability['available']) {
             return response()->json([
                 'success' => false,
-                'message' => 'Khung giờ này đã được đặt. Vui lòng chọn giờ khác.',
+                'message' => 'Một hoặc nhiều slot đã được đặt. Vui lòng chọn lại.',
                 'conflicts' => $availability['conflicts'],
             ], 409);
         }
 
-        $court = Court::find($request->court_id);
+        // Calculate price based on number of slots and court price
+        $slotCount = count($slots);
+        $pricePerSlot = $court->price_per_hour ? ($court->price_per_hour / 2) : 75000; // 30min = half hourly rate
+        $totalPrice = $slotCount * $pricePerSlot;
 
         // Create booking
         $booking = BookingList::create([
@@ -119,30 +205,32 @@ class QuickBookingController extends BaseController
             'court_id' => $request->court_id,
             'court_name' => $court->name,
             'date' => $request->date,
-            'start_time' => $request->start_time,
-            'end_time' => $request->end_time,
+            'start_time' => $startTime,
+            'end_time' => $endTime,
             'customer_name' => $request->customer_name,
             'contact' => $request->contact,
-            'price' => $request->price,
+            'price' => $totalPrice,
             'paid_amount' => $request->paid_amount ?? 0,
-            'status' => ($request->paid_amount ?? 0) >= $request->price ? 'paid' : 'pending',
-            'notes' => '[Đặt tại quầy: ' . Carbon::now()->format('H:i d/m/Y') . ']',
+            'status' => ($request->paid_amount ?? 0) >= $totalPrice ? 'paid' : 'pending',
+            'notes' => '[Đặt tại quầy: ' . Carbon::now()->format('H:i d/m/Y') . '] - ' . $slotCount . ' slot(s)',
         ]);
 
         // Add services if any
         if ($request->has('services')) {
             foreach ($request->services as $serviceData) {
-                $service = Service::find($serviceData['id']);
-                if ($service) {
-                    $booking->addService($service, $serviceData['quantity'] ?? 1);
+                if (!empty($serviceData['id']) && !empty($serviceData['quantity']) && $serviceData['quantity'] > 0) {
+                    $service = Service::find($serviceData['id']);
+                    if ($service) {
+                        $booking->addService($service, $serviceData['quantity']);
+                    }
                 }
             }
         }
 
         return response()->json([
             'success' => true,
-            'message' => 'Đặt sân thành công!',
-            'booking' => $booking->fresh()->load('bookingServices.service'),
+            'message' => 'Đặt sân thành công! Mã đơn: ' . $booking->order_code,
+            'booking' => $booking->fresh(),
         ]);
     }
 

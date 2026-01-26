@@ -3,367 +3,541 @@
 @section('content')
     <style>
         .quick-booking-page {
-            max-width: 800px;
-            margin: 0 auto;
+            padding: 0;
         }
 
-        .booking-form {
+        /* Header */
+        .booking-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .booking-header h2 {
+            margin: 0;
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .date-selector {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .date-selector input {
+            padding: 0.5rem 1rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 1rem;
+        }
+
+        .date-nav {
+            display: flex;
+            gap: 0.25rem;
+        }
+
+        .date-nav button {
+            padding: 0.5rem 0.75rem;
+            border: 1px solid #e5e7eb;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .date-nav button:hover {
+            background: #f3f4f6;
+        }
+
+        /* Grid Container */
+        .slot-grid-container {
             background: white;
             border-radius: 12px;
-            padding: 1.5rem;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+            margin-bottom: 1.5rem;
         }
 
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-            margin-bottom: 1rem;
-        }
-
-        @media (max-width: 640px) {
-            .form-row {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        .form-group {
-            margin-bottom: 1rem;
-        }
-
-        .form-group label {
+        /* Grid Table */
+        .slot-grid {
             display: block;
-            font-weight: 500;
-            margin-bottom: 0.5rem;
+            overflow-x: auto;
+            width: 100%;
+        }
+
+        .slot-grid table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 800px;
+        }
+
+        .slot-grid th,
+        .slot-grid td {
+            border: 1px solid #e5e7eb;
+            text-align: center;
+            padding: 0;
+        }
+
+        .slot-grid th {
+            background: #f9fafb;
+            padding: 0.625rem 0.25rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #374151;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .slot-grid th.court-col {
+            width: 120px;
+            min-width: 120px;
+            position: sticky;
+            left: 0;
+            background: #f3f4f6;
+            z-index: 20;
+        }
+
+        .slot-grid tbody td:first-child {
+            position: sticky;
+            left: 0;
+            background: #f9fafb;
+            z-index: 5;
+            padding: 0.5rem;
+            font-weight: 600;
             font-size: 0.875rem;
         }
 
-        .form-group input,
-        .form-group select {
+        /* Slots */
+        .slot {
             width: 100%;
-            padding: 0.625rem;
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
-            font-size: 0.9375rem;
-        }
-
-        .form-group input:focus,
-        .form-group select:focus {
-            outline: none;
-            border-color: #4f46e5;
-            box-shadow: 0 0 0 3px #eef2ff;
-        }
-
-        .availability-status {
-            padding: 0.75rem 1rem;
-            border-radius: 8px;
-            margin-bottom: 1rem;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 0.6875rem;
             font-weight: 500;
+            transition: all 0.15s;
+            user-select: none;
         }
 
-        .availability-status.available {
+        .slot.available {
             background: #d1fae5;
             color: #047857;
         }
 
-        .availability-status.unavailable {
-            background: #fee2e2;
-            color: #b91c1c;
+        .slot.available:hover {
+            background: #a7f3d0;
         }
 
-        .services-section {
+        .slot.booked {
+            background: #fecaca;
+            color: #991b1b;
+            cursor: not-allowed;
+        }
+
+        .slot.selected {
+            background: #4f46e5 !important;
+            color: white !important;
+        }
+
+        .slot.paid {
+            background: #dbeafe;
+            color: #1d4ed8;
+            cursor: not-allowed;
+        }
+
+        .slot.completed {
+            background: #e5e7eb;
+            color: #6b7280;
+            cursor: not-allowed;
+        }
+
+        /* Legend */
+        .legend {
+            display: flex;
+            gap: 1.5rem;
+            padding: 0.75rem 1rem;
+            background: #f9fafb;
             border-top: 1px solid #e5e7eb;
-            padding-top: 1rem;
-            margin-top: 1rem;
+            font-size: 0.8125rem;
         }
 
-        .services-section h4 {
-            font-size: 0.9375rem;
-            font-weight: 600;
-            margin-bottom: 0.75rem;
-        }
-
-        .service-item {
+        .legend-item {
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            padding: 0.5rem 0;
-            border-bottom: 1px solid #f3f4f6;
+            gap: 0.375rem;
         }
 
-        .service-item:last-child {
-            border-bottom: none;
+        .legend-item .dot {
+            width: 16px;
+            height: 16px;
+            border-radius: 4px;
         }
 
-        .service-info {
-            flex: 1;
+        .legend-item .dot.available {
+            background: #d1fae5;
         }
 
-        .service-name {
-            font-weight: 500;
+        .legend-item .dot.booked {
+            background: #fecaca;
         }
 
-        .service-price {
-            font-size: 0.8125rem;
-            color: #6b7280;
+        .legend-item .dot.selected {
+            background: #4f46e5;
         }
 
-        .service-qty {
-            width: 60px;
-            text-align: center;
+        .legend-item .dot.paid {
+            background: #dbeafe;
         }
 
-        .summary-box {
-            background: #f9fafb;
-            border-radius: 8px;
-            padding: 1rem;
-            margin-top: 1rem;
-        }
-
-        .summary-row {
-            display: flex;
-            justify-content: space-between;
-            padding: 0.375rem 0;
-        }
-
-        .summary-row.total {
-            font-size: 1.125rem;
-            font-weight: 700;
+        /* Booking Form */
+        .booking-form-panel {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
             border-top: 1px solid #e5e7eb;
-            padding-top: 0.75rem;
-            margin-top: 0.5rem;
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
+            padding: 1rem 1.5rem;
+            z-index: 100;
+            display: none;
         }
 
-        .btn-submit {
+        .booking-form-panel.active {
+            display: block;
+        }
+
+        .booking-form-panel .form-row {
+            display: flex;
+            align-items: flex-end;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .booking-form-panel .form-group {
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .booking-form-panel label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #6b7280;
+            margin-bottom: 0.25rem;
+        }
+
+        .booking-form-panel input {
             width: 100%;
-            padding: 0.875rem;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            font-size: 0.9375rem;
+        }
+
+        .booking-form-panel .selected-info {
+            background: #eef2ff;
+            padding: 0.5rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            color: #4f46e5;
+            font-weight: 600;
+        }
+
+        .booking-form-panel .btn-book {
+            padding: 0.625rem 1.5rem;
             background: #4f46e5;
             color: white;
             border: none;
             border-radius: 8px;
-            font-size: 1rem;
             font-weight: 600;
             cursor: pointer;
-            margin-top: 1rem;
+            white-space: nowrap;
         }
 
-        .btn-submit:hover {
+        .booking-form-panel .btn-book:hover {
             background: #4338ca;
         }
 
-        .btn-submit:disabled {
-            background: #9ca3af;
-            cursor: not-allowed;
+        .booking-form-panel .btn-cancel {
+            padding: 0.625rem 1rem;
+            background: #f3f4f6;
+            color: #374151;
+            border: none;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        /* Time period labels */
+        .time-period {
+            font-size: 0.625rem;
+            color: #9ca3af;
+            display: block;
         }
     </style>
 
     <div class="quick-booking-page">
-        <div class="booking-form">
-            <h2 style="margin-bottom: 1.5rem;">Đặt sân nhanh</h2>
+        <!-- Header -->
+        <div class="booking-header">
+            <h2>📅 Đặt sân nhanh</h2>
+            <div class="date-selector">
+                <div class="date-nav">
+                    <button onclick="changeDate(-1)">◀</button>
+                </div>
+                <input type="date" id="bookingDate" value="{{ $date }}" onchange="loadSlots()">
+                <div class="date-nav">
+                    <button onclick="changeDate(1)">▶</button>
+                </div>
+                <button onclick="goToday()"
+                    style="margin-left: 0.5rem; padding: 0.5rem 1rem; background: #4f46e5; color: white; border: none; border-radius: 6px; cursor: pointer;">Hôm
+                    nay</button>
+            </div>
+        </div>
 
-            <form id="quickBookingForm">
-                @csrf
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Sân</label>
-                        <select name="court_id" id="court_id" required>
-                            <option value="">-- Chọn sân --</option>
-                            @foreach($courts as $court)
-                                <option value="{{ $court->id }}">{{ $court->name }}</option>
+        <!-- Slot Grid -->
+        <div class="slot-grid-container">
+            <div class="slot-grid">
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="court-col">Sân</th>
+                            @foreach($timeSlots as $slot)
+                                <th>
+                                    {{ $slot }}
+                                    @if($slot >= '05:00' && $slot < '08:00')
+                                        <span class="time-period">Sáng sớm</span>
+                                    @elseif($slot >= '08:00' && $slot < '12:00')
+                                        <span class="time-period">Buổi sáng</span>
+                                    @elseif($slot >= '12:00' && $slot < '14:00')
+                                        <span class="time-period">Trưa</span>
+                                    @elseif($slot >= '14:00' && $slot < '18:00')
+                                        <span class="time-period">Chiều</span>
+                                    @else
+                                        <span class="time-period">Tối</span>
+                                    @endif
+                                </th>
                             @endforeach
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Ngày</label>
-                        <input type="date" name="date" id="date" value="{{ $today }}" required>
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Giờ bắt đầu</label>
-                        <input type="time" name="start_time" id="start_time" value="08:00" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Giờ kết thúc</label>
-                        <input type="time" name="end_time" id="end_time" value="09:00" required>
-                    </div>
-                </div>
-
-                <div id="availabilityStatus" style="display: none;"></div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Tên khách hàng</label>
-                        <input type="text" name="customer_name" id="customer_name" required placeholder="Nguyễn Văn A">
-                    </div>
-                    <div class="form-group">
-                        <label>Số điện thoại</label>
-                        <input type="tel" name="contact" id="contact" required placeholder="0901234567">
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Giá sân</label>
-                        <input type="number" name="price" id="price" required placeholder="100000" value="100000">
-                    </div>
-                    <div class="form-group">
-                        <label>Đã thanh toán</label>
-                        <input type="number" name="paid_amount" id="paid_amount" placeholder="0" value="0">
-                    </div>
-                </div>
-
-                @if($services->count() > 0)
-                    <div class="services-section">
-                        <h4>Dịch vụ kèm theo</h4>
-                        @foreach($services->groupBy('category') as $category => $categoryServices)
-                            <div style="margin-bottom: 0.75rem;">
-                                <strong
-                                    style="font-size: 0.8125rem; color: #6b7280;">{{ $categoryServices->first()->category_label }}</strong>
-                                @foreach($categoryServices as $service)
-                                    <div class="service-item">
-                                        <div class="service-info">
-                                            <div class="service-name">{{ $service->name }}</div>
-                                            <div class="service-price">{{ $service->formatted_price }}/{{ $service->unit }}</div>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($courts as $court)
+                            <tr data-court-id="{{ $court->id }}">
+                                <td>
+                                    <div style="font-weight: 600;">{{ $court->name }}</div>
+                                    <div style="font-size: 0.6875rem; color: #6b7280;">
+                                        {{ number_format($court->price_per_hour ?? 150000) }}đ/h</div>
+                                </td>
+                                @foreach($timeSlots as $slot)
+                                    @php
+                                        $isBooked = isset($bookedSlots[$court->id][$slot]);
+                                        $status = $isBooked ? ($bookedSlots[$court->id][$slot]['status'] ?? 'pending') : 'available';
+                                        $customer = $isBooked ? ($bookedSlots[$court->id][$slot]['customer'] ?? '') : '';
+                                    @endphp
+                                    <td>
+                                        <div class="slot {{ $status === 'available' ? 'available' : ($status === 'paid' ? 'paid' : ($status === 'completed' ? 'completed' : 'booked')) }}"
+                                            data-court-id="{{ $court->id }}" data-court-name="{{ $court->name }}"
+                                            data-slot="{{ $slot }}" data-status="{{ $status }}" @if($status === 'available')
+                                            onclick="toggleSlot(this)" @endif title="{{ $isBooked ? $customer : 'Trống' }}">
+                                            {{ $status === 'available' ? 'Trống' : ($status === 'paid' ? 'Đã TT' : ($status === 'completed' ? 'Xong' : 'Đặt')) }}
                                         </div>
-                                        <input type="number" class="service-qty form-control" data-id="{{ $service->id }}"
-                                            data-price="{{ $service->price }}" min="0" value="0" style="width: 70px;">
-                                    </div>
+                                    </td>
                                 @endforeach
-                            </div>
+                            </tr>
                         @endforeach
-                    </div>
-                @endif
+                    </tbody>
+                </table>
+            </div>
+            <div class="legend">
+                <div class="legend-item"><span class="dot available"></span> Trống</div>
+                <div class="legend-item"><span class="dot selected"></span> Đang chọn</div>
+                <div class="legend-item"><span class="dot booked"></span> Chờ TT</div>
+                <div class="legend-item"><span class="dot paid"></span> Đã TT</div>
+            </div>
+        </div>
 
-                <div class="summary-box">
-                    <div class="summary-row">
-                        <span>Tiền sân:</span>
-                        <span id="courtPriceDisplay">0 đ</span>
-                    </div>
-                    <div class="summary-row">
-                        <span>Tiền dịch vụ:</span>
-                        <span id="servicePriceDisplay">0 đ</span>
-                    </div>
-                    <div class="summary-row total">
-                        <span>Tổng cộng:</span>
-                        <span id="totalDisplay">0 đ</span>
-                    </div>
+        <!-- Booking Form Panel (fixed at bottom) -->
+        <div class="booking-form-panel" id="bookingPanel">
+            <div class="form-row">
+                <div class="selected-info" id="selectedInfo">
+                    Chưa chọn slot
                 </div>
-
-                <button type="submit" class="btn-submit" id="submitBtn">Xác nhận đặt sân</button>
-            </form>
+                <div class="form-group">
+                    <label>Tên khách hàng *</label>
+                    <input type="text" id="customerName" placeholder="Nguyễn Văn A" required>
+                </div>
+                <div class="form-group">
+                    <label>Số điện thoại *</label>
+                    <input type="tel" id="customerPhone" placeholder="0901234567" required>
+                </div>
+                <div class="form-group" style="flex: 0.5;">
+                    <label>Đã thanh toán</label>
+                    <input type="number" id="paidAmount" placeholder="0" value="0">
+                </div>
+                <button class="btn-cancel" onclick="clearSelection()">Hủy</button>
+                <button class="btn-book" onclick="submitBooking()">✓ Xác nhận đặt</button>
+            </div>
         </div>
     </div>
 @endsection
 
 @push('footer')
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            const form = document.getElementById('quickBookingForm');
-            const checkFields = ['court_id', 'date', 'start_time', 'end_time'];
+        let selectedSlots = [];
+        let selectedCourtId = null;
+        let selectedCourtName = '';
 
-            checkFields.forEach(field => {
-                document.getElementById(field).addEventListener('change', checkAvailability);
+        function toggleSlot(el) {
+            const courtId = el.dataset.courtId;
+            const courtName = el.dataset.courtName;
+            const slot = el.dataset.slot;
+
+            // Only allow selecting from one court at a time
+            if (selectedCourtId && selectedCourtId !== courtId) {
+                Botble.showError('Chỉ có thể chọn slot từ một sân. Vui lòng hủy chọn trước.');
+                return;
+            }
+
+            if (el.classList.contains('selected')) {
+                // Deselect
+                el.classList.remove('selected');
+                el.classList.add('available');
+                selectedSlots = selectedSlots.filter(s => s !== slot);
+            } else {
+                // Select
+                el.classList.remove('available');
+                el.classList.add('selected');
+                selectedSlots.push(slot);
+                selectedCourtId = courtId;
+                selectedCourtName = courtName;
+            }
+
+            // Sort slots
+            selectedSlots.sort();
+
+            // Update UI
+            updateSelectedInfo();
+        }
+
+        function updateSelectedInfo() {
+            const panel = document.getElementById('bookingPanel');
+            const info = document.getElementById('selectedInfo');
+
+            if (selectedSlots.length === 0) {
+                panel.classList.remove('active');
+                selectedCourtId = null;
+                selectedCourtName = '';
+                return;
+            }
+
+            panel.classList.add('active');
+
+            const startTime = selectedSlots[0];
+            const lastSlot = selectedSlots[selectedSlots.length - 1];
+            // End time is last slot + 30 minutes
+            const [h, m] = lastSlot.split(':').map(Number);
+            const endMinutes = h * 60 + m + 30;
+            const endTime = `${String(Math.floor(endMinutes / 60)).padStart(2, '0')}:${String(endMinutes % 60).padStart(2, '0')}`;
+
+            const duration = selectedSlots.length * 30;
+            const hours = Math.floor(duration / 60);
+            const mins = duration % 60;
+            const durationText = hours > 0 ? `${hours}h${mins > 0 ? mins + 'p' : ''}` : `${mins}p`;
+
+            info.innerHTML = `
+            <strong>${selectedCourtName}</strong> | 
+            ${startTime} → ${endTime} (${durationText}) | 
+            ${selectedSlots.length} slot
+        `;
+        }
+
+        function clearSelection() {
+            document.querySelectorAll('.slot.selected').forEach(el => {
+                el.classList.remove('selected');
+                el.classList.add('available');
             });
+            selectedSlots = [];
+            selectedCourtId = null;
+            selectedCourtName = '';
+            updateSelectedInfo();
+        }
 
-            document.getElementById('price').addEventListener('input', updateTotal);
-            document.querySelectorAll('.service-qty').forEach(el => {
-                el.addEventListener('input', updateTotal);
-            });
+        function changeDate(delta) {
+            const input = document.getElementById('bookingDate');
+            const date = new Date(input.value);
+            date.setDate(date.getDate() + delta);
+            input.value = date.toISOString().split('T')[0];
+            loadSlots();
+        }
 
-            function checkAvailability() {
-                const courtId = document.getElementById('court_id').value;
-                const date = document.getElementById('date').value;
-                const startTime = document.getElementById('start_time').value;
-                const endTime = document.getElementById('end_time').value;
+        function goToday() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('bookingDate').value = today;
+            loadSlots();
+        }
 
-                if (!courtId || !date || !startTime || !endTime) return;
+        function loadSlots() {
+            clearSelection();
+            const date = document.getElementById('bookingDate').value;
+            window.location.href = `{{ route('receptionist.quick-booking') }}?date=${date}`;
+        }
 
-                fetch(`{{ route('receptionist.check-availability') }}?court_id=${courtId}&date=${date}&start_time=${startTime}&end_time=${endTime}`)
-                    .then(r => r.json())
-                    .then(data => {
-                        const statusDiv = document.getElementById('availabilityStatus');
-                        statusDiv.style.display = 'block';
+        function submitBooking() {
+            const customerName = document.getElementById('customerName').value.trim();
+            const customerPhone = document.getElementById('customerPhone').value.trim();
+            const paidAmount = parseFloat(document.getElementById('paidAmount').value) || 0;
 
-                        if (data.available) {
-                            statusDiv.className = 'availability-status available';
-                            statusDiv.innerHTML = '✓ Khung giờ trống, có thể đặt';
-                            document.getElementById('submitBtn').disabled = false;
-                        } else {
-                            statusDiv.className = 'availability-status unavailable';
-                            statusDiv.innerHTML = '✗ Khung giờ đã có người đặt';
-                            document.getElementById('submitBtn').disabled = true;
-                        }
-                    });
+            if (!customerName) {
+                Botble.showError('Vui lòng nhập tên khách hàng');
+                return;
+            }
+            if (!customerPhone) {
+                Botble.showError('Vui lòng nhập số điện thoại');
+                return;
+            }
+            if (selectedSlots.length === 0) {
+                Botble.showError('Vui lòng chọn ít nhất một slot');
+                return;
             }
 
-            function updateTotal() {
-                const courtPrice = parseFloat(document.getElementById('price').value) || 0;
-                let servicePrice = 0;
+            const data = {
+                court_id: selectedCourtId,
+                date: document.getElementById('bookingDate').value,
+                slots: selectedSlots,
+                customer_name: customerName,
+                contact: customerPhone,
+                paid_amount: paidAmount,
+                services: []
+            };
 
-                document.querySelectorAll('.service-qty').forEach(el => {
-                    const qty = parseInt(el.value) || 0;
-                    const price = parseFloat(el.dataset.price) || 0;
-                    servicePrice += qty * price;
-                });
-
-                document.getElementById('courtPriceDisplay').textContent = formatNumber(courtPrice) + ' đ';
-                document.getElementById('servicePriceDisplay').textContent = formatNumber(servicePrice) + ' đ';
-                document.getElementById('totalDisplay').textContent = formatNumber(courtPrice + servicePrice) + ' đ';
-            }
-
-            function formatNumber(num) {
-                return new Intl.NumberFormat('vi-VN').format(num);
-            }
-
-            form.addEventListener('submit', function (e) {
-                e.preventDefault();
-
-                const services = [];
-                document.querySelectorAll('.service-qty').forEach(el => {
-                    const qty = parseInt(el.value) || 0;
-                    if (qty > 0) {
-                        services.push({ id: el.dataset.id, quantity: qty });
+            fetch('{{ route("receptionist.quick-booking.store") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify(data)
+            })
+                .then(r => r.json())
+                .then(result => {
+                    if (result.success) {
+                        Botble.showSuccess(result.message);
+                        setTimeout(() => location.reload(), 1000);
+                    } else {
+                        Botble.showError(result.message);
                     }
-                });
-
-                const formData = {
-                    court_id: document.getElementById('court_id').value,
-                    date: document.getElementById('date').value,
-                    start_time: document.getElementById('start_time').value,
-                    end_time: document.getElementById('end_time').value,
-                    customer_name: document.getElementById('customer_name').value,
-                    contact: document.getElementById('contact').value,
-                    price: document.getElementById('price').value,
-                    paid_amount: document.getElementById('paid_amount').value || 0,
-                    services: services
-                };
-
-                fetch('{{ route("receptionist.quick-booking.store") }}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    },
-                    body: JSON.stringify(formData)
                 })
-                    .then(r => r.json())
-                    .then(data => {
-                        if (data.success) {
-                            alert(data.message);
-                            window.location.href = '{{ route("receptionist.index") }}';
-                        } else {
-                            alert(data.message);
-                        }
-                    })
-                    .catch(err => {
-                        alert('Có lỗi xảy ra!');
-                        console.error(err);
-                    });
-            });
-
-            updateTotal();
-        });
+                .catch(err => {
+                    Botble.showError('Có lỗi xảy ra!');
+                    console.error(err);
+                });
+        }
     </script>
 @endpush

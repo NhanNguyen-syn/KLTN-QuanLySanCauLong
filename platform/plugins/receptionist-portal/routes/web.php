@@ -49,6 +49,10 @@ Route::group(['namespace' => 'Botble\ReceptionistPortal\Http\Controllers', 'midd
                 ->name('check-availability')
                 ->permission('receptionist.quick-booking');
 
+            Route::get('/get-slots', [QuickBookingController::class, 'getSlots'])
+                ->name('get-slots')
+                ->permission('receptionist.quick-booking');
+
             // VIP Customers
             Route::resource('vip-customers', VipCustomerController::class)
                 ->except(['show'])
