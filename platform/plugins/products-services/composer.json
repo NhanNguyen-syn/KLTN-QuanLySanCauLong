@@ -1,0 +1,20 @@
+{
+    "name": "botble/products-services",
+    "description": "Plugin quản lý sản phẩm và dịch vụ",
+    "type": "library",
+    "require": {
+        "php": "^8.2"
+    },
+    "autoload": {
+        "psr-4": {
+            "Botble\\ProductsServices\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Botble\\ProductsServices\\Providers\\ProductsServicesServiceProvider"
+            ]
+        }
+    }
+}

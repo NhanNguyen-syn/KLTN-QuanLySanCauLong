@@ -32,7 +32,9 @@ class ReceptionistDashboardController extends BaseController
         $stats = [
             'total_today' => $todayBookings->count(),
             'checked_in' => $todayBookings->whereIn('status', ['completed', 'paid'])->count(),
-            'pending_payment' => $todayBookings->where('status', 'pending')->count(),
+            'pending_payment' => $todayBookings->filter(function ($b) {
+                return !$b->isFullyPaid() && !in_array($b->status, ['cancelled']);
+            })->count(),
             'waiting_checkin' => $todayBookings->where('status', 'confirmed')->count(),
         ];
 
@@ -41,15 +43,20 @@ class ReceptionistDashboardController extends BaseController
             ->whereIn('status', ['completed', 'paid'])
             ->sum('paid_amount');
 
-        // Upcoming bookings (next 2 hours)
+        // Upcoming bookings (next 2 hours) - Exclude checked-in/completed/cancelled
         $upcomingBookings = $todayBookings->filter(function ($booking) {
+            if (in_array($booking->status, ['confirmed', 'completed', 'cancelled'])) {
+                return false;
+            }
             $startTime = Carbon::parse($booking->date->format('Y-m-d') . ' ' . $booking->start_time);
             $now = Carbon::now();
             return $startTime->isFuture() && $startTime->diffInMinutes($now) <= 120;
         });
 
-        // Pending payments
-        $pendingPayments = $todayBookings->where('status', 'pending');
+        // Pending payments (All bookings today that are NOT fully paid and NOT cancelled)
+        $pendingPayments = $todayBookings->filter(function ($booking) {
+            return !$booking->isFullyPaid() && !in_array($booking->status, ['cancelled']);
+        });
 
         return view('plugins/receptionist-portal::dashboard', compact(
             'todayBookings',
@@ -89,7 +96,7 @@ class ReceptionistDashboardController extends BaseController
                     'status' => $booking->status,
                     'price' => $booking->price,
                     'paid_amount' => $booking->paid_amount,
-                    'remaining' => $booking->grand_total - ($booking->paid_amount ?? 0),
+                    'remaining' => $booking->remaining_amount,
                     'services_total' => $booking->services_total ?? 0,
                     'grand_total' => $booking->grand_total,
                 ];
@@ -104,10 +111,16 @@ class ReceptionistDashboardController extends BaseController
     {
         $today = Carbon::today();
 
-        $pending = BookingList::whereDate('date', $today)
-            ->where('status', 'pending')
+        // We can't easily filter by computed properties in SQL, so get potential candidates and filter in PHP
+        // Get all active bookings for today
+        $activeBookings = BookingList::whereDate('date', $today)
+            ->whereNotIn('status', ['cancelled', 'completed'])
             ->orderBy('start_time')
             ->get();
+
+        $pending = $activeBookings->filter(function ($booking) {
+            return !$booking->isFullyPaid();
+        })->values();
 
         return response()->json([
             'success' => true,

@@ -92,6 +92,30 @@ Theme::registerRoutes(function (): void {
             return Theme::scope('about', compact('page'))->render();
         })->name('public.about');
 
+        // Trang đánh giá
+        Route::get('danh-gia', function () {
+            $page = null;
+            try {
+                $slug = SlugHelper::getSlug('danh-gia', SlugHelper::getPrefix(Page::class), Page::class);
+                if ($slug && $slug->reference_id) {
+                    $page = app(PageInterface::class)->getFirstBy(['id' => $slug->reference_id, 'status' => BaseStatusEnum::PUBLISHED]);
+                }
+            } catch (\Throwable $e) {}
+            return Theme::scope('reviews', compact('page'))->render();
+        })->name('public.reviews');
+
+        // Trang sản phẩm & dịch vụ
+        Route::get('san-pham-dich-vu', function () {
+            $page = null;
+            try {
+                $slug = SlugHelper::getSlug('san-pham-dich-vu', SlugHelper::getPrefix(Page::class), Page::class);
+                if ($slug && $slug->reference_id) {
+                    $page = app(PageInterface::class)->getFirstBy(['id' => $slug->reference_id, 'status' => BaseStatusEnum::PUBLISHED]);
+                }
+            } catch (\Throwable $e) {}
+            return Theme::scope('products', compact('page'))->render();
+        })->name('public.products');
+
     // Trang thanh toán (bước 3)
     Route::get('thanh-toan', function () {
         Theme::asset()->container('footer')->usePath()->add('checkout-script', 'js/checkout.js');

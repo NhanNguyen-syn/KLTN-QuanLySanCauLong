@@ -12,6 +12,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
 
 class QuickBookingController extends BaseController
 {
@@ -93,8 +94,8 @@ class QuickBookingController extends BaseController
 
         foreach ($bookings as $booking) {
             $courtId = $booking->court_id;
-            $start = Carbon::createFromFormat('H:i:s', $booking->start_time);
-            $end = Carbon::createFromFormat('H:i:s', $booking->end_time);
+            $start = Carbon::parse($date . ' ' . $booking->start_time);
+            $end = Carbon::parse($date . ' ' . $booking->end_time);
 
             // Mark all slots within the booking range
             $current = clone $start;
@@ -194,9 +195,8 @@ class QuickBookingController extends BaseController
             ], 409);
         }
 
-        // Calculate price based on number of slots and court price
-        $slotCount = count($slots);
-        $pricePerSlot = $court->price_per_hour ? ($court->price_per_hour / 2) : 75000; // 30min = half hourly rate
+        // Standardize price: 70,000 VND per 30min slot (140,000 VND/hour)
+        $pricePerSlot = 70000; 
         $totalPrice = $slotCount * $pricePerSlot;
 
         // Create booking
@@ -211,7 +211,7 @@ class QuickBookingController extends BaseController
             'contact' => $request->contact,
             'price' => $totalPrice,
             'paid_amount' => $request->paid_amount ?? 0,
-            'status' => ($request->paid_amount ?? 0) >= $totalPrice ? 'paid' : 'pending',
+            'status' => ($request->paid_amount ?? 0) >= $totalPrice ? 'paid' : 'processing',
             'notes' => '[Đặt tại quầy: ' . Carbon::now()->format('H:i d/m/Y') . '] - ' . $slotCount . ' slot(s)',
         ]);
 
@@ -239,10 +239,21 @@ class QuickBookingController extends BaseController
      */
     private function generateOrderCode(): string
     {
-        $prefix = 'LT' . Carbon::now()->format('ymd');
-        do {
-            $code = $prefix . strtoupper(Str::random(4));
-        } while (BookingList::where('order_code', $code)->exists());
-        return $code;
+        return DB::transaction(function () {
+            $prefix = 'BD-' . Carbon::now()->format('Ymd') . '-';
+            $latest = BookingList::query()
+                ->where('order_code', 'like', $prefix . '%')
+                ->lockForUpdate()
+                ->orderBy('order_code', 'desc')
+                ->value('order_code');
+
+            $nextSeq = 1;
+            if ($latest) {
+                $lastSeqStr = substr($latest, strrpos($latest, '-') + 1);
+                $nextSeq = ((int) $lastSeqStr) + 1;
+            }
+
+            return $prefix . str_pad((string) $nextSeq, 3, '0', STR_PAD_LEFT);
+        });
     }
 }

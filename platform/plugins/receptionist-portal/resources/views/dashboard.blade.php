@@ -377,11 +377,21 @@
         <!-- Today's Bookings -->
         <div class="card">
             <div class="card-header">
-                <h3>📅 Lịch hôm nay ({{ Carbon\Carbon::today()->format('d/m/Y') }})</h3>
-                <span class="badge bg-primary text-white">{{ $todayBookings->count() }} đơn</span>
+                <div class="d-flex align-items-center justify-content-between w-100">
+                    <h3 class="mb-0">📅 Lịch hôm nay ({{ Carbon\Carbon::today()->format('d/m/Y') }})</h3>
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="input-group input-group-sm" style="width: 250px;">
+                            <span class="input-group-text bg-white border-end-0">
+                                <i class="fas fa-search text-muted"></i>
+                            </span>
+                            <input type="text" id="bookingSearch" class="form-control border-start-0 ps-0" placeholder="Tìm tên hoặc SĐT..." onkeyup="filterBookings()">
+                        </div>
+                        <span class="badge bg-primary text-white">{{ $todayBookings->count() }} đơn</span>
+                    </div>
+                </div>
             </div>
             <div class="card-body">
-                <div class="booking-list">
+                <div class="booking-list" id="bookingList">
                     @forelse($todayBookings as $booking)
                     <div class="booking-item" data-id="{{ $booking->id }}">
                         <div class="booking-info">
@@ -390,9 +400,9 @@
                                 {{ $booking->court_name }}
                             </h4>
                             <div class="meta">
-                                <span>👤 {{ $booking->customer_name }}</span>
+                                <span class="customer-name">👤 {{ $booking->customer_name }}</span>
                                 <span class="divider">•</span>
-                                <span>📞 {{ $booking->contact }}</span>
+                                <span class="customer-phone">📞 {{ $booking->contact }}</span>
                                 <span class="divider">•</span>
                                 <span class="price">💰 {{ number_format($booking->grand_total) }}đ</span>
                                 @if($booking->paid_amount < $booking->grand_total)
@@ -404,29 +414,27 @@
                         <div class="booking-actions">
                             <span class="status-badge status-{{ $booking->status }}">
                                 @switch($booking->status)
-                                    @case('pending') Chờ TT @break
-                                    @case('confirmed') Xác nhận @break
-                                    @case('paid') Đã TT @break
+                                    @case('processing') <span style="background:#fef3c7; color:#b45309; padding:2px 6px; border-radius:4px;">Chờ Thanh Toán</span> @break
+                                    @case('pending') Chờ Thanh Toán @break
+                                    @case('confirmed') <span style="background:#dbeafe; color:#1d4ed8; padding:2px 6px; border-radius:4px;">Đã Check-in</span> @break
+                                    @case('paid') Đã Thanh Toán @break
                                     @case('completed') Xong @break
                                     @default {{ $booking->status }}
                                 @endswitch
                             </span>
-                            @if($booking->status === 'pending' || $booking->status === 'confirmed')
-                            <button class="btn-action btn-checkin" onclick="checkin({{ $booking->id }})">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
-                                In
+                            @if($booking->status === 'pending' || $booking->status === 'processing')
+                            <button class="btn-action btn-checkin" onclick="checkin({{ $booking->id }})" style="min-width: 80px; justify-content: center;">
+                                <i class="fas fa-check"></i> Check In
                             </button>
                             @endif
                             @if($booking->remaining_amount > 0)
-                            <button class="btn-action btn-payment" onclick="openPayment({{ $booking->id }}, {{ $booking->remaining_amount }})">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
-                                TT
+                            <button class="btn-action btn-payment" onclick="openPayment({{ $booking->id }}, {{ $booking->remaining_amount }})" style="min-width: 100px; justify-content: center;">
+                                <i class="fas fa-money-bill-wave"></i> Thanh Toán
                             </button>
                             @endif
-                            @if($booking->isFullyPaid() && $booking->status !== 'completed')
-                            <button class="btn-action btn-checkout" onclick="checkout({{ $booking->id }})">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
-                                Out
+                            @if(($booking->isFullyPaid() || $booking->status == 'paid') && $booking->status !== 'completed' && $booking->status !== 'processing' && $booking->status !== 'pending')
+                            <button class="btn-action btn-checkout" onclick="checkout({{ $booking->id }})" style="min-width: 80px; justify-content: center;">
+                                <i class="fas fa-sign-out-alt"></i> Check Out
                             </button>
                             @endif
                         </div>
@@ -456,9 +464,16 @@
                     <div class="sidebar-item">
                         <div class="info">
                             <h5>{{ $booking->court_name }}</h5>
-                            <div class="sub">{{ $booking->customer_name }} • {{ number_format($booking->remaining_amount) }}đ</div>
+                            <div class="sub">
+                                {{ $booking->customer_name }} • <span class="text-danger">Còn {{ number_format($booking->remaining_amount) }}đ</span>
+                                @if($booking->paid_amount > 0)
+                                    <span class="badge bg-info text-white" style="font-size: 0.65rem;">Đã cọc {{ number_format($booking->paid_amount) }}đ</span>
+                                @endif
+                            </div>
                         </div>
-                        <button class="btn-action btn-payment" onclick="openPayment({{ $booking->id }}, {{ $booking->remaining_amount }})">TT</button>
+                        <button class="btn-action btn-payment" onclick="openPayment({{ $booking->id }}, {{ $booking->remaining_amount }})" style="padding: 0.25rem 0.5rem; font-size: 0.7rem; white-space: nowrap;">
+                            Thanh Toán
+                        </button>
                     </div>
                     @empty
                     <div class="empty-state">
@@ -538,6 +553,25 @@
 
 @push('footer')
 <script>
+function filterBookings() {
+    const input = document.getElementById('bookingSearch');
+    const filter = input.value.toLowerCase();
+    const list = document.getElementById('bookingList');
+    const items = list.getElementsByClassName('booking-item');
+
+    for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        const name = item.querySelector('.customer-name').textContent.toLowerCase();
+        const phone = item.querySelector('.customer-phone').textContent.toLowerCase();
+        
+        if (name.includes(filter) || phone.includes(filter)) {
+            item.style.display = "";
+        } else {
+            item.style.display = "none";
+        }
+    }
+}
+
 function checkin(bookingId) {
     if (!confirm('Xác nhận check-in?')) return;
     fetch(`{{ url('admin/receptionist/checkin') }}/${bookingId}`, {

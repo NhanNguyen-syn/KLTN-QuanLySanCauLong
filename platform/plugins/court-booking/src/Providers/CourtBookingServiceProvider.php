@@ -72,16 +72,7 @@ class CourtBookingServiceProvider extends ServiceProvider
                 'permissions' => ['booking-list.index'],
             ]);
 
-            // Dịch vụ & Sản phẩm
-            DashboardMenu::registerItem([
-                'id' => 'cms-plugins-services',
-                'priority' => 3,
-                'parent_id' => 'cms-plugins-court-booking',
-                'name' => 'Dịch vụ & Sản phẩm',
-                'icon' => 'ti ti-bottle',
-                'url' => route('services.index'),
-                'permissions' => ['services.index'],
-            ]);
+            // Menu 'Dịch vụ & Sản phẩm' đã được chuyển sang plugin products-services
 
             // Thống kê doanh thu - đã chuyển sang plugin revenue-statistics
 

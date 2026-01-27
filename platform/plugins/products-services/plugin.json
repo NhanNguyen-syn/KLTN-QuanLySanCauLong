@@ -1,0 +1,9 @@
+{
+    "name": "products-services",
+    "namespace": "Botble\\ProductsServices\\",
+    "provider": "Botble\\ProductsServices\\Providers\\ProductsServicesServiceProvider",
+    "author": "QuanLySanCauLong",
+    "url": "https://quanlysancaulong.test",
+    "version": "1.0.0",
+    "description": "Plugin quản lý sản phẩm và dịch vụ"
+}
