@@ -28,6 +28,7 @@ class BookingListController extends BaseController
             'items.*.price'      => 'nullable|numeric',
             'customer_name'      => 'nullable|string',
             'contact'            => 'nullable|string',
+            'email'              => 'nullable|email',
             'notes'              => 'nullable|string',
             'paid_amount'        => 'nullable|numeric',
             'status'             => 'nullable|in:processing,paid,failed,completed',
@@ -160,6 +161,7 @@ class BookingListController extends BaseController
                     'status'          => $status,
                     'customer_name'   => $request->input('customer_name'),
                     'contact'         => $request->input('contact'),
+                    'email'           => $request->input('email'),
                     'price'           => $price,
                     'paid_amount'     => $allocated,
                     'notes'           => $request->input('notes'),
@@ -169,6 +171,14 @@ class BookingListController extends BaseController
             }
 
             DB::commit();
+
+            // Gửi email hóa đơn ngay lập tức
+            if ($request->input('email')) {
+                $createdBookings = BookingList::query()
+                    ->where('order_code', $orderCode)
+                    ->get();
+                \Botble\CourtBooking\Services\InvoicePdfService::sendGroupedEmail($createdBookings, $request->input('email'));
+            }
 
             return response()->json([
                 'success'    => true,

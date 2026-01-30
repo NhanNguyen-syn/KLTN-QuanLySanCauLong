@@ -32,50 +32,50 @@ class RegisterForm extends AuthForm
             ->setValidatorClass(RegisterRequest::class)
             ->model(Member::class)
             ->icon('ti ti-user-plus')
-            ->heading(__('Register an account'))
-            ->description(__('Your personal data will be used to support your experience throughout this website, to manage access to your account.'))
+            ->heading('Đăng ký tài khoản')
+            ->description('Tạo tài khoản mới để đặt sân online và sử dụng đầy đủ dịch vụ của chúng tôi.')
             ->when(
                 theme_option('register_background'),
-                fn (AuthForm $form, string $background) => $form->banner($background)
+                fn(AuthForm $form, string $background) => $form->banner($background)
             )
             ->add(
                 'first_name',
                 TextField::class,
                 TextFieldOption::make()
-                    ->label(__('First name'))
-                    ->placeholder(__('First name'))
+                    ->label('Tên')
+                    ->placeholder('Nhập tên')
                     ->icon('ti ti-user')
             )
             ->add(
                 'last_name',
                 TextField::class,
                 TextFieldOption::make()
-                    ->label(__('Last name'))
-                    ->placeholder(__('Last name'))
+                    ->label('Họ')
+                    ->placeholder('Nhập họ')
                     ->icon('ti ti-user')
             )
             ->add(
                 'email',
                 EmailField::class,
                 EmailFieldOption::make()
-                    ->label(__('Email'))
-                    ->placeholder(__('Your email'))
+                    ->label('Email')
+                    ->placeholder('Nhập địa chỉ email')
                     ->icon('ti ti-mail')
             )
             ->add(
                 'password',
                 PasswordField::class,
                 TextFieldOption::make()
-                    ->label(__('Password'))
-                    ->placeholder(__('Password'))
+                    ->label('Mật khẩu')
+                    ->placeholder('Nhập mật khẩu')
                     ->icon('ti ti-lock')
             )
             ->add(
                 'password_confirmation',
                 PasswordField::class,
                 TextFieldOption::make()
-                    ->label(__('Password confirmation'))
-                    ->placeholder(__('Password confirmation'))
+                    ->label('Xác nhận mật khẩu')
+                    ->placeholder('Nhập lại mật khẩu')
                     ->icon('ti ti-lock')
             )
             ->when(
@@ -90,16 +90,16 @@ class RegisterForm extends AuthForm
                             ->when(
                                 $privacyPolicyUrl,
                                 function (CheckboxFieldOption $fieldOption, string $url): void {
-                                    $fieldOption->label(__('I agree to the :link', ['link' => Html::link($url, __('Terms and Privacy Policy'), attributes: ['class' => 'text-decoration-underline', 'target' => '_blank'])]));
+                                    $fieldOption->label(__('Tôi đồng ý với :link', ['link' => Html::link($url, 'Điều khoản và Chính sách bảo mật', attributes: ['class' => 'text-decoration-underline', 'target' => '_blank'])]));
                                 }
                             )
-                            ->when(! $privacyPolicyUrl, function (CheckboxFieldOption $fieldOption): void {
-                                $fieldOption->label(__('I agree to the Terms and Privacy Policy'));
+                            ->when(!$privacyPolicyUrl, function (CheckboxFieldOption $fieldOption): void {
+                                $fieldOption->label('Tôi đồng ý với Điều khoản và Chính sách bảo mật');
                             })
                     );
                 }
             )
-            ->submitButton(sprintf('%s %s', __('Register'), BaseHelper::renderIcon('ti ti-arrow-narrow-right', null, ['class' => 'ms-1'])))
+            ->submitButton('Đăng ký')
             ->add(
                 'login',
                 HtmlField::class,

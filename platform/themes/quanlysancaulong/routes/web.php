@@ -9,6 +9,7 @@ use Botble\Base\Enums\BaseStatusEnum;
 use Botble\CourtBooking\Models\BookingList;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use App\Http\Controllers\ReviewController;
 
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
@@ -53,7 +54,7 @@ Theme::registerRoutes(function (): void {
         });
 
         // Chỉ nạp bundle booking cho trang này
-        Theme::asset()->container('footer')->usePath()->add('booking-script', 'js/booking.js');
+        Theme::asset()->container('footer')->usePath()->add('booking-script', 'js/booking.js?v=1.3');
 
         return Theme::scope('booking', compact('courts', 'page'))->render();
     })->name('public.booking');
@@ -117,6 +118,27 @@ Theme::registerRoutes(function (): void {
         })->name('public.products');
 
     // Trang thanh toán (bước 3)
+    Route::get('ajax/cities', function() {
+    $cities = \Botble\Location\Models\City::where('status', 'published')->orderBy('name')->get(['id', 'name']);
+    return response()->json($cities);
+});
+
+// Download Invoice Route
+Route::get('invoice/download/{code}', function ($code) {
+    if (!$code) abort(404);
+
+    $bookings = \Botble\CourtBooking\Models\BookingList::query()
+        ->where('order_code', $code)
+        ->get();
+
+    if ($bookings->isEmpty()) abort(404, 'Order not found');
+
+    $service = new \Botble\CourtBooking\Services\InvoicePdfService();
+    $pdf = $service->generateGroupedPdf($bookings);
+    
+    return $pdf->download('hoa-don-' . $code . '.pdf');
+});
+
     Route::get('thanh-toan', function () {
         Theme::asset()->container('footer')->usePath()->add('checkout-script', 'js/checkout.js');
 
@@ -165,6 +187,22 @@ Theme::registerRoutes(function (): void {
 
         return response()->json(['order_code' => $orderCode]);
     })->name('public.booking.order-code');
+
+    // Review API routes
+    Route::get('api/reviews', [\App\Http\Controllers\ReviewController::class, 'index'])
+        ->name('api.reviews.index');
+    
+    Route::post('api/reviews', [\App\Http\Controllers\ReviewController::class, 'store'])
+        ->name('api.reviews.store');
+    
+    Route::post('api/reviews/{id}/helpful', [\App\Http\Controllers\ReviewController::class, 'helpful'])
+        ->name('api.reviews.helpful');
+
+    Route::delete('api/reviews/{id}', [\App\Http\Controllers\ReviewController::class, 'destroy'])
+        ->name('api.reviews.destroy');
+
+    Route::delete('api/reviews/replies/{id}', [\App\Http\Controllers\ReviewController::class, 'deleteReply'])
+        ->name('api.reviews.deleteReply');
 
 Route::post('ajax/vnpay/qr', function (Request $request) {
         $tmnCode = env('vnp_TmnCode', env('VNP_TMN_CODE'));
@@ -260,12 +298,22 @@ Route::post('ajax/vnpay/qr', function (Request $request) {
                 }
 
                 if ($txnRef) {
-                    BookingList::query()
+                    $bookings = BookingList::query()
                         ->where('order_code', $txnRef)
-                        ->update([
+                        ->get();
+
+                    foreach ($bookings as $booking) {
+                        $booking->update([
                             'status' => $isSuccess ? 'paid' : 'failed',
                             'invoice_updated_at' => now(),
                         ]);
+                    }
+
+                    if ($isSuccess && $bookings->isNotEmpty()) {
+                        // Send ONE email for the whole order
+                        $email = $bookings->first()->email;
+                        \Botble\CourtBooking\Services\InvoicePdfService::sendGroupedEmail($bookings, $email);
+                    }
                 }
             }
         }
@@ -308,12 +356,21 @@ Route::post('ajax/vnpay/qr', function (Request $request) {
         $isSuccess = $responseCode === '00' && $transactionStatus === '00';
 
         if ($txnRef) {
-            BookingList::query()
+            $bookings = BookingList::query()
                 ->where('order_code', $txnRef)
-                ->update([
+                ->get();
+
+            foreach ($bookings as $booking) {
+                $booking->update([
                     'status' => $isSuccess ? 'paid' : 'failed',
                     'invoice_updated_at' => now(),
                 ]);
+            }
+
+            if ($isSuccess && $bookings->isNotEmpty()) {
+                $email = $bookings->first()->email;
+                \Botble\CourtBooking\Services\InvoicePdfService::sendGroupedEmail($bookings, $email);
+            }
         }
 
         return response()->json(['RspCode' => '00', 'Message' => 'Confirm Success']);

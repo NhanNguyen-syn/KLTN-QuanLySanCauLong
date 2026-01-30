@@ -42,8 +42,7 @@
                         <div id="order-code" style="font-size:28px;font-weight:900">Đang tạo...</div>
                     </div>
                     <div style="display:flex;gap:10px">
-                        <button class="btn btn-outline" type="button">Tải hóa đơn</button>
-                        <button class="btn btn-outline" type="button">Chia sẻ</button>
+                        <button id="btn-download-invoice" class="btn btn-outline" type="button">Tải hóa đơn</button>
                     </div>
                 </div>
             </div>
@@ -209,7 +208,8 @@ if (paymentDetails) {
         const payload={
             order_code: orderCode || null,
             customer_name: getName(personal) || null,
-            contact: getPhone(personal) || getEmail(personal) || null,
+            contact: getPhone(personal) || null,
+            email: getEmail(personal) || null,
             notes: null,
             paid_amount: paymentDetails ? paymentDetails.amountPaid : 0,
             status: vnpIsReturn ? (vnpSuccess ? ((paymentDetails && paymentDetails.paymentType === 'full') ? 'completed' : 'paid') : 'failed') : 'processing',
@@ -304,9 +304,65 @@ if (paymentDetails) {
                 // Nếu lỗi, vẫn giữ hiển thị theo cấu trúc
                 qs('#order-code').textContent = localStorage.getItem('order_code') || placeholderCode;
             });
-        } else {
             // Không có item hợp lệ: vẫn hiển thị cấu trúc mã thay vì "Không xác định"
             qs('#order-code').textContent = localStorage.getItem('order_code') || placeholderCode;
+        }
+
+        // Handle Download Invoice
+        const btnDownload = qs('#btn-download-invoice');
+        if (btnDownload) {
+            btnDownload.addEventListener('click', () => {
+                const code = localStorage.getItem('order_code');
+                if (code && code.startsWith('BD-')) {
+                    window.open('{{ url('/invoice/download') }}/' + code, '_blank');
+                } else {
+                    alert('Vui lòng chờ mã hóa đơn được tạo xong.');
+                }
+            });
+        }
+
+        // Handle Share Button
+        const btnShare = qs('#btn-share-booking');
+        if (btnShare) {
+            btnShare.addEventListener('click', async () => {
+                const code = localStorage.getItem('order_code') || 'N/A';
+                const booking = JSON.parse(localStorage.getItem('booking') || '[]');
+                const total = booking.reduce((sum, item) => sum + (Number(item.price)||0), 0);
+                
+                let text = `🎉 Đặt sân thành công tại Sân Cầu Lông Niên Thời!\n\n`;
+                text += `🔖 Mã hóa đơn: ${code}\n`;
+                text += `💰 Tổng tiền: ${Number(total).toLocaleString('vi-VN')}đ\n`;
+                text += `--------------------------------\n`;
+                
+                booking.forEach(item => {
+                    const d = item.date || 'N/A';
+                    const t = item.time || (item.start_time + ' - ' + item.end_time) || 'N/A';
+                    text += `🏸 ${item.court || item.court_name}\n`;
+                    text += `📅 Ngày: ${d}\n`;
+                    text += `⏰ Giờ: ${t}\n\n`;
+                });
+                
+                text += `📍 Địa chỉ: 123 Đường ABC, Quận 1, TP.HCM\n`;
+                text += `📞 Hotline: 0901234567`;
+
+                if (navigator.share) {
+                    try {
+                        await navigator.share({
+                            title: 'Đặt sân thành công - ' + code,
+                            text: text,
+                        });
+                    } catch (err) {
+                        // User cancelled or failed
+                    }
+                } else {
+                    try {
+                        await navigator.clipboard.writeText(text);
+                        alert('Đã sao chép thông tin đặt sân vào bộ nhớ tạm!');
+                    } catch (err) {
+                        alert('Không thể chia sẻ. Vui lòng chụp màn hình.');
+                    }
+                }
+            });
         }
     })();
     </script>

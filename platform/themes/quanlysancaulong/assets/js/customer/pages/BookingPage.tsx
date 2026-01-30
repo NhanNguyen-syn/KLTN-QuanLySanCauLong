@@ -101,7 +101,7 @@ export default defineComponent({
       try {
         const data = localStorage.getItem('customerData')
         if (data) customerData.value = JSON.parse(data)
-      } catch {}
+      } catch { }
       // Preload injected courts for immediate render
       const injected = readInjectedCourts()
       if (injected.length) courts.value = injected
@@ -126,7 +126,7 @@ export default defineComponent({
           type: court?.type,
           date: selectedDate.value,
           time,
-          price: customerData.value?.customerType === 'casual' ? court?.price : court?.memberPrice || 0,
+          price: (court?.price || 0) / 2,
         }
       })
       localStorage.setItem('tempBooking', JSON.stringify(bookingData))
@@ -151,78 +151,78 @@ export default defineComponent({
 
     return () => (
       <div class="page-booking">
-                <section class="sticky-controls-section">
-                    <div class="container">
-                        <div class="controls-wrapper">
-                            <div class="date-picker-control">
-                                <label class="date-picker-label">
-                                    <i class="far fa-calendar-alt"></i>
-                                    Chọn ngày đặt sân
-                                </label>
-                                <input
-                                    type="date"
-                                    class="date-picker-input"
-                                    value={selectedDate.value}
-                                    onInput={(e: any) => (selectedDate.value = e.target.value)}
-                                    min={getMinDate()}
-                                    max={getMaxDate()}
-                                    aria-label="Select booking date"
-                                />
-                                <p class="date-picker-helper-text">Có thể đặt trước tối đa 30 ngày</p>
-                            </div>
-
-                            <div class="status-indicators">
-                                {selectedSlots.value.length > 0 && (
-                                    <div class="selected-slots-indicator">
-                                        <div class="selected-slots-icon">{selectedSlots.value.length}</div>
-                                        <div>
-                                            <span class="indicator-label">Đã chọn</span>
-                                            <div class="indicator-value">Khung giờ</div>
-                                        </div>
-                                    </div>
-                                )}
-
-                                <div class="info-indicator">
-                                    <i class="fas fa-info-circle"></i>
-                                    <p>Nhấp vào ô trống để chọn</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                <div class="booking-table-section">
-                    <div class="container-fluid" style={{ maxWidth: '1600px', margin: '0 auto', padding: '0 1rem' }}>
-                        <div class="table-header">
-                            <h2 class="table-title">{props.title}</h2>
-                            <p class="table-subtitle">{props.subtitle}</p>
-                        </div>
-
-                        {isLoading.value ? (
-                            <div class="loading-spinner">
-                                <div class="spinner-border text-primary" role="status">
-                                    <span class="visually-hidden">Loading...</span>
-                                </div>
-                                <p class="mt-3">Đang tải dữ liệu sân...</p>
-                            </div>
-                        ) : (
-                            <CourtBookingTable
-                                courts={courts.value}
-                                periods={TIME_PERIODS}
-                                allTimeSlots={ALL_TIME_SLOTS}
-                                getSlotStatus={getSlotStatus}
-                                onToggleSlot={toggleSlot}
-                            />
-                        )}
-                    </div>
-                </div>
-
-                <BookingSummary
-                    courts={courts.value}
-                    selectedSlots={selectedSlots.value}
-                    onCheckout={handleCheckout}
+        <section class="sticky-controls-section">
+          <div class="container">
+            <div class="controls-wrapper">
+              <div class="date-picker-control">
+                <label class="date-picker-label">
+                  <i class="far fa-calendar-alt"></i>
+                  Chọn ngày đặt sân
+                </label>
+                <input
+                  type="date"
+                  class="date-picker-input"
+                  value={selectedDate.value}
+                  onInput={(e: any) => (selectedDate.value = e.target.value)}
+                  min={getMinDate()}
+                  max={getMaxDate()}
+                  aria-label="Select booking date"
                 />
+                <p class="date-picker-helper-text">Có thể đặt trước tối đa 30 ngày</p>
+              </div>
+
+              <div class="status-indicators">
+                {selectedSlots.value.length > 0 && (
+                  <div class="selected-slots-indicator">
+                    <div class="selected-slots-icon">{selectedSlots.value.length}</div>
+                    <div>
+                      <span class="indicator-label">Đã chọn</span>
+                      <div class="indicator-value">Khung giờ</div>
+                    </div>
+                  </div>
+                )}
+
+                <div class="info-indicator">
+                  <i class="fas fa-info-circle"></i>
+                  <p>Nhấp vào ô trống để chọn</p>
+                </div>
+              </div>
             </div>
+          </div>
+        </section>
+
+        <div class="booking-table-section">
+          <div class="container-fluid" style={{ maxWidth: '1600px', margin: '0 auto', padding: '0 1rem' }}>
+            <div class="table-header">
+              <h2 class="table-title">{props.title}</h2>
+              <p class="table-subtitle">{props.subtitle}</p>
+            </div>
+
+            {isLoading.value ? (
+              <div class="loading-spinner">
+                <div class="spinner-border text-primary" role="status">
+                  <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-3">Đang tải dữ liệu sân...</p>
+              </div>
+            ) : (
+              <CourtBookingTable
+                courts={courts.value}
+                periods={TIME_PERIODS}
+                allTimeSlots={ALL_TIME_SLOTS}
+                getSlotStatus={getSlotStatus}
+                onToggleSlot={toggleSlot}
+              />
+            )}
+          </div>
+        </div>
+
+        <BookingSummary
+          courts={courts.value}
+          selectedSlots={selectedSlots.value}
+          onCheckout={handleCheckout}
+        />
+      </div>
     )
   },
 })

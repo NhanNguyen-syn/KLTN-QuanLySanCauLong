@@ -30,3 +30,21 @@ AdminHelper::registerRoutes(function () {
 });
 
 
+
+// Public Invoice Download Route
+Route::group(['middleware' => ['web', 'core']], function () {
+    Route::get('invoice/download/{code}', function ($code) {
+        if (!$code) abort(404);
+
+        $bookings = \Botble\CourtBooking\Models\BookingList::query()
+            ->where('order_code', $code)
+            ->get();
+
+        if ($bookings->isEmpty()) abort(404, 'Order not found');
+
+        $service = new \Botble\CourtBooking\Services\InvoicePdfService();
+        $pdf = $service->generateGroupedPdf($bookings);
+        
+        return $pdf->download('hoa-don-' . $code . '.pdf');
+    });
+});

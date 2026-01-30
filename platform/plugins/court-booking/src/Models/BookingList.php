@@ -29,6 +29,7 @@ class BookingList extends BaseModel
         'price',
         'paid_amount',
         'notes',
+        'email',
         'invoice_created_at',
         'invoice_updated_at',
     ];

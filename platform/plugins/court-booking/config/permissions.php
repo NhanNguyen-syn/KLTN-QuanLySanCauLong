@@ -17,6 +17,11 @@ return [
         'parent_flag' => 'courts.index',
     ],
     [
+        'name' => 'Chỉnh giá',
+        'flag' => 'courts.edit-price',
+        'parent_flag' => 'courts.index',
+    ],
+    [
         'name' => 'Delete',
         'flag' => 'courts.destroy',
         'parent_flag' => 'courts.index',
@@ -51,6 +56,11 @@ return [
     [
         'name' => 'Chỉnh sửa',
         'flag' => 'services.edit',
+        'parent_flag' => 'services.index',
+    ],
+    [
+        'name' => 'Chỉnh giá',
+        'flag' => 'services.edit-price',
         'parent_flag' => 'services.index',
     ],
     [

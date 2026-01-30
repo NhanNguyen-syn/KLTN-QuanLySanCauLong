@@ -532,6 +532,10 @@ class EmailHandler
     {
         $content = $this->prepareData(get_setting_email_template_content($this->type, $this->module, $this->template));
 
+        if (empty($content)) {
+            return '';
+        }
+
         $inlineCss = new CssToInlineStyles();
 
         return $inlineCss->convert($content, $this->getCssContent());

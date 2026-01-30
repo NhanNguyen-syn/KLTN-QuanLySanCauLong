@@ -61,12 +61,37 @@ class ServiceController extends BaseController
      */
     public function update(ServiceRequest $request, Service $service)
     {
+        // Check if user is trying to change price without permission
+        if (!$this->checkPriceEditPermission($service, $request)) {
+            return $this->httpResponse()
+                ->setError()
+                ->setMessage('Bạn không có quyền chỉnh giá dịch vụ. Chỉ Admin mới được phép.');
+        }
+
         $service->update($request->validated());
 
         return $this
             ->httpResponse()
             ->setPreviousRoute('services.index')
             ->withUpdatedSuccessMessage();
+    }
+
+    /**
+     * Check if user has permission to edit price
+     */
+    private function checkPriceEditPermission(Service $service, ServiceRequest $request): bool
+    {
+        // Get price field from request
+        $oldPrice = $service->price;
+        $newPrice = $request->input('price');
+
+        // If price hasn't changed, allow update
+        if ($oldPrice == $newPrice) {
+            return true;
+        }
+
+        // If price changed, check permission
+        return auth()->user()->hasPermission('services.edit-price');
     }
 
     /**

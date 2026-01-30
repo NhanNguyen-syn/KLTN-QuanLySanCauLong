@@ -21,7 +21,7 @@ class InvoicePdfService
             'invoice_number' => $this->generateInvoiceNumber($booking),
             'generated_at' => Carbon::now(),
             'company' => [
-                'name' => setting('admin_title', 'Sân Cầu Lông ABC'),
+                'name' => setting('admin_title', 'Sân Cầu Lông Niên Thời'),
                 'address' => setting('company_address', '123 Đường ABC, Quận 1, TP.HCM'),
                 'phone' => setting('company_phone', '0901234567'),
                 'email' => setting('email_from_address', 'info@sancaulong.vn'),
@@ -72,8 +72,18 @@ class InvoicePdfService
     /**
      * Send invoice via email
      */
-    public function sendEmail(BookingList $booking, string $email): bool
+    public function sendEmail(BookingList $booking, ?string $email = null): bool
     {
+        $email = $email ?: $booking->email;
+        if (!$email) {
+             // Fallback to contact if it looks like email
+             if (filter_var($booking->contact, FILTER_VALIDATE_EMAIL)) {
+                 $email = $booking->contact;
+             }
+        }
+
+        if (!$email) return false;
+
         try {
             $pdf = $this->generatePdf($booking);
             $filename = 'hoa-don-' . ($booking->order_code ?? $booking->id) . '.pdf';
@@ -136,9 +146,104 @@ class InvoicePdfService
             'notes' => ($booking->notes ?? '') . "\n[Hóa đơn: " . $pdfPath . "]",
         ]);
 
-        // Send email if contact looks like email
-        if (filter_var($booking->contact, FILTER_VALIDATE_EMAIL)) {
-            $service->sendEmail($booking, $booking->contact);
+        // Send email
+        $service->sendEmail($booking);
+    }
+
+    /**
+     * Generate Grouped PDF invoice
+     */
+    public function generateGroupedPdf($bookings): \Barryvdh\DomPDF\PDF
+    {
+        $first = $bookings->first();
+        $totalAmount = $bookings->sum('grand_total');
+        
+        // Eager load services
+        $bookings->load('bookingServices.service');
+
+        $data = [
+            'bookings' => $bookings,
+            'first_booking' => $first,
+            'total_amount' => $totalAmount,
+            'invoice_number' => $this->generateInvoiceNumber($first),
+            'generated_at' => Carbon::now(),
+            'company' => [
+                'name' => setting('admin_title', 'Sân Cầu Lông Niên Thời'),
+                'address' => setting('company_address', '123 Đường ABC, Quận 1, TP.HCM'),
+                'phone' => setting('company_phone', '0901234567'),
+                'email' => setting('email_from_address', 'info@sancaulong.vn'),
+            ],
+        ];
+
+        $pdf = Pdf::loadView('plugins/court-booking::invoice-grouped-pdf', $data);
+        $pdf->setPaper('A4', 'portrait');
+
+        return $pdf;
+    }
+
+    /**
+     * Send grouped invoice via email
+     */
+    public static function sendGroupedEmail($bookings, ?string $email = null)
+    {
+        if ($bookings->isEmpty()) return;
+
+        // Prevent duplicate emails (check if already sent)
+        if ($bookings->first()->invoice_created_at) {
+            return;
+        }
+
+        $service = new self();
+        $first = $bookings->first();
+        $email = $email ?: $first->email;
+
+        // Fallback email from contact if valid
+        if (!$email && filter_var($first->contact, FILTER_VALIDATE_EMAIL)) {
+            $email = $first->contact;
+        }
+
+        if (!$email) {
+            \Log::warning('[INVOICE EMAIL] No email found for order ' . $first->order_code);
+            return;
+        }
+
+        try {
+            // Force config at runtime to be 100% sure
+            config([
+                'mail.default' => 'smtp',
+                'mail.mailers.smtp.transport' => 'smtp',
+                'mail.mailers.smtp.host' => 'smtp.gmail.com',
+                'mail.mailers.smtp.port' => 587,
+                'mail.mailers.smtp.encryption' => 'tls',
+                'mail.mailers.smtp.username' => env('MAIL_USERNAME'),
+                'mail.mailers.smtp.password' => env('MAIL_PASSWORD'),
+            ]);
+
+            $pdf = $service->generateGroupedPdf($bookings);
+            $filename = 'hoa-don-' . ($first->order_code ?? 'order') . '.pdf';
+
+            // Use 'smtp' explicitly
+            Mail::mailer('smtp')->send('plugins/court-booking::emails.invoice-grouped', [
+                'bookings' => $bookings,
+                'email' => $email,
+                'company_name' => setting('admin_title', 'Sân Cầu Lông'),
+            ], function ($message) use ($email, $first, $pdf, $filename) {
+                $message->to($email)
+                    ->subject('Hóa đơn đặt sân - ' . ($first->order_code ?? 'Order'))
+                    ->attachData($pdf->output(), $filename, [
+                        'mime' => 'application/pdf',
+                    ]);
+            });
+            
+            \Log::info('[INVOICE EMAIL] Sent to ' . $email);
+            
+            // Mark all as invoiced
+            foreach($bookings as $b) {
+                $b->update(['invoice_created_at' => Carbon::now()]);
+            }
+
+        } catch (\Exception $e) {
+            \Log::error('Failed to send grouped invoice email: ' . $e->getMessage());
         }
     }
 }

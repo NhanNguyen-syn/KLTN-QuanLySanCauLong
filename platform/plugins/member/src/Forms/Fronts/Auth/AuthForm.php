@@ -27,6 +27,7 @@ abstract class AuthForm extends FormFront
                 'label' => $label,
                 'attr' => [
                     'class' => 'btn btn-primary btn-auth-submit',
+                    'style' => 'background: #059669 !important; border-color: #059669 !important; color: white !important;',
                 ],
             ])
             ->add('closeButtonWrap', HtmlField::class, [

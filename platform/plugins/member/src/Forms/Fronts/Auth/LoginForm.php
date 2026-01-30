@@ -30,26 +30,26 @@ class LoginForm extends AuthForm
             ->setUrl(route('public.member.login.post'))
             ->setValidatorClass(LoginRequest::class)
             ->icon('ti ti-lock')
-            ->heading(__('Login to your account'))
-            ->description(__('Your personal data will be used to support your experience throughout this website, to manage access to your account.'))
+            ->heading('Đăng nhập tài khoản')
+            ->description('Vui lòng nhập thông tin đăng nhập để tiếp tục sử dụng dịch vụ.')
             ->when(
                 theme_option('login_background'),
-                fn (AuthForm $form, string $background) => $form->banner($background)
+                fn(AuthForm $form, string $background) => $form->banner($background)
             )
             ->add(
                 'email',
                 EmailField::class,
                 EmailFieldOption::make()
-                    ->label(__('Email'))
-                    ->placeholder(__('Email address'))
+                    ->label('Email')
+                    ->placeholder('Nhập địa chỉ email')
                     ->icon('ti ti-mail')
             )
             ->add(
                 'password',
                 PasswordField::class,
                 TextFieldOption::make()
-                    ->label(__('Password'))
-                    ->placeholder(__('Password'))
+                    ->label('Mật khẩu')
+                    ->placeholder('Nhập mật khẩu')
                     ->icon('ti ti-lock')
             )
             ->add('openRow', HtmlField::class, [
@@ -59,14 +59,14 @@ class LoginForm extends AuthForm
                 'remember',
                 OnOffCheckboxField::class,
                 CheckboxFieldOption::make()
-                    ->label(__('Remember me'))
+                    ->label('Ghi nhớ đăng nhập')
                     ->wrapperAttributes(['class' => 'col-6'])
             )
             ->add(
                 'forgot_password',
                 HtmlField::class,
                 [
-                    'html' => Html::link(route('public.member.password.request'), __('Forgot password?'), attributes: ['class' => 'text-decoration-underline']),
+                    'html' => Html::link(route('public.member.password.request'), 'Quên mật khẩu?', attributes: ['class' => 'text-decoration-underline']),
                     'wrapper' => [
                         'class' => 'col-6 text-end',
                     ],
@@ -75,10 +75,10 @@ class LoginForm extends AuthForm
             ->add('closeRow', HtmlField::class, [
                 'html' => '</div>',
             ])
-            ->submitButton(sprintf('%s %s', __('Login'), BaseHelper::renderIcon('ti ti-arrow-narrow-right', null, ['class' => 'ms-1'])))
+            ->submitButton('Đăng nhập')
             ->when(
                 setting('member_enabled_registration', true),
-                fn (AuthForm $form) => $form->add(
+                fn(AuthForm $form) => $form->add(
                     'register',
                     HtmlField::class,
                     HtmlFieldOption::make()

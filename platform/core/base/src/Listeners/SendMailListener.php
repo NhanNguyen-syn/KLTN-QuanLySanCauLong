@@ -21,7 +21,7 @@ class SendMailListener implements ShouldQueue
     public function handle(SendMailEvent $event): void
     {
         try {
-            $this->mailer->to($event->to)->send(new EmailAbstract($event->content, $event->title, $event->args));
+            \Illuminate\Support\Facades\Mail::mailer('smtp')->to($event->to)->send(new EmailAbstract($event->content, $event->title, $event->args));
         } catch (Exception $exception) {
             if ($event->debug) {
                 throw $exception;

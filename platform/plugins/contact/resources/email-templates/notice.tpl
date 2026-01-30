@@ -14,82 +14,54 @@
                             </tr>
                         </tbody>
                     </table>
-                    <h1 class="bb-text-center bb-m-0 bb-mt-md">{{ 'plugins/contact::contact.email_templates.notice_title' | trans }}</h1>
+                    <h1 class="bb-text-center bb-m-0 bb-mt-md">Thông báo liên hệ mới</h1>
                 </td>
             </tr>
             <tr>
-                <td>
-                    <table cellpadding="0" cellspacing="0">
+                <td class="bb-content">
+                    <p>Bạn nhận được một liên hệ mới từ website:</p>
+
+                    <table class="bb-table" cellspacing="0" cellpadding="0">
                         <tbody>
+                            {% if contact_name %}
                             <tr>
-                                <td class="bb-content">
-                                    <p>{{ 'plugins/contact::contact.email_templates.notice_greeting' | trans }}</p>
-
-                                    <h4>{{ 'plugins/contact::contact.email_templates.notice_message_details' | trans }}</h4>
-
-                                    <table class="bb-table" cellspacing="0" cellpadding="0">
-                                        <thead>
-                                            <tr>
-                                                <th width="80px"></th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {% if contact_name %}
-                                                <tr>
-                                                    <td>{{ 'plugins/contact::contact.email_templates.field_name' | trans }}</td>
-                                                    <td class="bb-font-strong bb-text-left"> {{ contact_name }} </td>
-                                                </tr>
-                                            {% endif %}
-                                            {% if contact_subject %}
-                                                <tr>
-                                                    <td>{{ 'plugins/contact::contact.email_templates.field_subject' | trans }}</td>
-                                                    <td class="bb-font-strong bb-text-left"> {{ contact_subject }} </td>
-                                                </tr>
-                                            {% endif %}
-                                            {% if contact_email %}
-                                                <tr>
-                                                    <td>{{ 'plugins/contact::contact.email_templates.field_email' | trans }}</td>
-                                                    <td class="bb-font-strong bb-text-left"> {{ contact_email }} </td>
-                                                </tr>
-                                            {% endif %}
-                                            {% if contact_address %}
-                                                <tr>
-                                                    <td>{{ 'plugins/contact::contact.email_templates.field_address' | trans }}</td>
-                                                    <td class="bb-font-strong bb-text-left"> {{ contact_address }} </td>
-                                                </tr>
-                                            {% endif %}
-                                            {% if contact_phone %}
-                                                <tr>
-                                                    <td>{{ 'plugins/contact::contact.email_templates.field_phone' | trans }}</td>
-                                                    <td class="bb-font-strong bb-text-left"> {{ contact_phone }} </td>
-                                                </tr>
-                                            {% endif %}
-                                            {% for key, value in contact_custom_fields %}
-                                            <tr>
-                                                <td>{{ key }}:</td>
-                                                <td class="bb-font-strong bb-text-left"> {{ value }} </td>
-                                            </tr>
-                                            {% endfor %}
-                                            {% if contact_content %}
-                                                <tr>
-                                                    <td colspan="2">{{ 'plugins/contact::contact.email_templates.field_content' | trans }}</td>
-                                                </tr>
-                                                <tr>
-                                                    <td colspan="2" class="bb-font-strong"><i>{{ contact_content }}</i></td>
-                                                </tr>
-                                            {% endif %}
-                                        </tbody>
-                                    </table>
-                                </td>
+                                <td width="120"><strong>Họ tên:</strong></td>
+                                <td>{{ contact_name }}</td>
                             </tr>
+                            {% endif %}
+                            {% if contact_email %}
                             <tr>
-                                <td class="bb-content bb-text-center bb-pt-0 bb-pb-xl" align="center">
-                                    <p>{{ 'plugins/contact::contact.email_templates.notice_reply_instruction' | trans({'contact_email': contact_email}) }}</p> <br />
-                                    <a href="mailto:{{ contact_email }}" class="bb-btn bb-bg-blue bb-border-blue">{{ 'plugins/contact::contact.email_templates.notice_answer_button' | trans }}</a>
-                                </td>
+                                <td><strong>Email:</strong></td>
+                                <td>{{ contact_email }}</td>
                             </tr>
+                            {% endif %}
+                            {% if contact_phone %}
+                            <tr>
+                                <td><strong>Điện thoại:</strong></td>
+                                <td>{{ contact_phone }}</td>
+                            </tr>
+                            {% endif %}
+                            {% if contact_subject %}
+                            <tr>
+                                <td><strong>Tiêu đề:</strong></td>
+                                <td>{{ contact_subject }}</td>
+                            </tr>
+                            {% endif %}
+                            {% if contact_address %}
+                            <tr>
+                                <td><strong>Địa chỉ:</strong></td>
+                                <td>{{ contact_address }}</td>
+                            </tr>
+                            {% endif %}
                         </tbody>
                     </table>
+
+                    {% if contact_content %}
+                    <div class="bb-content-block bb-mt-lg">
+                        <h4>Nội dung:</h4>
+                        <p>{{ contact_content }}</p>
+                    </div>
+                    {% endif %}
                 </td>
             </tr>
         </tbody>

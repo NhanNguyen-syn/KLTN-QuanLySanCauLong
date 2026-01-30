@@ -1,6 +1,6 @@
 @php
     Theme::layout('default');
-    Theme::set('pageTitle', 'Đăng ký');
+    Theme::set('pageTitle', 'Đăng nhập');
 @endphp
 
 <section class="auth-section">
@@ -14,7 +14,7 @@
         }
 
         .auth-section .container {
-            max-width: 520px;
+            max-width: 480px;
             margin: 0 auto;
             padding: 0 16px;
         }
@@ -77,18 +77,6 @@
 
         .auth-form .form-group {
             margin-bottom: 20px;
-        }
-
-        .auth-form .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 16px;
-        }
-
-        @media (max-width: 576px) {
-            .auth-form .form-row {
-                grid-template-columns: 1fr;
-            }
         }
 
         .auth-form label {
@@ -167,53 +155,6 @@
             text-decoration: underline;
         }
 
-        .benefits {
-            background: #ecfdf5;
-            border: 2px solid #a7f3d0;
-            border-radius: 16px;
-            padding: 20px;
-            margin-bottom: 24px;
-        }
-
-        .benefits h3 {
-            font-size: 16px;
-            font-weight: 800;
-            color: #065f46;
-            margin: 0 0 12px 0;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .benefits ul {
-            margin: 0;
-            padding: 0;
-            list-style: none;
-        }
-
-        .benefits li {
-            padding: 8px 0;
-            color: #047857;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .benefits li::before {
-            content: '✓';
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 24px;
-            height: 24px;
-            background: #10b981;
-            color: #fff;
-            border-radius: 50%;
-            font-weight: 800;
-            flex-shrink: 0;
-        }
-
         .alert {
             padding: 14px 16px;
             border-radius: 12px;
@@ -266,25 +207,16 @@
     <div class="container">
         <div class="auth-card">
             <div class="auth-header">
-                <div class="auth-icon">🎯</div>
-                <h1>Đăng Ký Tài Khoản</h1>
-                <p>Tạo tài khoản mới để đặt sân online!</p>
-            </div>
-
-            <div class="benefits">
-                <h3>🎁 Lợi ích khi đăng ký</h3>
-                <ul>
-                    <li>Đặt sân online nhanh chóng 24/7</li>
-                    <li>Xem lịch sử đặt sân chi tiết</li>
-                    <li>Nhận ưu đãi đặc biệt</li>
-                    <li>Quản lý thông tin dễ dàng</li>
-                </ul>
+                <div class="auth-icon">🏸</div>
+                <h1>Đăng Nhập</h1>
+                <p>Chào mừng bạn quay trở lại!</p>
             </div>
 
             {!! $form->renderForm() !!}
 
             <div class="auth-links">
-                <p>Đã có tài khoản? <a href="{{ route('public.member.login') }}">Đăng nhập ngay</a></p>
+                <p><a href="{{ route('public.member.password.request') }}">Quên mật khẩu?</a></p>
+                <p>Chưa có tài khoản? <a href="{{ route('public.member.register') }}">Đăng ký ngay</a></p>
             </div>
         </div>
     </div>

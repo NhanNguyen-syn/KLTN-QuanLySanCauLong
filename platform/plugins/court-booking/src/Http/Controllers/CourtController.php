@@ -46,11 +46,38 @@ class CourtController extends BaseController
 
     public function update(Court $court, CourtRequest $request)
     {
+        // Check if user is trying to change price without permission
+        if (!$this->checkPriceEditPermission($court, $request)) {
+            return $this->httpResponse()
+                ->setError()
+                ->setMessage('Bạn không có quyền chỉnh giá sân. Chỉ Admin mới được phép.');
+        }
+
         CourtForm::createFromModel($court)->setRequest($request)->save();
 
         return $this->httpResponse()
             ->setPreviousUrl(route('courts.index'))
             ->withUpdatedSuccessMessage();
+    }
+
+    /**
+     * Check if user has permission to edit price
+     */
+    private function checkPriceEditPermission(Court $court, CourtRequest $request): bool
+    {
+        // Get price fields from request
+        $oldDefaultPrice = $court->default_price;
+        $oldMemberPrice = $court->member_price;
+        $newDefaultPrice = $request->input('default_price');
+        $newMemberPrice = $request->input('member_price');
+
+        // If prices haven't changed, allow update
+        if ($oldDefaultPrice == $newDefaultPrice && $oldMemberPrice == $newMemberPrice) {
+            return true;
+        }
+
+        // If prices changed, check permission
+        return auth()->user()->hasPermission('courts.edit-price');
     }
 
     public function destroy(Court $court)

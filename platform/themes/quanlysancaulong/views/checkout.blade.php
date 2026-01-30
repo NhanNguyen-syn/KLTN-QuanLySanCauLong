@@ -272,7 +272,8 @@ const syncPaymentDetails = () => {
                 return {
                     order_code: localStorage.getItem('order_code') || null,
                     customer_name: getName(state.personal) || null,
-                    contact: getPhone(state.personal) || getEmail(state.personal) || null,
+                    contact: getPhone(state.personal) || null,
+                    email: getEmail(state.personal) || null,
                     notes: null,
                     paid_amount: getPayAmount(),
                     items: items,

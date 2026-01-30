@@ -17,6 +17,11 @@ use Illuminate\Http\Request;
 
 class BookingListController extends BaseController
 {
+    public function __construct()
+    {
+        $this->middleware('core.permission:booking-list.destroy')->only('destroy');
+    }
+
     public function index(BookingListTable $table)
     {
         $this->pageTitle(trans('plugins/court-booking::booking-list.name'));

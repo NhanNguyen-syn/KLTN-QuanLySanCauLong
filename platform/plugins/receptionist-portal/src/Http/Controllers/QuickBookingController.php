@@ -196,7 +196,7 @@ class QuickBookingController extends BaseController
         }
 
         // Standardize price: 70,000 VND per 30min slot (140,000 VND/hour)
-        $pricePerSlot = 70000; 
+        $pricePerSlot = 70000;
         $totalPrice = $slotCount * $pricePerSlot;
 
         // Create booking

@@ -109,7 +109,7 @@ class MemberServiceProvider extends ServiceProvider
                     ->parentId(null)
                     ->name('plugins/member::member.menu_name')
                     ->icon('ti ti-users')
-                    ->url(fn () => route('member.index'))
+                    ->url(fn() => route('member.index'))
                     ->permissions(['member.index'])
             );
         });
@@ -121,33 +121,26 @@ class MemberServiceProvider extends ServiceProvider
                         ->id('cms-member-dashboard')
                         ->priority(10)
                         ->name('plugins/member::member.dashboard')
-                        ->url(fn () => route('public.member.dashboard'))
+                        ->url(fn() => route('public.member.dashboard'))
                         ->icon('ti ti-home')
-                )
-                ->registerItem(
-                    DashboardMenuItem::make()
-                        ->id('cms-member-posts')
-                        ->priority(20)
-                        ->name('plugins/blog::posts.posts')
-                        ->url(fn () => route('public.member.posts.index'))
-                        ->icon('ti ti-article')
                 )
                 ->registerItem(
                     DashboardMenuItem::make()
                         ->id('cms-member-settings')
                         ->priority(30)
                         ->name('plugins/member::dashboard.header_settings_link')
-                        ->url(fn () => route('public.member.settings'))
+                        ->url(fn() => route('public.member.settings'))
                         ->icon('ti ti-settings')
                 );
         });
+
 
         DashboardMenu::default();
 
         PanelSectionManager::default()->beforeRendering(function (): void {
             PanelSectionManager::registerItem(
                 SettingOthersPanelSection::class,
-                fn () => PanelSectionItem::make('members')
+                fn() => PanelSectionItem::make('members')
                     ->setTitle(trans('plugins/member::settings.title'))
                     ->withIcon('ti ti-user-cog')
                     ->withPriority(170)
@@ -170,7 +163,7 @@ class MemberServiceProvider extends ServiceProvider
 
             if (
                 defined('SOCIAL_LOGIN_MODULE_SCREEN_NAME') &&
-                ! $this->app->runningInConsole() &&
+                !$this->app->runningInConsole() &&
                 Route::has('public.member.login')
             ) {
                 SocialService::registerModule([
@@ -211,7 +204,7 @@ class MemberServiceProvider extends ServiceProvider
                     Route::current() &&
                     in_array('member', Route::current()->middleware()) &&
                     Auth::guard('member')->check() &&
-                    ! $isDefaultLocale &&
+                    !$isDefaultLocale &&
                     $model &&
                     $model instanceof Member &&
                     $model->getKey() &&
@@ -279,11 +272,11 @@ class MemberServiceProvider extends ServiceProvider
         add_action(
             BASE_ACTION_TOP_FORM_CONTENT_NOTIFICATION,
             function (Request $request, Model|string|null $data = null): void {
-                if (! setting('verify_account_email', false)) {
+                if (!setting('verify_account_email', false)) {
                     return;
                 }
 
-                if (! $data instanceof Member || Route::currentRouteName() !== 'member.edit') {
+                if (!$data instanceof Member || Route::currentRouteName() !== 'member.edit') {
                     return;
                 }
 
@@ -299,7 +292,7 @@ class MemberServiceProvider extends ServiceProvider
         );
 
         add_filter('social_login_before_creating_account', function ($data) {
-            if (! setting('member_enabled_registration', true)) {
+            if (!setting('member_enabled_registration', true)) {
                 return (new BaseHttpResponse())
                     ->setError()
                     ->setMessage(trans('auth.failed'));
