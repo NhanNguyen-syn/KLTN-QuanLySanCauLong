@@ -22,11 +22,50 @@ echo "DB_HOST: ${DB_HOST:-NOT SET}"
 echo "DB_PORT: ${DB_PORT:-NOT SET}"
 echo "DB_DATABASE: ${DB_DATABASE:-NOT SET}"
 echo "DB_USERNAME: ${DB_USERNAME:-NOT SET}"
+echo "DB_PASSWORD set: $(test -n "$DB_PASSWORD" && echo 'YES' || echo 'NO')"
+echo "APP_KEY set: $(test -n "$APP_KEY" && echo 'YES' || echo 'NO')"
 echo "FORCE_ROOT_URL: ${FORCE_ROOT_URL:-NOT SET}"
 echo "FORCE_SCHEMA: ${FORCE_SCHEMA:-NOT SET}"
 echo "PHP version: $(php -v | head -1)"
 php artisan --version
 echo "storage/installed exists: $(test -f storage/installed && echo 'YES' || echo 'NO')"
+
+echo "=== File System Check ==="
+echo "Current dir: $(pwd)"
+echo "public/ directory:"
+ls -la public/ | head -20
+echo "public/index.php exists: $(test -f public/index.php && echo 'YES' || echo 'NO')"
+echo "public/test.html exists: $(test -f public/test.html && echo 'YES' || echo 'NO')"
+echo "public/healthcheck.php exists: $(test -f public/healthcheck.php && echo 'YES' || echo 'NO')"
+
+echo "=== PHP-FPM Config ==="
+echo "PHP-FPM configs:"
+ls -la /usr/local/etc/php-fpm.d/
+echo "zz-docker.conf contents:"
+cat /usr/local/etc/php-fpm.d/zz-docker.conf
+
+echo "=== Nginx Config ==="
+nginx -t 2>&1
+echo "Nginx root check:"
+ls -la /var/www/html/public/index.php 2>&1 || echo "index.php NOT FOUND"
+
+echo "=== DB Connection Test ==="
+php -r "
+try {
+    \$pdo = new PDO(
+        'mysql:host=' . getenv('DB_HOST') . ';port=' . getenv('DB_PORT') . ';dbname=' . getenv('DB_DATABASE'),
+        getenv('DB_USERNAME'),
+        getenv('DB_PASSWORD'),
+        [PDO::ATTR_TIMEOUT => 5]
+    );
+    echo 'DB: CONNECTED' . PHP_EOL;
+    \$count = \$pdo->query('SHOW TABLES')->rowCount();
+    echo 'Tables: ' . \$count . PHP_EOL;
+} catch (Exception \$e) {
+    echo 'DB: FAILED - ' . \$e->getMessage() . PHP_EOL;
+}
+" 2>&1
+
 echo "=== End Debug Info ==="
 
 # Create storage symlink
