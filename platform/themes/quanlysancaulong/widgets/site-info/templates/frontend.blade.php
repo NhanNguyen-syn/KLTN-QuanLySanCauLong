@@ -9,7 +9,7 @@
                 </div>
             @endif
             <div>
-                <span class="fw-bold fs-5 d-block">{{ theme_option('site_title', 'BadmintonPro') }}</span>
+                <span class="fw-bold fs-5 d-block">{{ theme_option('site_title', 'Sân cầu lông Niên Thời') }}</span>
                 <span class="small text-white-50" style="font-size: 0.813rem;">{{ __('Sân cầu lông Niên Thời') }}</span>
             </div>
         </a>

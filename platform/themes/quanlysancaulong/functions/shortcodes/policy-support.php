@@ -89,7 +89,7 @@ Shortcode::setAdminConfig('policy-support', function (array $attributes) {
             TextField::class,
             TextFieldOption::make()
                 ->label(__('Email Address'))
-                ->defaultValue('info@badmintonpro.vn')
+                ->defaultValue('info@sancaulongnienthoi.vn')
                 ->toArray()
         )
         ->add(

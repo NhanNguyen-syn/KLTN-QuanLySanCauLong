@@ -1,0 +1,9 @@
+{
+    "name": "AI Chatbot",
+    "namespace": "Botble\\AiChatbot\\",
+    "provider": "Botble\\AiChatbot\\Providers\\AiChatbotServiceProvider",
+    "author": "KLTN Team",
+    "url": "https://github.com/nhannhan05102004/KLTN-QuanLySanCauLong",
+    "version": "1.0.0",
+    "description": "AI Chatbot with RAG for customer service"
+}

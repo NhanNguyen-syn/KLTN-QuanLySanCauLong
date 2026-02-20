@@ -101,18 +101,50 @@ class MemberServiceProvider extends ServiceProvider
             ->loadMigrations()
             ->publishAssets();
 
-        DashboardMenu::default()->beforeRetrieving(function (): void {
-            DashboardMenu::registerItem(
-                DashboardMenuItem::make()
-                    ->id('cms-core-member')
-                    ->priority(50)
-                    ->parentId(null)
-                    ->name('plugins/member::member.menu_name')
-                    ->icon('ti ti-users')
-                    ->url(fn() => route('member.index'))
-                    ->permissions(['member.index'])
-            );
-        });
+        $this->commands([
+            \Botble\Member\Console\CalculateCustomerSegments::class,
+        ]);
+
+        $configKey = 'plugins.member.general';
+
+        if (setting($configKey)) {
+            DashboardMenu::default()->beforeRetrieving(function (): void {
+                DashboardMenu::registerItem([
+                    'id' => 'cms-plugins-member',
+                    'priority' => 22,
+                    'parent_id' => null,
+                    'name' => 'plugins/member::member.menu_name',
+                    'icon' => 'ti ti-users',
+                    'url' => route('member.index'),
+                    'permissions' => ['member.index'],
+                ])
+                    ->registerItem([
+                        'id' => 'cms-plugins-member-list',
+                        'priority' => 1,
+                        'parent_id' => 'cms-plugins-member',
+                        'name' => 'plugins/member::member.all_members',
+                        'url' => route('member.index'),
+                        'permissions' => ['member.index'],
+                    ])
+                    ->registerItem([
+                        'id' => 'cms-plugins-customer-analytics',
+                        'priority' => 2,
+                        'parent_id' => 'cms-plugins-member',
+                        'name' => 'Customer Analytics',
+                        'icon' => 'ti ti-chart-pie',
+                        'url' => route('customer-analytics.index'),
+                        'permissions' => ['member.index'],
+                    ])
+                    ->registerItem([
+                        'id' => 'cms-plugins-member-setting',
+                        'priority' => 999,
+                        'parent_id' => 'cms-plugins-member',
+                        'name' => 'plugins/member::member.settings',
+                        'url' => route('member.settings'),
+                        'permissions' => ['member.settings'],
+                    ]);
+            });
+        }
 
         DashboardMenu::for('member')->beforeRetrieving(function (): void {
             DashboardMenu::make()

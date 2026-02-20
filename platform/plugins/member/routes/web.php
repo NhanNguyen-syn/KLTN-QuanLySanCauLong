@@ -26,6 +26,26 @@ Route::group([
             ])->wherePrimaryKey();
         });
 
+        Route::group(['prefix' => 'customer-analytics', 'as' => 'customer-analytics.'], function (): void {
+            Route::get('', [
+                'as' => 'index',
+                'uses' => 'Admin\CustomerAnalyticsController@index',
+                'permission' => 'member.index',
+            ]);
+
+            Route::get('segment/{segment}', [
+                'as' => 'segment',
+                'uses' => 'Admin\CustomerAnalyticsController@segment',
+                'permission' => 'member.index',
+            ]);
+
+            Route::post('recalculate', [
+                'as' => 'recalculate',
+                'uses' => 'Admin\CustomerAnalyticsController@recalculate',
+                'permission' => 'member.edit',
+            ]);
+        });
+
         Route::group(['prefix' => 'settings', 'as' => 'member.'], function (): void {
             Route::get('members', [
                 'as' => 'settings',

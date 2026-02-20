@@ -1,7 +1,7 @@
 {!! dynamic_sidebar('top_sidebar') !!}
 @php
     $page = $page ?? null;
-    Theme::set('pageTitle', ($page->name ?? 'Sản Phẩm & Dịch Vụ') . ' - ' . theme_option('site_title', 'BadmintonPro'));
+    Theme::set('pageTitle', ($page->name ?? 'Sản Phẩm & Dịch Vụ') . ' - ' . theme_option('site_title', 'Sân cầu lông Niên Thời'));
     Theme::set('pageDescription', $page->description ?? 'Tất cả những gì bạn cần cho trình độ cầu lông');
 @endphp
 

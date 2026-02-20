@@ -62,7 +62,8 @@
             "Database\\Factories\\": "database/factories/",
             "Database\\Seeders\\": "database/seeders/",
             "Botble\\CourtBooking\\": "platform/plugins/court-booking/src/",
-            "Botble\\ProductsServices\\": "platform/plugins/products-services/src/"
+            "Botble\\ProductsServices\\": "platform/plugins/products-services/src/",
+            "Botble\\Reviews\\": "platform/plugins/reviews/src/"
         }
     },
     "autoload-dev": {

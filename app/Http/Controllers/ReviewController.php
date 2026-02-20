@@ -72,12 +72,12 @@ class ReviewController extends Controller
             
             // Fetch replies from review_replies table
             $review->replies = DB::table('review_replies')
-                ->join('members', 'review_replies.member_id', '=', 'members.id')
+                ->leftJoin('members', 'review_replies.member_id', '=', 'members.id')
                 ->where('review_id', $review->id)
                 ->orderBy('review_replies.created_at', 'asc')
                 ->select([
                     'review_replies.*',
-                    DB::raw("CONCAT(members.first_name, ' ', members.last_name) as name"),
+                    DB::raw("COALESCE(CONCAT(members.first_name, ' ', members.last_name), 'Quản trị viên') as name"),
                     DB::raw("DATE_FORMAT(review_replies.created_at, '%d/%m/%Y') as date")
                 ])
                 ->get();

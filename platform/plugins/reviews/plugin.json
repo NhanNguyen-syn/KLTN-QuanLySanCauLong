@@ -1,0 +1,9 @@
+{
+    "name": "Reviews",
+    "namespace": "Botble\\Reviews\\",
+    "provider": "Botble\\Reviews\\Providers\\ReviewsServiceProvider",
+    "author": "Botble Technologies",
+    "url": "https://botble.com",
+    "version": "1.0.0",
+    "description": "Manage customer reviews with AI Integration"
+}

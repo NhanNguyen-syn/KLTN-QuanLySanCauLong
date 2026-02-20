@@ -104,7 +104,7 @@ Shortcode::setAdminConfig('about-intro', function (array $attributes) {
             TextareaFieldOption::make()
                 ->label(__('Content Paragraph 1'))
                 ->rows(3)
-                ->defaultValue('Được thành lập vào năm 2023, BadmintonPro ra đời với mong muốn giải quyết bài toán thiếu hụt sân chơi chất lượng cao cho cộng đồng yêu cầu lông.')
+                ->defaultValue('Được thành lập vào năm 2023, Sân cầu lông Niên Thời ra đời với mong muốn giải quyết bài toán thiếu hụt sân chơi chất lượng cao cho cộng đồng yêu cầu lông.')
                 ->toArray()
         )
         ->add(
@@ -113,7 +113,7 @@ Shortcode::setAdminConfig('about-intro', function (array $attributes) {
             TextareaFieldOption::make()
                 ->label(__('Content Paragraph 2'))
                 ->rows(4)
-                ->defaultValue('Chúng tôi tin rằng một sân đấu tốt không chỉ cần mặt sàn chuẩn, ánh sáng tốt mà còn cần một hệ thống dịch vụ chuyên nghiệp, tận tâm và tiện lợi. Đó là lý do BadmintonPro đầu tư mạnh mẽ vào cơ sở vật chất và công nghệ quản lý ngay từ những ngày đầu.')
+                ->defaultValue('Chúng tôi tin rằng một sân đấu tốt không chỉ cần mặt sàn chuẩn, ánh sáng tốt mà còn cần một hệ thống dịch vụ chuyên nghiệp, tận tâm và tiện lợi. Đó là lý do Sân cầu lông Niên Thời đầu tư mạnh mẽ vào cơ sở vật chất và công nghệ quản lý ngay từ những ngày đầu.')
                 ->toArray()
         )
         ->add(

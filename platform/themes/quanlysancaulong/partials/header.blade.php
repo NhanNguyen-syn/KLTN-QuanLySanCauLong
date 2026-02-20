@@ -5,6 +5,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -331,6 +332,13 @@
             color: white;
             font-weight: 700;
             font-size: 14px;
+            overflow: hidden;
+        }
+
+        .user-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
 
         .user-name {
@@ -492,7 +500,7 @@
                             {{ Theme::getLogoImage(maxHeight: 45) }}
                         @else
                             <span style="font-weight: 800; font-size: 20px; color: #059669;">
-                                {{ theme_option('site_title', 'BadmintonPro') }}
+                                {{ theme_option('site_title', 'Sân cầu lông Niên Thời') }}
                             </span>
                         @endif
                     </a>
@@ -592,7 +600,11 @@
                             <a href="#" class="user-menu-trigger dropdown-toggle" id="userMenuDropdown"
                                 data-bs-toggle="dropdown" aria-expanded="false">
                                 <div class="user-avatar">
-                                    {{ strtoupper(substr(auth('member')->user()->name, 0, 1)) }}
+                                    @if(auth('member')->user()->avatar_id)
+                                        <img src="{{ auth('member')->user()->avatar_url }}" alt="{{ auth('member')->user()->name }}">
+                                    @else
+                                        {{ strtoupper(substr(auth('member')->user()->name, 0, 1)) }}
+                                    @endif
                                 </div>
                                 <span
                                     class="user-name d-none d-md-block">{{ auth('member')->user()->first_name ?: auth('member')->user()->name }}</span>
@@ -604,9 +616,9 @@
                                     <div class="user-dropdown-email">{{ auth('member')->user()->email }}</div>
                                 </li>
                                 <li>
-                                    <a class="user-dropdown-item" href="{{ route('public.member.dashboard') }}">
-                                        <i class="ti ti-layout-dashboard"></i>
-                                        Dashboard
+                                    <a class="user-dropdown-item" href="{{ route('public.member.settings') }}">
+                                        <i class="ti ti-user-circle"></i>
+                                        Tài khoản của tôi
                                     </a>
                                 </li>
                                 <li>
@@ -616,12 +628,6 @@
                                     <a class="user-dropdown-item" href="{{ route('public.booking') }}">
                                         <i class="ti ti-calendar-plus"></i>
                                         Đặt sân ngay
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="user-dropdown-item" href="{{ route('public.member.dashboard') }}#bookings">
-                                        <i class="ti ti-history"></i>
-                                        Lịch sử đặt sân
                                     </a>
                                 </li>
                                 <li>

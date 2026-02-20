@@ -31,7 +31,7 @@
         <div class="success-head">
             <div class="success-badge">✔️</div>
             <h1 style="font-size:34px;font-weight:900;margin:8px 0">Đặt Sân Thành Công!</h1>
-            <p style="color:#6b7280">Cảm ơn bạn đã tin tưởng BadmintonPro. Thông tin chi tiết đã được gửi qua email.</p>
+            <p style="color:#6b7280">Cảm ơn bạn đã tin tưởng Sân cầu lông Niên Thời. Thông tin chi tiết đã được gửi qua email.</p>
         </div>
 
         <div class="card">
@@ -263,7 +263,7 @@ if (paymentDetails) {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}' // Thêm CSRF token để đảm bảo request hợp lệ
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
               },
               body: JSON.stringify(payload)
             })
@@ -271,11 +271,35 @@ if (paymentDetails) {
                 const responseText = await res.text();
                 console.log('[BOOKING API RESPONSE]', {
                     status: res.status,
-                    statusText: res.statusText,
                     ok: res.ok,
-                    headers: Object.fromEntries(res.headers.entries()),
                     body: responseText,
                 });
+
+                if (res.status === 409) {
+                    let errorMsg = 'Khung giờ này đã bị người khác đặt trước. Vui lòng chọn giờ khác.';
+                    try {
+                        const errData = JSON.parse(responseText);
+                        if (errData.message) errorMsg = errData.message;
+                    } catch(e) {}
+
+                    // Custom modal notification
+                    const overlay = document.createElement('div');
+                    overlay.style.cssText = 'position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.5);backdrop-filter:blur(4px);animation:fadeIn .3s ease';
+                    overlay.innerHTML = `
+                        <style>
+                            @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+                            @keyframes slideUp{from{opacity:0;transform:translateY(20px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}
+                        </style>
+                        <div style="background:#fff;border-radius:16px;padding:32px 28px;max-width:420px;width:90%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,0.2);animation:slideUp .35s ease">
+                            <div style="width:64px;height:64px;margin:0 auto 16px;background:linear-gradient(135deg,#fef3c7,#fde68a);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:28px;box-shadow:0 4px 12px rgba(251,191,36,0.3)">⚠️</div>
+                            <h3 style="margin:0 0 8px;font-size:18px;font-weight:700;color:#1f2937">Đặt sân không thành công</h3>
+                            <p style="margin:0 0 24px;font-size:14px;color:#6b7280;line-height:1.6">${errorMsg}</p>
+                            <button onclick="window.location.href='/dat-san'" style="background:linear-gradient(135deg,#3b82f6,#2563eb);color:#fff;border:none;padding:12px 32px;border-radius:10px;font-size:15px;font-weight:600;cursor:pointer;box-shadow:0 4px 14px rgba(37,99,235,0.35);transition:transform .15s,box-shadow .15s" onmouseover="this.style.transform='translateY(-1px)';this.style.boxShadow='0 6px 20px rgba(37,99,235,0.4)'" onmouseout="this.style.transform='';this.style.boxShadow='0 4px 14px rgba(37,99,235,0.35)'">← Quay lại chọn sân</button>
+                        </div>
+                    `;
+                    document.body.appendChild(overlay);
+                    return;
+                }
 
                 if (!res.ok) {
                     throw new Error(`HTTP ${res.status}: ${responseText}`);
@@ -288,12 +312,12 @@ if (paymentDetails) {
                 }
             })
             .then(res => {
+                if (!res) return; // Conflict was already handled
                 console.log('[BOOKING API SUCCESS]', res);
                 if (res.success && res.order_code) {
                     localStorage.setItem('order_code', res.order_code);
                     localStorage.setItem('booking_created', '1');
                     qs('#order-code').textContent = res.order_code;
-                    // Tránh lưu trùng lặp lần sau
                     try { localStorage.removeItem('tempBooking'); } catch(e) {}
                 } else {
                     console.warn('[BOOKING API] Server responded with success=false or missing order_code.', res);
@@ -301,7 +325,6 @@ if (paymentDetails) {
             })
             .catch(err => {
                 console.error('[BOOKING API FAILED]', err);
-                // Nếu lỗi, vẫn giữ hiển thị theo cấu trúc
                 qs('#order-code').textContent = localStorage.getItem('order_code') || placeholderCode;
             });
             // Không có item hợp lệ: vẫn hiển thị cấu trúc mã thay vì "Không xác định"

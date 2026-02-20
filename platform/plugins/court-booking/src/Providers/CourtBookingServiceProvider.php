@@ -34,6 +34,7 @@ class CourtBookingServiceProvider extends ServiceProvider
             $this->commands([
                 \Botble\CourtBooking\Commands\GenerateSlotsCommand::class,
                 \Botble\CourtBooking\Commands\CleanupHoldsCommand::class,
+                \Botble\CourtBooking\Console\GenerateForecast::class,
             ]);
         }
 
@@ -69,6 +70,17 @@ class CourtBookingServiceProvider extends ServiceProvider
                 'name' => 'Danh sách đặt sân',
                 'icon' => 'ti ti-calendar-event',
                 'url' => route('booking-list.index'),
+                'permissions' => ['booking-list.index'],
+            ]);
+
+            // Forecasting & AI Insights
+            DashboardMenu::registerItem([
+                'id' => 'cms-plugins-forecasting',
+                'priority' => 3,
+                'parent_id' => 'cms-plugins-court-booking',
+                'name' => 'Dự báo & Insights',
+                'icon' => 'ti ti-trending-up',
+                'url' => route('forecasting.index'),
                 'permissions' => ['booking-list.index'],
             ]);
 

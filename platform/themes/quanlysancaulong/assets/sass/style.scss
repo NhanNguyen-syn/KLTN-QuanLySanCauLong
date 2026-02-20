@@ -1,4 +1,3 @@
-
 @import 'partials/blog-post';
 @import 'partials/why-choose-us';
 
@@ -19,15 +18,16 @@ $primaryFont: var(--primary-font);
 @import 'partials/court-pricing';
 @import 'partials/why-choose';
 @import 'pages/booking';
-@import '../../../resources/sass/lookup';
+@import '../../resources/sass/lookup';
+
 * {
     font-family: $primaryFont;
 }
 
 /* purgecss start ignore */
 figure.image {
-    margin  : 10px 0;
-    display : inline-block;
+    margin: 10px 0;
+    display: inline-block;
 }
 
 figcaption {
@@ -36,6 +36,7 @@ figcaption {
     font-size: 90%;
     text-align: center;
 }
+
 /* purgecss end ignore */
 
 main {
@@ -76,5 +77,6 @@ footer ul li a:hover {
 
 /* Align footer list with title text */
 footer .col-lg-3 ul {
-    padding-left: calc(4px + .5rem); /* Width of green bar + its margin */
+    padding-left: calc(4px + .5rem);
+    /* Width of green bar + its margin */
 }

@@ -22,7 +22,7 @@ Shortcode::setAdminConfig('about-cta', function (array $attributes) {
             TextField::class,
             TextFieldOption::make()
                 ->label(__('Title'))
-                ->defaultValue('Gia Nhập Cộng Đồng BadmintonPro')
+                ->defaultValue('Gia Nhập Cộng Đồng Sân cầu lông Niên Thời')
                 ->toArray()
         )
         ->add(

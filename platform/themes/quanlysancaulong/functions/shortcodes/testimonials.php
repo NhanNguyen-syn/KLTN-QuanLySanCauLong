@@ -1,55 +1,49 @@
 <?php
 
 use Botble\Base\Forms\FieldOptions\InputFieldOption;
+use Botble\Base\Forms\FieldOptions\SelectFieldOption;
 use Botble\Base\Forms\FieldOptions\TextareaFieldOption;
 use Botble\Base\Forms\FieldOptions\TextFieldOption;
 
 use Botble\Base\Forms\Fields\NumberField;
+use Botble\Base\Forms\Fields\SelectField;
 use Botble\Base\Forms\Fields\TextareaField;
 use Botble\Base\Forms\Fields\TextField;
 use Botble\Shortcode\Compilers\Shortcode as ShortcodeCompiler;
 use Botble\Shortcode\Facades\Shortcode;
-use Botble\Shortcode\Forms\FieldOptions\ShortcodeTabsFieldOption;
 use Botble\Shortcode\Forms\Fields\ShortcodeColorField;
-use Botble\Shortcode\Forms\Fields\ShortcodeTabsField;
 use Botble\Shortcode\Forms\ShortcodeForm;
 use Botble\Theme\Facades\Theme;
 use Botble\Media\Facades\RvMedia;
+use Botble\Reviews\Models\Review;
 
 Shortcode::register('testimonials', __('Testimonials'), __('Testimonials'), function (ShortcodeCompiler $shortcode) {
     $testimonials = [];
-    $rawTestimonials = (array) ($shortcode->testimonials ?: []);
 
-    // Check if data is from the new ShortcodeTabsField format
-    if (!empty($rawTestimonials) && is_array($rawTestimonials) && isset($rawTestimonials[0]['name'])) {
-        foreach ($rawTestimonials as $item) {
-            if (is_array($item)) {
-                if (!empty($item['avatar'])) {
-                    $item['avatar'] = RvMedia::getImageUrl($item['avatar']);
-                }
-                $testimonials[] = $item;
-            }
-        }
-    } else {
-        // Fallback for legacy quantity-based fields
-        $quantity = (int)($shortcode->quantity ?: 0);
-        if ($quantity > 0) {
-            for ($i = 1; $i <= $quantity; $i++) {
-                if ($shortcode->{'name_' . $i}) {
-                    $avatarUrl = $shortcode->{'avatar_' . $i};
-                    if ($avatarUrl) {
-                        $avatarUrl = RvMedia::getImageUrl($avatarUrl);
-                    }
+    // Get selected review IDs from admin config
+    $selectedIds = array_filter(explode(',', $shortcode->review_ids ?? ''));
 
-                    $testimonials[] = [
-                        'name' => $shortcode->{'name_' . $i},
-                        'role' => $shortcode->{'role_' . $i},
-                        'avatar' => $avatarUrl,
-                        'content' => $shortcode->{'content_' . $i},
-                        'stars' => (int)$shortcode->{'stars_' . $i},
-                    ];
-                }
+    if (!empty($selectedIds)) {
+        $reviews = Review::query()
+            ->whereIn('id', $selectedIds)
+            ->where('is_approved', true)
+            ->get();
+
+        foreach ($reviews as $review) {
+            // Get avatar from first image if available
+            $avatar = '';
+            $images = $review->images;
+            if (!empty($images) && is_array($images) && !empty($images[0])) {
+                $avatar = RvMedia::getImageUrl($images[0]);
             }
+
+            $testimonials[] = [
+                'name' => $review->name ?? 'Khách hàng',
+                'role' => '',
+                'avatar' => $avatar,
+                'content' => $review->comment ?? '',
+                'stars' => (int)($review->rating ?? 5),
+            ];
         }
     }
 
@@ -57,6 +51,22 @@ Shortcode::register('testimonials', __('Testimonials'), __('Testimonials'), func
 });
 
 Shortcode::setAdminConfig('testimonials', function (array $attributes) {
+    // Get all approved reviews for selection
+    $reviewOptions = Review::query()
+        ->where('is_approved', true)
+        ->latest()
+        ->get()
+        ->mapWithKeys(function ($review) {
+            $label = $review->name . ' - ' . $review->rating . '⭐ - ' . mb_substr($review->comment, 0, 50) . '...';
+            return [$review->id => $label];
+        })
+        ->toArray();
+
+    // Pre-process attributes for multi-select fields
+    if (isset($attributes['review_ids']) && is_string($attributes['review_ids'])) {
+        $attributes['review_ids'] = array_filter(explode(',', $attributes['review_ids']));
+    }
+
     return ShortcodeForm::createFromArray($attributes)
         ->withLazyLoading()
         ->add(
@@ -132,37 +142,14 @@ Shortcode::setAdminConfig('testimonials', function (array $attributes) {
             InputFieldOption::make()->label(__('Button Text Color'))->defaultValue('#153E35')->toArray()
         )
         ->add(
-            'testimonials',
-            ShortcodeTabsField::class,
-            ShortcodeTabsFieldOption::make()
-                ->label(__('Testimonials'))
-                ->fields([
-                    'name' => [
-                        'type' => 'text',
-                        'title' => __('Name'),
-                        'required' => true,
-                    ],
-                    'avatar' => [
-                        'type' => 'image',
-                        'title' => __('Avatar Image'),
-                    ],
-                    'content' => [
-                        'type' => 'textarea',
-                        'title' => __('Testimonial Content'),
-                        'required' => true,
-                    ],
-                    'stars' => [
-                        'type' => 'number',
-                        'title' => __('Rating (1--5 stars)'),
-                        'attributes' => [
-                            'min' => 1,
-                            'max' => 5,
-                            'step' => 1,
-                        ],
-                    ],
-                ])
-                ->attrs($attributes)
+            'review_ids',
+            SelectField::class,
+            SelectFieldOption::make()
+                ->label(__('Chọn bài đánh giá hiển thị (tối đa 20)'))
+                ->choices($reviewOptions)
+                ->searchable()
+                ->multiple()
+                ->helperText(__('Chọn các bài đánh giá đã duyệt để hiển thị trong phần Testimonials'))
                 ->toArray()
         );
 });
-

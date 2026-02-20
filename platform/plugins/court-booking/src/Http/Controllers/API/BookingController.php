@@ -24,8 +24,11 @@ class BookingController extends BaseController
         $userId = $data['user_id'] ?? ($request->user()?->id ?? 1);
 
         try {
-            $booking = $this->service->holdSlots($userId, $data['slot_ids']);
-            return response()->json(['success' => true, 'booking' => $booking], 201);
+            $result = $this->service->holdSlots($userId, $data['slot_ids']);
+            if (! ($result['success'] ?? false)) {
+                return response()->json($result, 409);
+            }
+            return response()->json(['success' => true, 'booking' => $result['booking']], 201);
         } catch (\Throwable $e) {
             return response()->json(['success' => false, 'message' => $e->getMessage()], 422);
         }

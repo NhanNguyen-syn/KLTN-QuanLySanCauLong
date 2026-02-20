@@ -110,15 +110,21 @@ class BookingListController extends BaseController
             ->setMessage(trans('core/base::notices.update_success_message'));
     }
 
-    public function destroy(BookingList $bookingList, Request $request, BaseHttpResponse $response)
+    public function destroy(BookingList $bookingList, Request $request, BaseHttpResponse $response, \Botble\CourtBooking\Services\BookingService $bookingService)
     {
         try {
             // Booking list index is grouped by order_code, so deleting a row should delete the whole order
             $orderCode = $bookingList->order_code;
 
-            BookingList::query()
+            $items = BookingList::query()
                 ->where('order_code', $orderCode)
-                ->delete();
+                ->get();
+
+            foreach ($items as $item) {
+                // Release slots for online booking
+                $bookingService->releaseSlotsForBookingList($item);
+                $item->delete();
+            }
 
             event(new DeletedContentEvent(\BOOKING_LIST_MODULE_SCREEN_NAME, $request, $bookingList));
 

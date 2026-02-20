@@ -73,7 +73,7 @@ class SiteContactWidget extends AbstractWidget
                 EmailField::class,
                 EmailFieldOption::make()
                     ->label(__('Email address'))
-                    ->placeholder('info@badmintonpro.vn')
+                    ->placeholder('info@sancaulongnienthoi.vn')
                     ->toArray()
             )
             ->add(

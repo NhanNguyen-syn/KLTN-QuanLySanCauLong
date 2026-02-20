@@ -81,15 +81,7 @@ class PublicController extends BaseController
 
     public function getDashboard()
     {
-        $user = auth('member')->user();
-
-        $this->pageTitle(__('Dashboard'));
-
-        Assets::addScriptsDirectly('vendor/core/plugins/member/js/dashboard/activity-logs.js');
-
-        Assets::usingVueJS();
-
-        return view('plugins/member::themes.dashboard.index', compact('user'));
+        return redirect()->route('public.member.settings');
     }
 
     public function getSettings()
@@ -101,15 +93,20 @@ class PublicController extends BaseController
          */
         $user = auth('member')->user();
 
-        Assets::addScripts('form-validation');
+        Assets::addScripts('form-validation')
+            ->addStyles('cropper')
+            ->addScripts('cropper')
+            ->addStylesDirectly('vendor/core/core/base/css/crop-image.css')
+            ->addScriptsDirectly('vendor/core/core/base/js/crop-image.js');
 
         $profileForm = ProfileForm::createFromModel($user)->renderForm();
         $changePasswordForm = ChangePasswordForm::create()->renderForm();
 
-        return view(
-            'plugins/member::themes.dashboard.settings.index',
-            compact('user', 'profileForm', 'changePasswordForm')
-        );
+        return Theme::scope(
+            'account-settings',
+            compact('user', 'profileForm', 'changePasswordForm'),
+            'plugins/member::themes.dashboard.settings.index'
+        )->render();
     }
 
     public function postSettings(SettingRequest $request)
@@ -180,6 +177,26 @@ class PublicController extends BaseController
                 ->setError()
                 ->setMessage($exception->getMessage());
         }
+    }
+
+    public function destroyAccount(Request $request)
+    {
+        $user = auth('member')->user();
+
+        // Verify password before deletion
+        if (! \Illuminate\Support\Facades\Hash::check($request->input('password'), $user->password)) {
+            return back()->with('error_msg', __('Mật khẩu không chính xác. Vui lòng thử lại.'));
+        }
+
+        // Logout first
+        Auth::guard('member')->logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        // Delete the member (triggers booted cleanup)
+        $user->delete();
+
+        return redirect(url('/'))->with('success_msg', __('Tài khoản của bạn đã được xóa thành công.'));
     }
 
     public function getActivityLogs()

@@ -4,4 +4,5 @@
     {!! Theme::content() !!}
 </main>
 
+{!! Theme::partial('chatbot') !!}
 {!! Theme::partial('footer') !!}

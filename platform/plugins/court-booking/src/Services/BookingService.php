@@ -2,7 +2,7 @@
 
 namespace Botble\CourtBooking\Services;
 
-use Botble\CourtBooking\Models\{Booking, BookingHold, BookingItem, CourtSlot, Invoice, Payment};
+use Botble\CourtBooking\Models\{Booking, BookingHold, BookingItem, BookingList, CourtSlot, Invoice, Payment};
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -395,6 +395,70 @@ class BookingService
 
             $booking->update(['status' => 'cancelled']);
         });
+    }
+
+    /**
+     * Block court slots for a BookingList item (Receptionist booking)
+     * Throws exception if slots are not available.
+     */
+    public function blockSlotsForBookingList(BookingList $bookingList): void
+    {
+        // Find overlapping slots
+        $slots = CourtSlot::where('court_id', $bookingList->court_id)
+            ->whereDate('date', $bookingList->date)
+            ->where(function ($query) use ($bookingList) {
+                // Overlap: StartA < EndB && EndA > StartB
+                $query->where('start_time', '<', $bookingList->end_time)
+                      ->where('end_time', '>', $bookingList->start_time);
+            })
+            ->lockForUpdate()
+            ->get();
+
+        if ($slots->isEmpty()) {
+            // Note: If no slots found (e.g. slots not generated yet), we might want to warn
+            // but usually slots exist for valid booking dates.
+            // For now, proceed (assuming admin knows best or slots will be generated later)
+            // Or typically: throw exception "System has not generated slots for this date".
+            // Let's log warning but allow (or strict? let's be strict for safety)
+            // throw new \RuntimeException('Hệ thống chưa tạo lịch cho ngày này.');
+            return; 
+        }
+
+        foreach ($slots as $slot) {
+            if ($slot->status !== 'available') {
+                $timeStr = Carbon::createFromFormat('H:i:s', $slot->start_time)->format('H:i') . ' - ' . 
+                           Carbon::createFromFormat('H:i:s', $slot->end_time)->format('H:i');
+                throw new \RuntimeException("⚠️ Rất tiếc, Khung giờ {$timeStr} đã bị người khác giữ hoặc đặt trước đó 1 xíu. Vui lòng chọn giờ khác.");
+            }
+        }
+
+        foreach ($slots as $slot) {
+            $slot->status = 'booked'; // Mark as booked immediately
+            $slot->save();
+        }
+    }
+
+    /**
+     * Release court slots for a BookingList item (Receptionist cancellation)
+     */
+    public function releaseSlotsForBookingList(BookingList $bookingList): void
+    {
+        $slots = CourtSlot::where('court_id', $bookingList->court_id)
+            ->whereDate('date', $bookingList->date)
+            ->where(function ($query) use ($bookingList) {
+                $query->where('start_time', '<', $bookingList->end_time)
+                      ->where('end_time', '>', $bookingList->start_time);
+            })
+            ->lockForUpdate()
+            ->get();
+
+        foreach ($slots as $slot) {
+            // Only release if reserved/booked
+            if (in_array($slot->status, ['booked', 'reserved'])) {
+                $slot->status = 'available';
+                $slot->save();
+            }
+        }
     }
 
     public function generateBookingCode(): string

@@ -9,7 +9,7 @@
 
     // Email Data
     $emailTitle = $shortcode->email_title ?: 'Email';
-    $emailValue = $shortcode->email_value ?: 'info@badmintonpro.vn';
+    $emailValue = $shortcode->email_value ?: 'info@sancaulongnienthoi.vn';
     $emailBorder = $shortcode->email_border_color ?: '#059669';
     $emailText = $shortcode->email_text_color ?: '#059669';
 @endphp

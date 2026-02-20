@@ -60,6 +60,11 @@ if (defined('THEME_MODULE_SCREEN_NAME')) {
             ], function (): void {
                 Route::match(['GET', 'POST'], 'logout', 'LoginController@logout')->name('logout');
 
+                // Redirect /account and /account/dashboard to /account/settings
+                Route::get('/', function () {
+                    return redirect()->route('public.member.settings');
+                });
+
                 Route::get('dashboard', [
                     'as' => 'dashboard',
                     'uses' => 'PublicController@getDashboard',
@@ -84,6 +89,11 @@ if (defined('THEME_MODULE_SCREEN_NAME')) {
                     'as' => 'avatar',
                     'uses' => 'PublicController@postAvatar',
                 ]);
+
+                Route::delete('destroy', [
+                    'as' => 'destroy',
+                    'uses' => 'PublicController@destroyAccount',
+                ]);
             });
 
             Route::group(['prefix' => 'ajax/members'], function (): void {
@@ -102,22 +112,6 @@ if (defined('THEME_MODULE_SCREEN_NAME')) {
                     'uses' => 'PublicController@postUploadFromEditor',
                 ]);
             });
-
-            if (is_plugin_active('blog')) {
-                Route::group([
-                    'prefix' => 'account/posts',
-                    'as' => 'posts.',
-                ], function (): void {
-                    Route::resource('', 'PostController')->parameters(['' => 'post']);
-                });
-
-                Route::group(['prefix' => 'ajax/members'], function (): void {
-                    Route::get('tags/all', [
-                        'as' => 'tags.all',
-                        'uses' => 'PostController@getAllTags',
-                    ]);
-                });
-            }
         });
     });
 }

@@ -50,7 +50,7 @@ class FooterCopyrightWidget extends AbstractWidget
         // Replace placeholders
         $copyrightText = str_replace(
             ['{year}', '{site_title}'],
-            [date('Y'), theme_option('site_title', 'BadmintonPro')],
+            [date('Y'), theme_option('site_title', 'Sân cầu lông Niên Thời')],
             $copyrightText
         );
 

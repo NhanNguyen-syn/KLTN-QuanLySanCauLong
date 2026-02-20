@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Validator;
 
 class BookingListController extends BaseController
 {
-    public function store(Request $request)
+    public function store(Request $request, \Botble\CourtBooking\Services\BookingService $bookingService)
     {
         // Ghi log để xác nhận API được gọi
         Log::info('[BOOKING LIST STORE] hit', ['payload' => $request->all()]);
@@ -139,6 +139,27 @@ class BookingListController extends BaseController
 
             $status = $request->input('status') ?: 'processing';
 
+            // CHECK FOR CONFLICTS BEFORE CREATING ANY RECORDS
+            // Query existing bookings in court_bookings_list to detect overlaps
+            foreach ($items as $item) {
+                $conflictingBookings = BookingList::where('court_id', $item['court_id'])
+                    ->whereDate('date', $item['date'])
+                    ->where(function ($query) use ($item) {
+                        // Overlap condition: StartA < EndB && EndA > StartB
+                        $query->where('start_time', '<', $item['end_time'])
+                              ->where('end_time', '>', $item['start_time']);
+                    })
+                    ->whereIn('status', ['processing', 'paid', 'completed', 'confirmed'])
+                    ->lockForUpdate()
+                    ->first();
+
+                if ($conflictingBookings) {
+                    $timeStr = \Carbon\Carbon::createFromFormat('H:i:s', $item['start_time'])->format('H:i') . ' - ' . 
+                               \Carbon\Carbon::createFromFormat('H:i:s', $item['end_time'])->format('H:i');
+                    throw new \RuntimeException("⚠️ Rất tiếc, Khung giờ {$timeStr} đã bị người khác giữ hoặc đặt trước đó 1 xíu. Vui lòng chọn giờ khác.");
+                }
+            }
+
             foreach ($items as $idx => $item) {
                 $price = (float) ($item['price'] ?? 0);
 
@@ -151,7 +172,7 @@ class BookingListController extends BaseController
                     $allocatedSoFar += $allocated;
                 }
 
-                BookingList::create([
+                $newItem = BookingList::create([
                     'order_code'      => $orderCode,
                     'court_id'        => $item['court_id'] ?? null,
                     'court_name'      => $item['court_name'] ?? null,
@@ -168,6 +189,10 @@ class BookingListController extends BaseController
                     'invoice_created_at' => null,
                     'invoice_updated_at' => null,
                 ]);
+
+                // NOTE: court_slots table was removed by migration 2025_12_18_183700
+                // Conflict detection now handled by checking existing court_bookings_list records
+                // No need to call blockSlotsForBookingList() anymore
             }
 
             DB::commit();
@@ -185,6 +210,12 @@ class BookingListController extends BaseController
                 'order_code' => $orderCode,
             ]);
 
+        } catch (\RuntimeException $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 409); // Conflict
         } catch (\Throwable $e) {
             DB::rollBack();
 

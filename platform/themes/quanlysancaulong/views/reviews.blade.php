@@ -1,7 +1,7 @@
 {!! dynamic_sidebar('top_sidebar') !!}
 
 @php
-    Theme::set('pageTitle', 'Đánh Giá & Nhận Xét - ' . theme_option('site_title', 'BadmintonPro'));
+    Theme::set('pageTitle', 'Đánh Giá & Nhận Xét - ' . theme_option('site_title', 'Sân cầu lông Niên Thời'));
     Theme::set('pageDescription', 'Chia sẻ trải nghiệm của bạn và xem ý kiến từ cộng đồng');
     $page = $page ?? null;
 @endphp
@@ -643,4 +643,4 @@
     </div>
 </div>
 
-
+<script src="{{ url('themes/quanlysancaulong/js/reviews.js') }}?v={{ time() }}"></script>

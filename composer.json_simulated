@@ -1,0 +1,13 @@
+{
+    "name": "botble/platform",
+    "description": "The Botble Platform",
+    "require": {
+        "botble/reviews": "*@dev"
+    },
+    "repositories": [
+        {
+            "type": "path",
+            "url": "platform/plugins/reviews"
+        }
+    ]
+}
