@@ -91,9 +91,9 @@ RUN { \
     echo 'max_execution_time=120'; \
     } > /usr/local/etc/php/conf.d/custom.ini
 
-# Nginx configuration
+# Nginx configuration - replace main config entirely
 RUN mkdir -p /run/nginx
-COPY docker/nginx.conf /etc/nginx/http.d/default.conf
+COPY docker/nginx.conf /etc/nginx/nginx.conf
 
 # Supervisor configuration
 COPY docker/supervisord.conf /etc/supervisord.conf
