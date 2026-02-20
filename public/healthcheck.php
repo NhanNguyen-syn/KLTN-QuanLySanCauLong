@@ -104,6 +104,23 @@ try {
     $router = $app->make('router');
     $routes = $router->getRoutes();
     echo "   Registered routes: " . count($routes) . "\n";
+
+    echo "\n=== ROUTES LIST (Top 20) ===\n";
+    $count = 0;
+    foreach ($routes as $route) {
+        if ($count++ > 20) break;
+        echo $route->methods()[0] . " | " . $route->uri() . " | " . $route->getName() . "\n";
+    }
+
+    echo "\n=== DB CONTENT CHECK ===\n";
+    // Check pages table using Laravel DB
+    if (\Illuminate\Support\Facades\Schema::hasTable('pages')) {
+        $pages = \Illuminate\Support\Facades\DB::table('pages')->select('id', 'name', 'status')->limit(5)->get();
+        echo "Pages table found. First 5 rows:\n";
+        echo json_encode($pages) . "\n";
+    } else {
+        echo "CRITICAL: 'pages' table NOT FOUND in Laravel connection.\n";
+    }
     
 } catch (Throwable $e) {
     echo "   Status: FAILED\n";

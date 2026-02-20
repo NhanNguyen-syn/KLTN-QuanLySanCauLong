@@ -121,7 +121,7 @@ class BaseServiceProvider extends ServiceProvider
 
         Paginator::useBootstrap();
 
-        $this->forceSSL();
+        // $this->forceSSL();
 
         $this->configureIni();
 
