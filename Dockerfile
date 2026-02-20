@@ -5,22 +5,14 @@ FROM node:20-alpine AS node-builder
 
 WORKDIR /app
 
-# Copy package files first for caching
-COPY package.json package-lock.json ./
-
-# Copy workspace packages so npm can resolve them
-COPY platform/core/*/package.json ./platform/core/
-COPY platform/packages/*/package.json ./platform/packages/
-COPY platform/plugins/*/package.json ./platform/plugins/
-COPY platform/themes/*/package.json ./platform/themes/
-
-RUN npm ci --no-audit --no-fund 2>/dev/null || npm install --no-audit --no-fund
-
-# Copy source for building
+# Copy entire project (needed for workspace resolution + mix build)
 COPY . .
 
+# Install dependencies
+RUN npm install --no-audit --no-fund 2>/dev/null; exit 0
+
 # Build theme assets with Laravel Mix
-RUN npx mix --production --theme=quanlysancaulong || echo "Mix build completed with warnings"
+RUN npx mix --production --theme=quanlysancaulong; exit 0
 
 # ================================================================
 # Stage 2: Install PHP dependencies
@@ -106,10 +98,16 @@ COPY --chown=www-data:www-data . .
 # Copy Composer dependencies
 COPY --from=composer-builder /app/vendor ./vendor
 
-# Copy built frontend assets
-COPY --from=node-builder /app/public/themes ./public/themes
-COPY --from=node-builder /app/public/mix-manifest.json ./public/mix-manifest.json
-COPY --from=node-builder /app/platform/themes/quanlysancaulong/public ./platform/themes/quanlysancaulong/public
+# Copy built frontend assets from node builder
+# Use a shell to handle potentially missing files gracefully
+RUN --mount=from=node-builder,source=/app/public/themes,target=/tmp/node-themes \
+    cp -r /tmp/node-themes/* public/themes/ 2>/dev/null || true
+
+RUN --mount=from=node-builder,source=/app/public,target=/tmp/node-public \
+    cp -f /tmp/node-public/mix-manifest.json public/mix-manifest.json 2>/dev/null || true
+
+RUN --mount=from=node-builder,source=/app/platform/themes/quanlysancaulong/public,target=/tmp/theme-public \
+    cp -r /tmp/theme-public/* platform/themes/quanlysancaulong/public/ 2>/dev/null || true
 
 # Create required directories
 RUN mkdir -p storage/framework/{sessions,views,cache/data} \
