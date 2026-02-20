@@ -58,6 +58,7 @@ RUN apk add --no-cache \
     oniguruma-dev \
     curl-dev \
     libxml2-dev \
+    dos2unix \
     && docker-php-ext-configure gd \
         --with-freetype \
         --with-jpeg \
@@ -111,20 +112,34 @@ COPY --from=node-builder /app/public/themes ./public/themes
 COPY --from=node-builder /app/public/mix-manifest.json ./public/mix-manifest.json
 COPY --from=node-builder /app/platform/themes/quanlysancaulong/public ./platform/themes/quanlysancaulong/public
 
-# Create required directories
+# Create required directories and the critical 'installed' marker
 RUN mkdir -p storage/framework/{sessions,views,cache/data} \
     && mkdir -p storage/logs \
     && mkdir -p storage/app/public \
     && mkdir -p bootstrap/cache \
-    && mkdir -p public/storage
+    && mkdir -p public/storage \
+    && echo "$(date)" > storage/installed \
+    && rm -f storage/installing
+
+# Fix CRLF line endings on shell scripts (created on Windows)
+RUN dos2unix /var/www/html/docker/entrypoint.sh 2>/dev/null || \
+    sed -i 's/\r$//' /var/www/html/docker/entrypoint.sh
 
 # Set permissions
 RUN chown -R www-data:www-data storage bootstrap/cache public/storage \
     && chmod -R 775 storage bootstrap/cache
 
-# Copy entrypoint
+# Copy entrypoint and fix line endings
 COPY docker/entrypoint.sh /entrypoint.sh
+RUN dos2unix /entrypoint.sh 2>/dev/null || sed -i 's/\r$//' /entrypoint.sh
 RUN chmod +x /entrypoint.sh
+
+# Verify critical files exist
+RUN echo "=== Verifying deployment ===" \
+    && ls -la public/index.php \
+    && ls -la storage/installed \
+    && php -v \
+    && echo "=== Verification complete ==="
 
 EXPOSE 10000
 
