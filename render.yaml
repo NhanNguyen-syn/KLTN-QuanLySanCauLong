@@ -44,7 +44,7 @@ services:
       - key: FORCE_ROOT_URL
         sync: false
       - key: ENABLE_HTTPS_SUPPORT
-        value: "true"
+        value: "false"
       - key: SESSION_DRIVER
         value: file
       - key: SESSION_SECURE_COOKIE
