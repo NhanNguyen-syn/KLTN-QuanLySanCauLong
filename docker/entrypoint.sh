@@ -15,10 +15,25 @@ fi
 # Remove any stale 'installing' file
 rm -f storage/installing
 
+# Debug info - verify Render env vars are loaded
+echo "=== Debug Info ==="
+echo "APP_URL: ${APP_URL:-NOT SET}"
+echo "DB_HOST: ${DB_HOST:-NOT SET}"
+echo "DB_PORT: ${DB_PORT:-NOT SET}"
+echo "DB_DATABASE: ${DB_DATABASE:-NOT SET}"
+echo "DB_USERNAME: ${DB_USERNAME:-NOT SET}"
+echo "FORCE_ROOT_URL: ${FORCE_ROOT_URL:-NOT SET}"
+echo "FORCE_SCHEMA: ${FORCE_SCHEMA:-NOT SET}"
+echo "PHP version: $(php -v | head -1)"
+php artisan --version
+echo "storage/installed exists: $(test -f storage/installed && echo 'YES' || echo 'NO')"
+echo "=== End Debug Info ==="
+
 # Create storage symlink
 php artisan storage:link --force 2>/dev/null || true
 
 # Clear ALL caches — start fresh with Render's env vars
+echo "=== Clearing caches ==="
 php artisan config:clear 2>/dev/null || true
 php artisan route:clear 2>/dev/null || true
 php artisan view:clear 2>/dev/null || true
@@ -42,6 +57,7 @@ php artisan migrate --force 2>&1 || echo "WARNING: migration failed"
 mkdir -p platform/plugins/receptionist-portal/public 2>/dev/null || true
 
 # Publish CMS assets
+echo "=== Publishing assets ==="
 php artisan cms:publish:assets 2>&1 || echo "WARNING: cms:publish:assets failed"
 
 # Set media driver to s3 in database if AWS is configured
@@ -58,18 +74,7 @@ fi
 chown -R www-data:www-data storage bootstrap/cache 2>/dev/null || true
 chmod -R 775 storage bootstrap/cache 2>/dev/null || true
 
-# Debug info
-echo "=== Debug Info ==="
-echo "APP_URL: $APP_URL"
-echo "DB_HOST: $DB_HOST"
-echo "DB_PORT: $DB_PORT"
-echo "DB_DATABASE: $DB_DATABASE"
-echo "PHP version: $(php -v | head -1)"
-php artisan --version
-echo "storage/installed exists: $(test -f storage/installed && echo 'YES' || echo 'NO')"
-echo "=== End Debug Info ==="
-
-echo "=== Starting services ==="
+echo "=== Starting Supervisor (PHP-FPM + Nginx) ==="
 
 # Start Supervisor (manages PHP-FPM + Nginx)
 exec /usr/bin/supervisord -c /etc/supervisord.conf

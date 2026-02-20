@@ -96,6 +96,9 @@ RUN { \
 RUN mkdir -p /run/nginx
 COPY docker/nginx.conf /etc/nginx/nginx.conf
 
+# PHP-FPM configuration - explicit listen on 127.0.0.1:9000
+COPY docker/php-fpm.conf /usr/local/etc/php-fpm.d/zz-docker.conf
+
 # Supervisor configuration
 COPY docker/supervisord.conf /etc/supervisord.conf
 
