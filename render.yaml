@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: kltn-quan-ly-san-cau-long
+    name: sancaulongnienthoi
     runtime: docker
     dockerfilePath: ./Dockerfile
     plan: free
