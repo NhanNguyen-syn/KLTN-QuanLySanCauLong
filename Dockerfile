@@ -17,7 +17,8 @@ RUN mkdir -p public/themes/quanlysancaulong \
 RUN npm install --no-audit --no-fund 2>/dev/null; exit 0
 
 # Build theme assets with Laravel Mix
-RUN npx mix --production --theme=quanlysancaulong; exit 0
+# webpack.mix.js reads theme from npm_config_theme env var, NOT --theme flag
+RUN npm_config_theme=quanlysancaulong npx mix --production; exit 0
 
 # Ensure mix-manifest.json exists (create empty one if build failed)
 RUN if [ ! -f public/mix-manifest.json ]; then echo '{}' > public/mix-manifest.json; fi
