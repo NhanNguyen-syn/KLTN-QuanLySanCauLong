@@ -5,14 +5,22 @@ FROM node:20-alpine AS node-builder
 
 WORKDIR /app
 
-# Copy entire project (needed for workspace resolution + mix build)
+# Copy entire project
 COPY . .
+
+# Ensure output directories exist
+RUN mkdir -p public/themes/quanlysancaulong \
+    && mkdir -p platform/themes/quanlysancaulong/public/js \
+    && mkdir -p platform/themes/quanlysancaulong/public/css
 
 # Install dependencies
 RUN npm install --no-audit --no-fund 2>/dev/null; exit 0
 
 # Build theme assets with Laravel Mix
 RUN npx mix --production --theme=quanlysancaulong; exit 0
+
+# Ensure mix-manifest.json exists (create empty one if build failed)
+RUN if [ ! -f public/mix-manifest.json ]; then echo '{}' > public/mix-manifest.json; fi
 
 # ================================================================
 # Stage 2: Install PHP dependencies
@@ -98,16 +106,10 @@ COPY --chown=www-data:www-data . .
 # Copy Composer dependencies
 COPY --from=composer-builder /app/vendor ./vendor
 
-# Copy built frontend assets from node builder
-# Use a shell to handle potentially missing files gracefully
-RUN --mount=from=node-builder,source=/app/public/themes,target=/tmp/node-themes \
-    cp -r /tmp/node-themes/* public/themes/ 2>/dev/null || true
-
-RUN --mount=from=node-builder,source=/app/public,target=/tmp/node-public \
-    cp -f /tmp/node-public/mix-manifest.json public/mix-manifest.json 2>/dev/null || true
-
-RUN --mount=from=node-builder,source=/app/platform/themes/quanlysancaulong/public,target=/tmp/theme-public \
-    cp -r /tmp/theme-public/* platform/themes/quanlysancaulong/public/ 2>/dev/null || true
+# Copy built frontend assets from node-builder
+COPY --from=node-builder /app/public/themes ./public/themes
+COPY --from=node-builder /app/public/mix-manifest.json ./public/mix-manifest.json
+COPY --from=node-builder /app/platform/themes/quanlysancaulong/public ./platform/themes/quanlysancaulong/public
 
 # Create required directories
 RUN mkdir -p storage/framework/{sessions,views,cache/data} \
