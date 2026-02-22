@@ -34,5 +34,12 @@ return [
             'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
         ],
     ],
+    'vnpay' => [
+        'tmn_code' => env('vnp_TmnCode', env('VNP_TMN_CODE')),
+        'hash_secret' => env('vnp_HashSecret', env('VNP_HASH_SECRET')),
+        'url' => env('vnp_Url', env('VNP_URL', 'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html')),
+        'ipn_url' => env('vnp_IpnUrl', env('VNP_IPN_URL', '')),
+        'ip_addr' => env('vnp_IpAddr', env('VNP_IP_ADDR')),
+    ],
 
 ];

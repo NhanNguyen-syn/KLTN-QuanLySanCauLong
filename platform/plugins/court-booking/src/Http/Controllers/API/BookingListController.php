@@ -197,17 +197,28 @@ class BookingListController extends BaseController
 
             DB::commit();
 
-            // Gửi email hóa đơn ngay lập tức
+            // Gửi email hóa đơn ngay lập tức (tách riêng try-catch để lỗi email không ảnh hưởng booking)
+            $emailSent = false;
             if ($request->input('email')) {
-                $createdBookings = BookingList::query()
-                    ->where('order_code', $orderCode)
-                    ->get();
-                \Botble\CourtBooking\Services\InvoicePdfService::sendGroupedEmail($createdBookings, $request->input('email'));
+                try {
+                    $createdBookings = BookingList::query()
+                        ->where('order_code', $orderCode)
+                        ->get();
+                    \Botble\CourtBooking\Services\InvoicePdfService::sendGroupedEmail($createdBookings, $request->input('email'));
+                    $emailSent = true;
+                } catch (\Throwable $emailErr) {
+                    Log::error('[BOOKING EMAIL ERROR]', [
+                        'order_code' => $orderCode,
+                        'email' => $request->input('email'),
+                        'error' => $emailErr->getMessage(),
+                    ]);
+                }
             }
 
             return response()->json([
                 'success'    => true,
                 'order_code' => $orderCode,
+                'email_sent' => $emailSent,
             ]);
 
         } catch (\RuntimeException $e) {
@@ -219,16 +230,17 @@ class BookingListController extends BaseController
         } catch (\Throwable $e) {
             DB::rollBack();
 
-            // LOG lỗi
+            // LOG lỗi chi tiết
             Log::error('[BOOKING LIST ERROR]', [
                 'message' => $e->getMessage(),
+                'file'    => $e->getFile() . ':' . $e->getLine(),
                 'trace'   => $e->getTraceAsString(),
                 'payload' => $request->all(),
             ]);
 
             return response()->json([
                 'success' => false,
-                'message' => 'Lỗi tạo booking',
+                'message' => 'Lỗi tạo booking: ' . $e->getMessage(),
             ], 500);
         }
     }

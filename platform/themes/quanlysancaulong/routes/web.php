@@ -220,12 +220,12 @@ Route::get('invoice/download/{code}', function ($code) {
         ->name('api.reviews.deleteReply');
 
 Route::post('ajax/vnpay/qr', function (Request $request) {
-        $tmnCode = env('vnp_TmnCode', env('VNP_TMN_CODE'));
-        $hashSecret = env('vnp_HashSecret', env('VNP_HASH_SECRET'));
-        $vnpUrl = env('vnp_Url', env('VNP_URL', 'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html'));
-        $ipnUrl = env('vnp_IpnUrl', env('VNP_IPN_URL', ''));
+        $tmnCode = config('services.vnpay.tmn_code');
+        $hashSecret = config('services.vnpay.hash_secret');
+        $vnpUrl = config('services.vnpay.url', 'https://sandbox.vnpayment.vn/paymentv2/vpcpay.html');
+        $ipnUrl = config('services.vnpay.ipn_url', '');
         $ipnUrl = is_string($ipnUrl) ? trim($ipnUrl) : '';
-        $ipAddr = env('vnp_IpAddr', env('VNP_IP_ADDR', $request->ip()));
+        $ipAddr = config('services.vnpay.ip_addr', $request->ip());
 
         if (! $tmnCode || ! $hashSecret) {
             return response()->json([
@@ -289,7 +289,8 @@ Route::post('ajax/vnpay/qr', function (Request $request) {
 
     // Trang xac-nhan (buoc cuoi)
     Route::get('xac-nhan', function (Request $request) {
-        $hashSecret = env('vnp_HashSecret', env('VNP_HASH_SECRET'));
+        // env() returns null when config is cached (Render deployment)
+        $hashSecret = config('services.vnpay.hash_secret');
 
         $input = $request->all();
         if ($hashSecret && isset($input['vnp_SecureHash'])) {
@@ -325,9 +326,13 @@ Route::post('ajax/vnpay/qr', function (Request $request) {
                     }
 
                     if ($isSuccess && $bookings->isNotEmpty()) {
-                        // Send ONE email for the whole order
-                        $email = $bookings->first()->email;
-                        \Botble\CourtBooking\Services\InvoicePdfService::sendGroupedEmail($bookings, $email);
+                        // Send ONE email for the whole order (wrap in try-catch so email errors don't crash)
+                        try {
+                            $email = $bookings->first()->email;
+                            \Botble\CourtBooking\Services\InvoicePdfService::sendGroupedEmail($bookings, $email);
+                        } catch (\Throwable $emailErr) {
+                            \Log::error('[VNPAY EMAIL ERROR]', ['error' => $emailErr->getMessage(), 'order_code' => $txnRef]);
+                        }
                     }
                 }
             }
@@ -346,7 +351,7 @@ Route::post('ajax/vnpay/qr', function (Request $request) {
     })->name('public.confirmation');
 
     Route::match(['GET', 'POST'], 'vnpay/ipn', function (Request $request) {
-        $hashSecret = env('vnp_HashSecret', env('VNP_HASH_SECRET'));
+        $hashSecret = config('services.vnpay.hash_secret');
         if (! $hashSecret) {
             return response()->json(['RspCode' => '99', 'Message' => 'Config missing']);
         }

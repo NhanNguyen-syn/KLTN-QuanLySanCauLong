@@ -208,22 +208,22 @@ class InvoicePdfService
         }
 
         try {
-            // Force config at runtime to be 100% sure
-            $mailUsername = env('MAIL_USERNAME', config('mail.mailers.smtp.username'));
-            $mailPassword = env('MAIL_PASSWORD', config('mail.mailers.smtp.password'));
-            $mailFromAddress = env('MAIL_FROM_ADDRESS', config('mail.from.address', $mailUsername));
-            $mailFromName = env('MAIL_FROM_NAME', config('mail.from.name', 'Sân Cầu Lông'));
+            // On Render with cached config, env() returns null — use config() as primary
+            $mailUsername = config('mail.mailers.smtp.username', env('MAIL_USERNAME'));
+            $mailPassword = config('mail.mailers.smtp.password', env('MAIL_PASSWORD'));
+            $mailFromAddress = config('mail.from.address', env('MAIL_FROM_ADDRESS', $mailUsername));
+            $mailFromName = config('mail.from.name', env('MAIL_FROM_NAME', 'Sân Cầu Lông'));
 
             // Strip quotes that might be accidentally included in env vars (Render issue)
-            $mailPassword = trim($mailPassword, '"\'');
-            $mailFromName = trim($mailFromName, '"\'');
+            $mailPassword = trim((string) $mailPassword, '"\'');
+            $mailFromName = trim((string) $mailFromName, '"\'');
 
             config([
                 'mail.default' => 'smtp',
                 'mail.mailers.smtp.transport' => 'smtp',
-                'mail.mailers.smtp.host' => env('MAIL_HOST', config('mail.mailers.smtp.host', 'smtp.gmail.com')),
-                'mail.mailers.smtp.port' => (int) env('MAIL_PORT', config('mail.mailers.smtp.port', 587)),
-                'mail.mailers.smtp.encryption' => env('MAIL_ENCRYPTION', config('mail.mailers.smtp.encryption', 'tls')),
+                'mail.mailers.smtp.host' => config('mail.mailers.smtp.host', env('MAIL_HOST', 'smtp.gmail.com')),
+                'mail.mailers.smtp.port' => (int) config('mail.mailers.smtp.port', env('MAIL_PORT', 587)),
+                'mail.mailers.smtp.encryption' => config('mail.mailers.smtp.encryption', env('MAIL_ENCRYPTION', 'tls')),
                 'mail.mailers.smtp.username' => $mailUsername,
                 'mail.mailers.smtp.password' => $mailPassword,
                 'mail.from.address' => $mailFromAddress,
