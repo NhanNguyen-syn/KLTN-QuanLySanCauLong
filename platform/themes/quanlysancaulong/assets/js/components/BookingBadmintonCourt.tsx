@@ -224,7 +224,7 @@ export default defineComponent<Props>({
         <div class="container">
           <div class="bbc-grid">
             {(props.items || []).slice(0, 8).map((it, idx) => (
-              <div class="bbc-card" style={card()} key={idx}>
+              <a href={it.button_url || '#'} class="bbc-card" style={{ ...card(), textDecoration: 'none', color: 'inherit', cursor: 'pointer', display: 'block' }} key={idx}>
                 <div style={imageBox(it.image)}>
                   <div class="bbc-image" style={imageLayer(it.image)} />
                   <div style={overlay} />
@@ -249,14 +249,14 @@ export default defineComponent<Props>({
                       {it.price_value && <div style={priceValueStyle(it)}>{it.price_value}</div>}
                     </div>
 
-                    <a href={it.button_url || '#'} class="bbc-circle" style={circleBtn(it)} aria-label="Select">
+                    <span class="bbc-circle" style={circleBtn(it)} aria-label="Select">
                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                       </svg>
-                    </a>
+                    </span>
                   </div>
                 </div>
-              </div>
+              </a>
             ))}
           </div>
 

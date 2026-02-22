@@ -302,6 +302,32 @@
             box-shadow: 0 6px 20px rgba(5, 150, 105, 0.35);
         }
 
+        /* Login Button (white style) */
+        .header-login-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #ffffff;
+            color: #059669 !important;
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 14px;
+            text-decoration: none;
+            white-space: nowrap;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1.5px solid #e5e7eb;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        }
+
+        .header-login-btn:hover {
+            background: #f0fdfa;
+            border-color: #a7f3d0;
+            color: #047857 !important;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(5, 150, 105, 0.15);
+        }
+
         /* User Menu Dropdown */
         .user-menu-trigger {
             display: flex;
@@ -669,15 +695,16 @@
                         </div>
                     @else
                         <!-- Not Logged In -->
-                        @if(!request()->routeIs('public.member.login'))
-                            <a href="{{ route('public.member.login') }}" class="header-action-icon" title="Đăng nhập">
-                                <i class="ti ti-login"></i>
-                            </a>
-                        @endif
                         @if(!request()->routeIs('public.member.register'))
                             <a href="{{ route('public.member.register') }}" class="header-register-btn">
                                 <i class="ti ti-user-plus"></i>
                                 Đăng ký
+                            </a>
+                        @endif
+                        @if(!request()->routeIs('public.member.login'))
+                            <a href="{{ route('public.member.login') }}" class="header-login-btn">
+                                <i class="ti ti-login"></i>
+                                Đăng nhập
                             </a>
                         @endif
                     @endauth

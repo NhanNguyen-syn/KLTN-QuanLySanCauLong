@@ -16,6 +16,26 @@ use Illuminate\Support\Facades\DB;
 
 // Custom routes
 Theme::registerRoutes(function (): void {
+    // Trang Sân & Giá (danh sách sân)
+    Route::get('san-va-gia', function () {
+        return Theme::scope('court-listing')->render();
+    })->name('public.courts');
+
+    // Trang chi tiết sân
+    Route::get('san-va-gia/{slug}', function ($slug) {
+        $court = \Botble\CourtBooking\Models\Court::query()
+            ->with('type', 'courtStatus')
+            ->where('slug', $slug)
+            ->where('status', 'published')
+            ->first();
+
+        if (!$court) {
+            abort(404);
+        }
+
+        return Theme::scope('court-detail', compact('court'))->render();
+    })->name('public.court.detail');
+
     // Trang đặt sân cho khách hàng
     Route::get('dat-san', function () {
         $page = null;

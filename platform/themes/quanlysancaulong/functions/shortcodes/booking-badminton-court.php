@@ -124,8 +124,9 @@ add_action('init', function () {
             $priceLabel = 'Giá bắt đầu từ';
             $priceValue = number_format($defaultPrice) . 'đ/giờ';
 
-            // Get booking URL
-            $bookingUrl = $court->booking_url ?? '/dat-san';
+            // Get court detail URL (sử dụng slug cho trang chi tiết sân)
+            $courtSlug = $court->slug ?: \Illuminate\Support\Str::slug($court->name);
+            $detailUrl = '/san-va-gia/' . $courtSlug;
 
             $items[] = [
                 'court_id' => $court->id,
@@ -140,7 +141,7 @@ add_action('init', function () {
                 'price_value' => $priceValue,
                 'price_label_color' => '#6b7280',
                 'price_value_color' => '#111827',
-                'button_url' => $bookingUrl,
+                'button_url' => $detailUrl,
                 'button_bg_color' => 'rgba(5, 150, 105, 0.1)',
                 'button_text_color' => '#059669',
             ];

@@ -30,6 +30,8 @@ class CourtController extends BaseController
 
     public function store(CourtRequest $request)
     {
+        $this->convertFeaturesInput($request);
+
         $form = CourtForm::create()->setRequest($request)->save();
 
         return $this->httpResponse()
@@ -52,6 +54,8 @@ class CourtController extends BaseController
                 ->setError()
                 ->setMessage('Bạn không có quyền chỉnh giá sân. Chỉ Admin mới được phép.');
         }
+
+        $this->convertFeaturesInput($request);
 
         CourtForm::createFromModel($court)->setRequest($request)->save();
 
@@ -78,6 +82,31 @@ class CourtController extends BaseController
 
         // If prices changed, check permission
         return auth()->user()->hasPermission('courts.edit-price');
+    }
+
+    /**
+     * Convert features text input (one per line) to array
+     */
+    private function convertFeaturesInput(CourtRequest $request): void
+    {
+        $features = $request->input('features');
+        if (is_string($features) && $features !== '') {
+            $featuresArray = array_values(array_filter(
+                array_map('trim', explode("\n", $features)),
+                fn ($line) => $line !== ''
+            ));
+            $request->merge(['features' => $featuresArray]);
+        }
+
+        // Convert gallery - ensure it's always an array for JSON cast
+        $gallery = $request->input('gallery');
+        if (is_string($gallery)) {
+            $decoded = json_decode($gallery, true);
+            $gallery = is_array($decoded) ? $decoded : ($gallery !== '' ? [$gallery] : []);
+            $request->merge(['gallery' => $gallery]);
+        } elseif (is_null($gallery)) {
+            $request->merge(['gallery' => []]);
+        }
     }
 
     public function destroy(Court $court)
