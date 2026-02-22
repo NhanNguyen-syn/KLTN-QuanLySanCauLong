@@ -8,6 +8,9 @@ cd /var/www/html
 # Render / proxy: trust all proxies to avoid HTTPS redirect loops
 export TRUSTED_PROXIES="${TRUSTED_PROXIES:-*}"
 
+# Force logs to stderr so they show in Render's log viewer
+export LOG_CHANNEL="${LOG_CHANNEL:-stderr}"
+
 # If APP_URL is not set, try to use Render external url (if exists)
 if [ -z "${APP_URL}" ] && [ -n "${RENDER_EXTERNAL_URL}" ]; then
   export APP_URL="${RENDER_EXTERNAL_URL}"
