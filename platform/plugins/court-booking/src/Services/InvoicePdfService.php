@@ -233,6 +233,19 @@ class InvoicePdfService
             // Purge cached SMTP transport so it picks up the new config
             Mail::purge('smtp');
 
+            // Configure SSL stream context for Alpine Linux (Render)
+            // Alpine may not have all CA certs properly linked
+            config([
+                'mail.mailers.smtp.stream' => [
+                    'ssl' => [
+                        'allow_self_signed' => true,
+                        'verify_peer'       => false,
+                        'verify_peer_name'  => false,
+                    ],
+                ],
+            ]);
+            Mail::purge('smtp');
+
             \Log::info('[INVOICE EMAIL] Preparing to send', [
                 'to' => $email,
                 'order_code' => $first->order_code,

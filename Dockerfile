@@ -50,6 +50,8 @@ FROM php:8.2-fpm-alpine
 RUN apk add --no-cache \
     nginx \
     supervisor \
+    ca-certificates \
+    openssl \
     libpng-dev \
     libjpeg-turbo-dev \
     freetype-dev \
@@ -61,20 +63,20 @@ RUN apk add --no-cache \
     libxml2-dev \
     dos2unix \
     && docker-php-ext-configure gd \
-        --with-freetype \
-        --with-jpeg \
-        --with-webp \
+    --with-freetype \
+    --with-jpeg \
+    --with-webp \
     && docker-php-ext-install -j$(nproc) \
-        gd \
-        pdo_mysql \
-        zip \
-        exif \
-        bcmath \
-        intl \
-        mbstring \
-        curl \
-        xml \
-        opcache \
+    gd \
+    pdo_mysql \
+    zip \
+    exif \
+    bcmath \
+    intl \
+    mbstring \
+    curl \
+    xml \
+    opcache \
     && rm -rf /var/cache/apk/*
 
 # Configure PHP for production
