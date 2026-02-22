@@ -470,11 +470,57 @@ const syncPaymentDetails = () => {
                 }
             };
 
-            if (state.method === 'bank-transfer') {
-                try { localStorage.removeItem('booking_created'); } catch(e) {}
-                try { localStorage.removeItem('order_code'); } catch(e) {}
-                syncPaymentDetails();
+            syncPaymentDetails();
+
+            // Check if booking was already completed — show warning modal
+            // Only show if user navigated BACK (no fresh booking data in state.booking)
+            if (localStorage.getItem('booking_created') === '1' && localStorage.getItem('order_code') && state.booking.length === 0) {
+                const orderCode = localStorage.getItem('order_code');
+                const overlay = document.createElement('div');
+                overlay.id = 'booking-exists-overlay';
+                overlay.style.cssText = 'position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.5);backdrop-filter:blur(4px);animation:fadeInModal .3s ease';
+                overlay.innerHTML = `
+                    <style>
+                        @keyframes fadeInModal{from{opacity:0}to{opacity:1}}
+                        @keyframes slideUpModal{from{opacity:0;transform:translateY(20px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}
+                    </style>
+                    <div style="background:#fff;border-radius:20px;padding:36px 28px;max-width:460px;width:92%;text-align:center;box-shadow:0 25px 60px rgba(0,0,0,0.25);animation:slideUpModal .35s ease">
+                        <div style="width:72px;height:72px;margin:0 auto 18px;background:linear-gradient(135deg,#fef3c7,#fde68a);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:32px;box-shadow:0 6px 16px rgba(251,191,36,0.3)">⚠️</div>
+                        <h3 style="margin:0 0 8px;font-size:20px;font-weight:800;color:#1f2937">Đơn hàng đã được đặt!</h3>
+                        <p style="margin:0 0 8px;font-size:15px;color:#6b7280;line-height:1.6">Bạn đã hoàn tất đặt sân thành công trước đó.</p>
+                        <p style="margin:0 0 24px;font-size:14px;color:#9ca3af">Mã đơn hàng: <strong style="color:#059669">${orderCode}</strong></p>
+                        <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+                            <a href="/xac-nhan" style="text-decoration:none;background:linear-gradient(135deg,#059669,#14b8a6);color:#fff;border:none;padding:13px 28px;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(5,150,105,0.35);transition:transform .15s">📄 Xem xác nhận</a>
+                            <button id="btn-new-booking" style="background:#fff;color:#6b7280;border:2px solid #e5e7eb;padding:13px 28px;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;transition:all .15s">🔄 Đặt sân mới</button>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(overlay);
+                document.getElementById('btn-new-booking').addEventListener('click', function() {
+                    localStorage.removeItem('booking_created');
+                    localStorage.removeItem('order_code');
+                    localStorage.removeItem('tempBooking');
+                    localStorage.removeItem('paymentDetails');
+                    window.location.replace('/dat-san');
+                });
+            } else if (localStorage.getItem('booking_created') === '1' && state.booking.length > 0) {
+                // User started a new booking — clear old flags
+                localStorage.removeItem('booking_created');
+                localStorage.removeItem('order_code');
             }
+
+            // Handle browser bfcache: re-check when page is restored from cache
+            window.addEventListener('pageshow', function(e) {
+                if (e.persisted) {
+                    const existingOverlay = document.getElementById('booking-exists-overlay');
+                    if (existingOverlay && localStorage.getItem('booking_created') !== '1') {
+                        existingOverlay.remove();
+                    }
+                    if (!existingOverlay && localStorage.getItem('booking_created') === '1' && localStorage.getItem('order_code')) {
+                        window.location.reload();
+                    }
+                }
+            });
 
 // Radio interactions
             qsa('.radio-opt[data-method]').forEach(el=>{
@@ -490,12 +536,9 @@ const syncPaymentDetails = () => {
                     }
                     qs('#vnpay-card').style.display = val==='vnpay'?'block':'none';
                     if (val === 'vnpay') {
-                        try { localStorage.removeItem('booking_created'); } catch(e) {}
                         syncPaymentDetails();
                         fetchVnpayQr();
                     } else {
-                        try { localStorage.removeItem('booking_created'); } catch(e) {}
-                        try { localStorage.removeItem('order_code'); } catch(e) {}
                         syncPaymentDetails();
                     }
                     const payBtn = qs('#pay-btn');

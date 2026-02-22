@@ -28,10 +28,15 @@
     </style>
 
     <div class="container">
-        <div class="success-head">
+        <div class="success-head" id="success-head" style="display:none">
             <div class="success-badge">✔️</div>
             <h1 style="font-size:34px;font-weight:900;margin:8px 0">Đặt Sân Thành Công!</h1>
             <p style="color:#6b7280">Cảm ơn bạn đã tin tưởng Sân cầu lông Niên Thời. Thông tin chi tiết đã được gửi qua email.</p>
+        </div>
+        <div class="success-head" id="loading-head">
+            <div class="success-badge" style="background:linear-gradient(135deg,#fef3c7,#fde68a)">⏳</div>
+            <h1 style="font-size:34px;font-weight:900;margin:8px 0">Đang xử lý...</h1>
+            <p style="color:#6b7280">Hệ thống đang xác nhận đơn đặt sân của bạn.</p>
         </div>
 
         <div class="card">
@@ -71,6 +76,12 @@
     <script>
     (async function(){
         const qs=s=>document.querySelector(s);
+        const showSuccess = () => { qs('#success-head').style.display='block'; qs('#loading-head').style.display='none'; };
+        const showLoading = () => { qs('#success-head').style.display='none'; qs('#loading-head').style.display='block'; };
+        // If booking already created, show success immediately
+        if (localStorage.getItem('booking_created') === '1' && localStorage.getItem('order_code')) {
+            showSuccess();
+        }
         const fmt=n=>{try{return Number(n||0).toLocaleString('vi-VN')+'đ'}catch(e){return '0đ'}};
         // Map personalInfo fields: field_1 = name, field_2 = email, field_3 = phone
         const getName = p => (p?.field_1 || p?.fullName || p?.name || p?.full_name || p?.hoTen || p?.ten || '').toString().trim();
@@ -319,16 +330,22 @@ if (paymentDetails) {
                     localStorage.setItem('booking_created', '1');
                     qs('#order-code').textContent = res.order_code;
                     try { localStorage.removeItem('tempBooking'); } catch(e) {}
+                    showSuccess();
                 } else {
                     console.warn('[BOOKING API] Server responded with success=false or missing order_code.', res);
+                    showSuccess(); // Still show success for exists: true
                 }
             })
             .catch(err => {
                 console.error('[BOOKING API FAILED]', err);
                 qs('#order-code').textContent = localStorage.getItem('order_code') || placeholderCode;
+                showSuccess(); // Still show the page even on error
             });
             // Không có item hợp lệ: vẫn hiển thị cấu trúc mã thay vì "Không xác định"
             qs('#order-code').textContent = localStorage.getItem('order_code') || placeholderCode;
+        } else {
+            // Already created or VNPay return handled server-side
+            showSuccess();
         }
 
         // Handle Download Invoice

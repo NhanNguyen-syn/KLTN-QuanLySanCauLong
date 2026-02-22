@@ -129,6 +129,10 @@ export default defineComponent({
           price: (court?.price || 0) / 2,
         }
       })
+      // Clear old booking flags so the checkout page treats this as a fresh booking
+      localStorage.removeItem('booking_created')
+      localStorage.removeItem('order_code')
+      localStorage.removeItem('paymentDetails')
       localStorage.setItem('tempBooking', JSON.stringify(bookingData))
       window.location.href = '/thong-tin-ca-nhan'
     }

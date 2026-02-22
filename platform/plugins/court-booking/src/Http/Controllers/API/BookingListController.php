@@ -101,7 +101,7 @@ class BookingListController extends BaseController
                         return in_array($row->status, ['paid', 'failed', 'completed'], true);
                     });
 
-                    if ($incomingKeys === $storedKeys && ! $hasFinalStatus) {
+                    if ($incomingKeys === $storedKeys) {
                         return response()->json([
                             'success' => true,
                             'order_code' => $requestedOrderCode,
