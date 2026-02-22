@@ -186,10 +186,19 @@ class InvoicePdfService
      */
     public static function sendGroupedEmail($bookings, ?string $email = null)
     {
-        if ($bookings->isEmpty()) return;
+        \Log::info('[INVOICE EMAIL] sendGroupedEmail() called', [
+            'bookings_count' => $bookings->count(),
+            'email_param' => $email,
+        ]);
+
+        if ($bookings->isEmpty()) {
+            \Log::warning('[INVOICE EMAIL] SKIPPED: bookings collection is empty');
+            return;
+        }
 
         // Prevent duplicate emails (check if already sent)
         if ($bookings->first()->invoice_created_at) {
+            \Log::warning('[INVOICE EMAIL] SKIPPED: invoice already created at ' . $bookings->first()->invoice_created_at);
             return;
         }
 

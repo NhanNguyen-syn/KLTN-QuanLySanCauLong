@@ -204,8 +204,15 @@ class BookingListController extends BaseController
                     $createdBookings = BookingList::query()
                         ->where('order_code', $orderCode)
                         ->get();
+                    Log::info('[BOOKING] Calling sendGroupedEmail', [
+                        'order_code' => $orderCode,
+                        'email' => $request->input('email'),
+                        'bookings_found' => $createdBookings->count(),
+                        'first_invoice_created_at' => $createdBookings->first()?->invoice_created_at,
+                    ]);
                     \Botble\CourtBooking\Services\InvoicePdfService::sendGroupedEmail($createdBookings, $request->input('email'));
                     $emailSent = true;
+                    Log::info('[BOOKING] sendGroupedEmail returned successfully');
                 } catch (\Throwable $emailErr) {
                     Log::error('[BOOKING EMAIL ERROR]', [
                         'order_code' => $orderCode,
