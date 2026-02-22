@@ -575,7 +575,7 @@
             @foreach($courts as $court)
                 @php
                     $courtSlug = $court->slug ?: \Illuminate\Support\Str::slug($court->name);
-                    $courtImage = $court->image ? \Botble\Base\Facades\BaseHelper::getMediaUrl($court->image) : asset('themes/quanlysancaulong/images/placeholder-court.jpg');
+                    $courtImage = $court->image ? \Botble\Media\Facades\RvMedia::getImageUrl($court->image) : asset('themes/quanlysancaulong/images/placeholder-court.jpg');
                     $timeSlots = $court->time_display ? explode(',', $court->time_display) : [];
                 @endphp
                 <a href="{{ url('san-va-gia/' . $courtSlug) }}" class="court-card">

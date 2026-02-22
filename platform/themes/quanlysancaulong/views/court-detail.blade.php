@@ -108,6 +108,7 @@
         border-radius: 16px;
         overflow: hidden;
         margin-bottom: 12px;
+        background: #111827;
     }
     @media (min-width: 768px) {
         .court-gallery-main { height: 450px; }
@@ -115,7 +116,7 @@
     .court-gallery-main img {
         width: 100%;
         height: 100%;
-        object-fit: cover;
+        object-fit: contain;
         transition: opacity 0.5s ease;
     }
     .court-gallery-thumbs {

@@ -90,8 +90,8 @@ class CourtForm extends FormAbstract
                 'value' => $this->getModel()->features ? implode("\n", (array) $this->getModel()->features) : '',
             ])
             ->add('gallery', 'mediaImages', [
-                'label' => 'Thư viện ảnh',
-                'help' => 'Chọn nhiều ảnh để hiển thị gallery trên trang chi tiết sân.',
+                'label' => 'Thư viện ảnh (Trang Chi Tiết Sân)',
+                'help' => 'Chọn nhiều ảnh để hiển thị gallery trên trang chi tiết sân. Ảnh này KHÁC với Hình ảnh đại diện bên phải.',
                 'values' => $this->getModel()->gallery ?? [],
             ])
             ->add('availability', TextField::class, [
@@ -114,7 +114,7 @@ class CourtForm extends FormAbstract
                 'attr' => ['min' => 0],
                 'default_value' => 0,
             ])
-            ->add('image', MediaImageField::class, MediaImageFieldOption::make())
+            ->add('image', MediaImageField::class, MediaImageFieldOption::make()->label('Hình ảnh đại diện (Trang Sân & Giá)'))
             ->add('status', SelectField::class, StatusFieldOption::make())
             ->setBreakFieldPoint('image');
     }
