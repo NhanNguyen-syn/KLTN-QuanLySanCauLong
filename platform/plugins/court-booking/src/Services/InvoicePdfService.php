@@ -208,56 +208,64 @@ class InvoicePdfService
         }
 
         try {
-            // On Render with cached config, env() returns null — use config() as primary
-            $mailUsername = config('mail.mailers.smtp.username', env('MAIL_USERNAME'));
-            $mailPassword = config('mail.mailers.smtp.password', env('MAIL_PASSWORD'));
-            $mailFromAddress = config('mail.from.address', env('MAIL_FROM_ADDRESS', $mailUsername));
-            $mailFromName = config('mail.from.name', env('MAIL_FROM_NAME', 'Sân Cầu Lông'));
+            // Use env() directly — config() may return null on Render (Docker build-time cache)
+            $mailHost = env('MAIL_HOST', 'smtp.gmail.com');
+            $mailPort = (int) env('MAIL_PORT', 587);
+            $mailUsername = env('MAIL_USERNAME', '');
+            $mailPassword = env('MAIL_PASSWORD', '');
+            $mailEncryption = env('MAIL_ENCRYPTION', 'tls');
+            $mailFromAddress = env('MAIL_FROM_ADDRESS', $mailUsername);
+            $mailFromName = env('MAIL_FROM_NAME', 'Sân Cầu Lông');
 
-            // Strip quotes that might be accidentally included in env vars (Render issue)
+            // Strip quotes that might be accidentally included in env vars
             $mailPassword = trim((string) $mailPassword, '"\'');
             $mailFromName = trim((string) $mailFromName, '"\'');
+
+            \Log::info('[INVOICE EMAIL] SMTP Config', [
+                'host' => $mailHost,
+                'port' => $mailPort,
+                'encryption' => $mailEncryption,
+                'username' => $mailUsername,
+                'password_set' => !empty($mailPassword) ? 'YES (' . strlen($mailPassword) . ' chars)' : 'NO',
+                'from_address' => $mailFromAddress,
+                'from_name' => $mailFromName,
+                'to' => $email,
+                'order_code' => $first->order_code,
+            ]);
+
+            if (empty($mailUsername) || empty($mailPassword)) {
+                \Log::error('[INVOICE EMAIL] SMTP credentials are empty! Cannot send email.');
+                return;
+            }
 
             config([
                 'mail.default' => 'smtp',
                 'mail.mailers.smtp.transport' => 'smtp',
-                'mail.mailers.smtp.host' => config('mail.mailers.smtp.host', env('MAIL_HOST', 'smtp.gmail.com')),
-                'mail.mailers.smtp.port' => (int) config('mail.mailers.smtp.port', env('MAIL_PORT', 587)),
-                'mail.mailers.smtp.encryption' => config('mail.mailers.smtp.encryption', env('MAIL_ENCRYPTION', 'tls')),
+                'mail.mailers.smtp.host' => $mailHost,
+                'mail.mailers.smtp.port' => $mailPort,
+                'mail.mailers.smtp.encryption' => $mailEncryption,
                 'mail.mailers.smtp.username' => $mailUsername,
                 'mail.mailers.smtp.password' => $mailPassword,
                 'mail.from.address' => $mailFromAddress,
                 'mail.from.name' => $mailFromName,
+                'mail.mailers.smtp.stream' => [
+                    'ssl' => [
+                        'allow_self_signed' => true,
+                        'verify_peer' => false,
+                        'verify_peer_name' => false,
+                    ],
+                ],
             ]);
 
             // Purge cached SMTP transport so it picks up the new config
             Mail::purge('smtp');
 
-            // Configure SSL stream context for Alpine Linux (Render)
-            // Alpine may not have all CA certs properly linked
-            config([
-                'mail.mailers.smtp.stream' => [
-                    'ssl' => [
-                        'allow_self_signed' => true,
-                        'verify_peer'       => false,
-                        'verify_peer_name'  => false,
-                    ],
-                ],
-            ]);
-            Mail::purge('smtp');
-
-            \Log::info('[INVOICE EMAIL] Preparing to send', [
-                'to' => $email,
-                'order_code' => $first->order_code,
-                'mail_host' => config('mail.mailers.smtp.host'),
-                'mail_username' => $mailUsername,
-                'mail_from' => $mailFromAddress,
-            ]);
-
+            \Log::info('[INVOICE EMAIL] Generating PDF...');
             $pdf = $service->generateGroupedPdf($bookings);
             $filename = 'hoa-don-' . ($first->order_code ?? 'order') . '.pdf';
+            \Log::info('[INVOICE EMAIL] PDF generated: ' . $filename);
 
-            // Use 'smtp' explicitly
+            \Log::info('[INVOICE EMAIL] Sending via SMTP...');
             Mail::mailer('smtp')->send('plugins/court-booking::emails.invoice-grouped', [
                 'bookings' => $bookings,
                 'email' => $email,
@@ -271,15 +279,19 @@ class InvoicePdfService
                     ]);
             });
             
-            \Log::info('[INVOICE EMAIL] Sent to ' . $email);
+            \Log::info('[INVOICE EMAIL] Successfully sent to ' . $email);
             
             // Mark all as invoiced
             foreach($bookings as $b) {
                 $b->update(['invoice_created_at' => Carbon::now()]);
             }
 
-        } catch (\Exception $e) {
-            \Log::error('Failed to send grouped invoice email: ' . $e->getMessage());
+        } catch (\Throwable $e) {
+            \Log::error('[INVOICE EMAIL FAILED]', [
+                'error' => $e->getMessage(),
+                'file' => $e->getFile() . ':' . $e->getLine(),
+                'trace' => $e->getTraceAsString(),
+            ]);
         }
     }
 }
