@@ -431,7 +431,7 @@
         <nav>
             <a href="{{ BaseHelper::getHomepageUrl() }}">Trang chủ</a>
             <span>/</span>
-            <a href="{{ url('/san-va-gia') }}">Sân & Giá</a>
+            <a href="{{ url('/san-gia') }}">Sân & Giá</a>
             <span>/</span>
             <span class="current">{{ $court->name }}</span>
         </nav>
@@ -622,7 +622,7 @@
                             Đặt Sân Ngay
                             <i class="ti ti-arrow-right"></i>
                         </a>
-                        <a href="{{ url('/san-va-gia') }}" class="btn-view-all">
+                        <a href="{{ url('/san-gia') }}" class="btn-view-all">
                             <i class="ti ti-arrow-left"></i>
                             Xem tất cả sân
                         </a>
@@ -637,7 +637,7 @@
                             @php
                                 $cSlug = $c->slug ?: \Illuminate\Support\Str::slug($c->name);
                             @endphp
-                            <a href="{{ url('san-va-gia/' . $cSlug) }}"
+                            <a href="{{ url('san-gia/' . $cSlug) }}"
                                class="{{ $c->id === $court->id ? 'active' : '' }}">
                                 {{ preg_replace('/^Sân\s*/i', 'S', $c->name) }}
                             </a>

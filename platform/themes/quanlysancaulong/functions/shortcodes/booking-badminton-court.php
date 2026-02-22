@@ -126,7 +126,7 @@ add_action('init', function () {
 
             // Get court detail URL (sử dụng slug cho trang chi tiết sân)
             $courtSlug = $court->slug ?: \Illuminate\Support\Str::slug($court->name);
-            $detailUrl = '/san-va-gia/' . $courtSlug;
+            $detailUrl = '/san-gia/' . $courtSlug;
 
             $items[] = [
                 'court_id' => $court->id,

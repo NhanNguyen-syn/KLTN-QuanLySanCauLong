@@ -578,7 +578,7 @@
                     $courtImage = $court->image ? \Botble\Media\Facades\RvMedia::getImageUrl($court->image) : asset('themes/quanlysancaulong/images/placeholder-court.jpg');
                     $timeSlots = $court->time_display ? explode(',', $court->time_display) : [];
                 @endphp
-                <a href="{{ url('san-va-gia/' . $courtSlug) }}" class="court-card">
+                <a href="{{ url('san-gia/' . $courtSlug) }}" class="court-card">
                     <!-- Image -->
                     <div class="court-card-image">
                         <img src="{{ $courtImage }}" alt="{{ $court->name }}" loading="lazy">

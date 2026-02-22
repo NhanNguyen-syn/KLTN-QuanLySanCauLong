@@ -16,13 +16,8 @@ use Illuminate\Support\Facades\DB;
 
 // Custom routes
 Theme::registerRoutes(function (): void {
-    // Trang Sân & Giá (danh sách sân)
-    Route::get('san-va-gia', function () {
-        return Theme::scope('court-listing')->render();
-    })->name('public.courts');
-
     // Trang chi tiết sân
-    Route::get('san-va-gia/{slug}', function ($slug) {
+    Route::get('san-gia/{slug}', function ($slug) {
         $court = \Botble\CourtBooking\Models\Court::query()
             ->with('type', 'courtStatus')
             ->where('slug', $slug)
