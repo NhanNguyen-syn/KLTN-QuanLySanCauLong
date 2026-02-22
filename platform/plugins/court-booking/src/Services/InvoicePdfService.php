@@ -215,7 +215,7 @@ class InvoicePdfService
         }
 
         if (!$email) {
-            \Log::warning('[INVOICE EMAIL] No email found for order ' . $first->order_code);
+            error_log('[INVOICE EMAIL] No email found for order ' . $first->order_code);
             return;
         }
 
@@ -233,20 +233,10 @@ class InvoicePdfService
             $mailPassword = trim((string) $mailPassword, '"\'');
             $mailFromName = trim((string) $mailFromName, '"\'');
 
-            \Log::info('[INVOICE EMAIL] SMTP Config', [
-                'host' => $mailHost,
-                'port' => $mailPort,
-                'encryption' => $mailEncryption,
-                'username' => $mailUsername,
-                'password_set' => !empty($mailPassword) ? 'YES (' . strlen($mailPassword) . ' chars)' : 'NO',
-                'from_address' => $mailFromAddress,
-                'from_name' => $mailFromName,
-                'to' => $email,
-                'order_code' => $first->order_code,
-            ]);
+            error_log('[INVOICE EMAIL] SMTP Config: host=' . $mailHost . ' port=' . $mailPort . ' user=' . $mailUsername . ' pass_set=' . (!empty($mailPassword) ? 'YES(' . strlen($mailPassword) . ')' : 'NO') . ' from=' . $mailFromAddress . ' to=' . $email);
 
             if (empty($mailUsername) || empty($mailPassword)) {
-                \Log::error('[INVOICE EMAIL] SMTP credentials are empty! Cannot send email.');
+                error_log('[INVOICE EMAIL] SMTP credentials EMPTY! Cannot send.');
                 return;
             }
 
@@ -272,12 +262,12 @@ class InvoicePdfService
             // Purge cached SMTP transport so it picks up the new config
             Mail::purge('smtp');
 
-            \Log::info('[INVOICE EMAIL] Generating PDF...');
+            error_log('[INVOICE EMAIL] Generating PDF...');
             $pdf = $service->generateGroupedPdf($bookings);
             $filename = 'hoa-don-' . ($first->order_code ?? 'order') . '.pdf';
-            \Log::info('[INVOICE EMAIL] PDF generated: ' . $filename);
+            error_log('[INVOICE EMAIL] PDF generated: ' . $filename);
 
-            \Log::info('[INVOICE EMAIL] Sending via SMTP...');
+            error_log('[INVOICE EMAIL] Sending via SMTP to ' . $email . '...');
             Mail::mailer('smtp')->send('plugins/court-booking::emails.invoice-grouped', [
                 'bookings' => $bookings,
                 'email' => $email,
@@ -291,7 +281,7 @@ class InvoicePdfService
                     ]);
             });
             
-            \Log::info('[INVOICE EMAIL] Successfully sent to ' . $email);
+            error_log('[INVOICE EMAIL] Successfully sent to ' . $email);
             
             // Mark all as invoiced
             foreach($bookings as $b) {
@@ -299,11 +289,7 @@ class InvoicePdfService
             }
 
         } catch (\Throwable $e) {
-            \Log::error('[INVOICE EMAIL FAILED]', [
-                'error' => $e->getMessage(),
-                'file' => $e->getFile() . ':' . $e->getLine(),
-                'trace' => $e->getTraceAsString(),
-            ]);
+            error_log('[INVOICE EMAIL FAILED] ' . $e->getMessage() . ' at ' . $e->getFile() . ':' . $e->getLine());
         }
     }
 }
