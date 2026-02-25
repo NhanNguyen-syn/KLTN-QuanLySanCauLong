@@ -325,12 +325,14 @@ Route::post('ajax/vnpay/qr', function (Request $request) {
                     }
 
                     if ($isSuccess && $bookings->isNotEmpty()) {
-                        // Send ONE email for the whole order (wrap in try-catch so email errors don't crash)
+                        // Re-fetch fresh from DB to get updated invoice_created_at
+                        $freshBookings = BookingList::query()->where('order_code', $txnRef)->get();
+                        $email = $freshBookings->first()->email;
+                        error_log('[XACNHAN] Sending email for order=' . $txnRef . ' email=' . $email . ' invoice_created_at=' . $freshBookings->first()->invoice_created_at);
                         try {
-                            $email = $bookings->first()->email;
-                            \Botble\CourtBooking\Services\InvoicePdfService::sendGroupedEmail($bookings, $email);
+                            \Botble\CourtBooking\Services\InvoicePdfService::sendGroupedEmail($freshBookings, $email);
                         } catch (\Throwable $emailErr) {
-                            \Log::error('[VNPAY EMAIL ERROR]', ['error' => $emailErr->getMessage(), 'order_code' => $txnRef]);
+                            error_log('[XACNHAN EMAIL ERROR] ' . $emailErr->getMessage());
                         }
                     }
                 }
@@ -388,7 +390,12 @@ Route::post('ajax/vnpay/qr', function (Request $request) {
 
             if ($isSuccess && $bookings->isNotEmpty()) {
                 $email = $bookings->first()->email;
-                \Botble\CourtBooking\Services\InvoicePdfService::sendGroupedEmail($bookings, $email);
+                error_log('[IPN] Sending email for order=' . $txnRef . ' email=' . $email . ' invoice_created_at=' . $bookings->first()->invoice_created_at);
+                try {
+                    \Botble\CourtBooking\Services\InvoicePdfService::sendGroupedEmail($bookings, $email);
+                } catch (\Throwable $emailErr) {
+                    error_log('[IPN EMAIL ERROR] ' . $emailErr->getMessage());
+                }
             }
         }
 

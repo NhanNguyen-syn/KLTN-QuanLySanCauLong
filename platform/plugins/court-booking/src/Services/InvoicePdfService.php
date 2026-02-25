@@ -220,55 +220,21 @@ class InvoicePdfService
         }
 
         try {
-            // Use env() directly — config() may return null on Render (Docker build-time cache)
-            $mailHost = env('MAIL_HOST', 'smtp.gmail.com');
-            $mailPort = (int) env('MAIL_PORT', 587);
-            $mailUsername = env('MAIL_USERNAME', '');
-            $mailPassword = env('MAIL_PASSWORD', '');
-            $mailEncryption = env('MAIL_ENCRYPTION', 'tls');
-            $mailFromAddress = env('MAIL_FROM_ADDRESS', $mailUsername);
-            $mailFromName = env('MAIL_FROM_NAME', 'Sân Cầu Lông');
+            $mailFromAddress = env('MAIL_FROM_ADDRESS', config('mail.from.address'));
+            $mailFromName = env('MAIL_FROM_NAME', config('mail.from.name', 'Sân Cầu Lông'));
 
             // Strip quotes that might be accidentally included in env vars
-            $mailPassword = trim((string) $mailPassword, '"\'');
             $mailFromName = trim((string) $mailFromName, '"\'');
 
-            error_log('[INVOICE EMAIL] SMTP Config: host=' . $mailHost . ' port=' . $mailPort . ' user=' . $mailUsername . ' pass_set=' . (!empty($mailPassword) ? 'YES(' . strlen($mailPassword) . ')' : 'NO') . ' from=' . $mailFromAddress . ' to=' . $email);
-
-            if (empty($mailUsername) || empty($mailPassword)) {
-                error_log('[INVOICE EMAIL] SMTP credentials EMPTY! Cannot send.');
-                return;
-            }
-
-            config([
-                'mail.default' => 'smtp',
-                'mail.mailers.smtp.transport' => 'smtp',
-                'mail.mailers.smtp.host' => $mailHost,
-                'mail.mailers.smtp.port' => $mailPort,
-                'mail.mailers.smtp.encryption' => $mailEncryption,
-                'mail.mailers.smtp.username' => $mailUsername,
-                'mail.mailers.smtp.password' => $mailPassword,
-                'mail.from.address' => $mailFromAddress,
-                'mail.from.name' => $mailFromName,
-                'mail.mailers.smtp.stream' => [
-                    'ssl' => [
-                        'allow_self_signed' => true,
-                        'verify_peer' => false,
-                        'verify_peer_name' => false,
-                    ],
-                ],
-            ]);
-
-            // Purge cached SMTP transport so it picks up the new config
-            Mail::purge('smtp');
+            error_log('[INVOICE EMAIL] Mail config: mailer=' . config('mail.default') . ' from=' . $mailFromAddress . ' to=' . $email);
 
             error_log('[INVOICE EMAIL] Generating PDF...');
             $pdf = $service->generateGroupedPdf($bookings);
             $filename = 'hoa-don-' . ($first->order_code ?? 'order') . '.pdf';
             error_log('[INVOICE EMAIL] PDF generated: ' . $filename);
 
-            error_log('[INVOICE EMAIL] Sending via SMTP to ' . $email . '...');
-            Mail::mailer('smtp')->send('plugins/court-booking::emails.invoice-grouped', [
+            error_log('[INVOICE EMAIL] Sending email to ' . $email . '...');
+            Mail::send('plugins/court-booking::emails.invoice-grouped', [
                 'bookings' => $bookings,
                 'email' => $email,
                 'company_name' => setting('admin_title', 'Sân Cầu Lông'),
