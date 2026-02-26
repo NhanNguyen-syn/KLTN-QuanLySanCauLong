@@ -490,7 +490,7 @@ const syncPaymentDetails = () => {
                         <p style="margin:0 0 8px;font-size:15px;color:#6b7280;line-height:1.6">Bạn đã hoàn tất đặt sân thành công trước đó.</p>
                         <p style="margin:0 0 24px;font-size:14px;color:#9ca3af">Mã đơn hàng: <strong style="color:#059669">${orderCode}</strong></p>
                         <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
-                            <a href="/xac-nhan" style="text-decoration:none;background:linear-gradient(135deg,#059669,#14b8a6);color:#fff;border:none;padding:13px 28px;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(5,150,105,0.35);transition:transform .15s">📄 Xem xác nhận</a>
+                            <a href="/tra-cuu" style="text-decoration:none;background:linear-gradient(135deg,#059669,#14b8a6);color:#fff;border:none;padding:13px 28px;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(5,150,105,0.35);transition:transform .15s">📄 Tra cứu đơn</a>
                             <button id="btn-new-booking" style="background:#fff;color:#6b7280;border:2px solid #e5e7eb;padding:13px 28px;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;transition:all .15s">🔄 Đặt sân mới</button>
                         </div>
                     </div>
