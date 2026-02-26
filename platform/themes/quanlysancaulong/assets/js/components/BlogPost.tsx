@@ -26,6 +26,7 @@ export default defineComponent({
         categories: { type: Array as PropType<Category[]>, required: true },
         posts: { type: Array as PropType<Post[]>, required: true },
         allText: { type: String, default: 'Tất Cả' },
+        paginationHtml: { type: String, default: '' },
     },
     setup(props) {
         const activeCategoryId = ref<number | null>(null);
@@ -91,6 +92,9 @@ export default defineComponent({
                 <div class="bp-grid">
                     {filteredPosts.value.map(post => <PostCard key={post.id} {...post} />)}
                 </div>
+                {props.paginationHtml && (
+                    <div class="bp-pagination mt-4" innerHTML={props.paginationHtml}></div>
+                )}
             </div>
         );
     },

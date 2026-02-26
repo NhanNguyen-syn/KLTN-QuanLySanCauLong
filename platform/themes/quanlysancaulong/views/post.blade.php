@@ -310,11 +310,8 @@
         <div class="post-content-grid">
             <!-- Main Content -->
             <div>
-                @if($postImage)
-                <div class="post-thumbnail">
-                    <img src="{{ $postImage }}" alt="{{ $post->name }}">
-                </div>
-                @endif
+                
+
                 
                 @if($post->description)
                 <div class="post-description">

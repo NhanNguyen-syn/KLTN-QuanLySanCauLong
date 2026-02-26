@@ -39,7 +39,7 @@ Shortcode::register('blog-post', __('Blog Post'), __('Blog posts grid by categor
 
     $title = $shortcode->title ?: __('Bài viết');
     $subtitle = $shortcode->subtitle ?: '';
-    $limit = (int)($shortcode->limit ?: 8);
+    $limit = (int)($shortcode->limit ?: 6);
 
     $categories = BlogCategory::query()
         ->when($categoryIds, fn ($q) => $q->whereIn('id', $categoryIds))
@@ -47,7 +47,7 @@ Shortcode::register('blog-post', __('Blog Post'), __('Blog posts grid by categor
         ->get(['id', 'name']);
 
     // Get posts in any of selected categories; if none selected, get latest posts
-    $posts = Post::query()
+    $paginator = Post::query()
         ->with(['slugable', 'categories', 'author'])
         ->when($categoryIds, function ($q) use ($categoryIds) {
             $q->whereHas('categories', function ($c) use ($categoryIds) {
@@ -55,10 +55,12 @@ Shortcode::register('blog-post', __('Blog Post'), __('Blog posts grid by categor
             });
         })
         ->orderByDesc('created_at')
-        ->limit($limit)
-        ->get();
+        ->paginate($limit);
 
-    return Theme::partial('shortcodes.blog-post', compact('shortcode', 'title', 'subtitle', 'categories', 'posts'));
+    $posts = $paginator->getCollection();
+    $paginationHtml = $paginator->appends(request()->query())->links()->toHtml();
+
+    return Theme::partial('shortcodes.blog-post', compact('shortcode', 'title', 'subtitle', 'categories', 'posts', 'paginationHtml'));
 });
 
 Shortcode::setAdminConfig('blog-post', function (array $attributes) {

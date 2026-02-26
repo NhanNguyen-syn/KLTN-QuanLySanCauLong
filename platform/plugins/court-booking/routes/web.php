@@ -44,6 +44,12 @@ AdminHelper::registerRoutes(function () {
             'as' => 'regenerate',
             'permission' => 'booking-list.edit',
         ]);
+
+        Route::post('ai-advice', [
+            'uses' => '\\Botble\\CourtBooking\\Http\\Controllers\\Admin\\ForecastingController@generateAiAdvice',
+            'as' => 'ai-advice',
+            'permission' => 'booking-list.index',
+        ]);
     });
 
     // Revenue Dashboard - đã chuyển sang plugin revenue-statistics

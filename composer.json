@@ -33,6 +33,7 @@
         "botble/widget": "*@dev",
         "darkaonline/l5-swagger": "^10.1",
         "doctrine/dbal": "^4.2",
+        "google-gemini-php/client": "^2.7",
         "guzzlehttp/guzzle": "^7.9",
         "laravel/framework": "^12.0",
         "laravel/sanctum": "^4.0",

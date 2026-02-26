@@ -11,6 +11,9 @@ class InsightGeneratorService
 {
     public function generateAllInsights(): void
     {
+        // Clear old insights first to avoid duplicates
+        AiInsight::where('is_read', false)->delete();
+
         $this->generatePeakHoursInsight();
         $this->generateTrendInsight();
         $this->generateRecommendations();
@@ -21,6 +24,7 @@ class InsightGeneratorService
     {
         $peakHours = BookingForecast::where('forecast_date', '>=', now()->toDateString())
             ->where('forecast_date', '<=', now()->addDays(7)->toDateString())
+            ->where('predicted_bookings', '>', 0)
             ->selectRaw('hour, AVG(predicted_bookings) as avg_bookings')
             ->groupBy('hour')
             ->orderByDesc('avg_bookings')
@@ -36,22 +40,21 @@ class InsightGeneratorService
                 'description' => "Khung giờ dự kiến đông nhất: {$hoursList}. Hãy chuẩn bị nhân lực và sân đầy đủ.",
                 'data' => ['peak_hours' => $peakHours->toArray()],
                 'priority' => 'high',
-                'created_at' => now(),
             ]);
         }
     }
 
     protected function generateTrendInsight(): void
     {
-        // Compare this week vs last week
-        $thisWeek = DB::table('booking_lists')
-            ->whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()])
-            ->where('status', 'completed')
+        // Compare this week vs last week using the 'date' column
+        $thisWeek = DB::table('court_bookings_list')
+            ->whereBetween('date', [now()->startOfWeek()->toDateString(), now()->endOfWeek()->toDateString()])
+            ->whereIn('status', ['completed', 'confirmed', 'paid', 'processing'])
             ->count();
 
-        $lastWeek = DB::table('booking_lists')
-            ->whereBetween('created_at', [now()->subWeek()->startOfWeek(), now()->subWeek()->endOfWeek()])
-            ->where('status', 'completed')
+        $lastWeek = DB::table('court_bookings_list')
+            ->whereBetween('date', [now()->subWeek()->startOfWeek()->toDateString(), now()->subWeek()->endOfWeek()->toDateString()])
+            ->whereIn('status', ['completed', 'confirmed', 'paid', 'processing'])
             ->count();
 
         if ($lastWeek > 0) {
@@ -62,21 +65,28 @@ class InsightGeneratorService
             AiInsight::create([
                 'insight_type' => 'trend',
                 'title' => 'Xu hướng đặt sân',
-                'description' => "Tuần này {$direction} " . abs(round($change, 1)) . "% so với tuần trước ({$thisWeek} vs {$lastWeek} bookings).",
+                'description' => "Tuần này {$direction} " . abs(round($change, 1)) . "% so với tuần trước ({$thisWeek} vs {$lastWeek} lượt đặt).",
                 'data' => [
                     'this_week' => $thisWeek,
                     'last_week' => $lastWeek,
                     'change_percent' => round($change, 2),
                 ],
                 'priority' => $priority,
-                'created_at' => now(),
+            ]);
+        } elseif ($thisWeek > 0) {
+            AiInsight::create([
+                'insight_type' => 'trend',
+                'title' => 'Thống kê tuần này',
+                'description' => "Tuần này có {$thisWeek} lượt đặt sân.",
+                'data' => ['this_week' => $thisWeek, 'last_week' => 0],
+                'priority' => 'low',
             ]);
         }
     }
 
     protected function generateRecommendations(): void
     {
-        // Find low-demand hours
+        // Find low-demand hours from forecast
         $lowDemandHours = BookingForecast::where('forecast_date', '>=', now()->toDateString())
             ->where('forecast_date', '<=', now()->addDays(7)->toDateString())
             ->selectRaw('hour, AVG(predicted_bookings) as avg_bookings')
@@ -91,39 +101,37 @@ class InsightGeneratorService
             AiInsight::create([
                 'insight_type' => 'recommendation',
                 'title' => 'Khuyến nghị khuyến mãi',
-                'description' => "Khung giờ sepi dự kiến: {$hoursList}. Nên tung khuyến mãi để tối ưu doanh thu.",
+                'description' => "Khung giờ vắng dự kiến: {$hoursList}. Nên tung khuyến mãi để tối ưu doanh thu.",
                 'data' => ['low_demand_hours' => $lowDemandHours->toArray()],
                 'priority' => 'medium',
-                'created_at' => now(),
             ]);
         }
     }
 
     protected function detectAnomalies(): void
     {
-        // Detect sudden drops in bookings
-        $yesterday = DB::table('booking_lists')
-            ->whereDate('created_at', now()->subDay())
-            ->where('status', 'completed')
+        // Detect sudden drops in bookings using 'date' column
+        $yesterday = DB::table('court_bookings_list')
+            ->where('date', now()->subDay()->toDateString())
+            ->whereIn('status', ['completed', 'confirmed', 'paid', 'processing'])
             ->count();
 
-        $avg7Days = DB::table('booking_lists')
-            ->whereBetween('created_at', [now()->subDays(8), now()->subDays(2)])
-            ->where('status', 'completed')
-            ->selectRaw('COUNT(*) / 7 as avg')
+        $avg7Days = DB::table('court_bookings_list')
+            ->whereBetween('date', [now()->subDays(8)->toDateString(), now()->subDays(2)->toDateString()])
+            ->whereIn('status', ['completed', 'confirmed', 'paid', 'processing'])
+            ->selectRaw('COUNT(*) / GREATEST(COUNT(DISTINCT date), 1) as avg')
             ->value('avg');
 
         if ($avg7Days > 0 && $yesterday < ($avg7Days * 0.5)) {
             AiInsight::create([
                 'insight_type' => 'anomaly',
                 'title' => '⚠️ Giảm booking bất thường',
-                'description' => "Hôm qua chỉ có {$yesterday} bookings, giảm hơn 50% so với trung bình ({$avg7Days}). Cần kiểm tra nguyên nhân.",
+                'description' => "Hôm qua chỉ có {$yesterday} lượt đặt, giảm hơn 50% so với trung bình (" . round($avg7Days, 1) . "). Cần kiểm tra nguyên nhân.",
                 'data' => [
                     'yesterday' => $yesterday,
                     'avg_7days' => round($avg7Days, 1),
                 ],
                 'priority' => 'high',
-                'created_at' => now(),
             ]);
         }
     }
@@ -136,7 +144,7 @@ class InsightGeneratorService
     public function getUnreadInsights()
     {
         return AiInsight::unread()
-            ->orderByDesc('priority')
+            ->orderByRaw("FIELD(priority, 'high', 'medium', 'low')")
             ->orderByDesc('created_at')
             ->get();
     }

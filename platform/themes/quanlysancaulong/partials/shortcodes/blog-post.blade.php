@@ -23,6 +23,7 @@
         'categories' => $allCategories,
         'posts' => $allPosts,
         'allText' => __('Tất Cả'),
+        'paginationHtml' => $paginationHtml ?? '',
     ];
 @endphp
 

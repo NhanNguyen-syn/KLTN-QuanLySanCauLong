@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class BookingForecast extends Model
 {
-    public $timestamps = false;
+    const UPDATED_AT = null;
 
     protected $fillable = [
         'forecast_date',

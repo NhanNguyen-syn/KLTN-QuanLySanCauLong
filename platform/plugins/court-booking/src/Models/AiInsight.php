@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class AiInsight extends Model
 {
-    public $timestamps = false;
+    const UPDATED_AT = null;
 
     protected $fillable = [
         'insight_type',
