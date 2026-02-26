@@ -582,7 +582,8 @@ const syncPaymentDetails = () => {
                     totalAmount: total,
                     paymentType: payType,
                     amountPaid: amountPaid,
-                    amountRemaining: amountRemaining
+                    amountRemaining: amountRemaining,
+                    paymentMethod: state.method
                 };
 
                 localStorage.setItem('paymentDetails', JSON.stringify(paymentDetails));

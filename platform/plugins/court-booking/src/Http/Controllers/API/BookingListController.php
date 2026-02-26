@@ -197,31 +197,29 @@ class BookingListController extends BaseController
 
             DB::commit();
 
-            // Gửi email hóa đơn ngay lập tức (tách riêng try-catch để lỗi email không ảnh hưởng booking)
+            // Gửi email hóa đơn:
+            // - Bank transfer (payment_method != 'vnpay'): gửi ngay dù status='processing'
+            // - VNPay pending (payment_method='vnpay' + status='processing'): SKIP, sẽ gửi khi VNPay callback trả về
+            // - VNPay thành công (status='paid'/'completed'): gửi luôn
             $emailSent = false;
-            if ($request->input('email')) {
+            $paymentMethod = $request->input('payment_method', 'bank-transfer');
+            $isVnpayPending = ($status === 'processing' && $paymentMethod === 'vnpay');
+
+            if ($request->input('email') && !$isVnpayPending) {
                 try {
                     $createdBookings = BookingList::query()
                         ->where('order_code', $orderCode)
                         ->get();
-                    error_log('[BOOKING] Calling sendGroupedEmail: order=' . $orderCode . ' email=' . $request->input('email') . ' found=' . $createdBookings->count());
-                    Log::info('[BOOKING] Calling sendGroupedEmail', [
-                        'order_code' => $orderCode,
-                        'email' => $request->input('email'),
-                        'bookings_found' => $createdBookings->count(),
-                        'first_invoice_created_at' => $createdBookings->first()?->invoice_created_at,
-                    ]);
+                    error_log('[BOOKING] Calling sendGroupedEmail: order=' . $orderCode . ' email=' . $request->input('email') . ' status=' . $status . ' method=' . $paymentMethod . ' found=' . $createdBookings->count());
                     \Botble\CourtBooking\Services\InvoicePdfService::sendGroupedEmail($createdBookings, $request->input('email'));
                     $emailSent = true;
                     error_log('[BOOKING] sendGroupedEmail completed OK');
-                    Log::info('[BOOKING] sendGroupedEmail returned successfully');
                 } catch (\Throwable $emailErr) {
-                    Log::error('[BOOKING EMAIL ERROR]', [
-                        'order_code' => $orderCode,
-                        'email' => $request->input('email'),
-                        'error' => $emailErr->getMessage(),
-                    ]);
+                    error_log('[BOOKING EMAIL ERROR] ' . $emailErr->getMessage());
+                    \Log::error('[BOOKING EMAIL ERROR]', ['message' => $emailErr->getMessage(), 'trace' => $emailErr->getTraceAsString()]);
                 }
+            } elseif ($isVnpayPending) {
+                error_log('[BOOKING] Skipping email for VNPay pending order=' . $orderCode . ' (status=processing, method=vnpay)');
             }
 
             return response()->json([

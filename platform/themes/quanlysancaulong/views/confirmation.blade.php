@@ -223,6 +223,7 @@ if (paymentDetails) {
             email: getEmail(personal) || null,
             notes: null,
             paid_amount: paymentDetails ? paymentDetails.amountPaid : 0,
+            payment_method: vnpIsReturn ? 'vnpay' : (paymentDetails?.paymentMethod || 'bank-transfer'),
             status: vnpIsReturn ? (vnpSuccess ? ((paymentDetails && paymentDetails.paymentType === 'full') ? 'completed' : 'paid') : 'failed') : 'processing',
             items: (booking||[])
                 .map(it => {

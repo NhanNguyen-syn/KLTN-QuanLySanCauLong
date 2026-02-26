@@ -38,6 +38,7 @@
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^2.10",
         "predis/predis": "^3.0",
+        "resend/resend-laravel": "*",
         "wikimedia/composer-merge-plugin": "^2.1"
     },
     "require-dev": {
@@ -116,7 +117,7 @@
         ]
     },
     "config": {
-        "optimize-autoloader": true,
+        "optimize-autoloader": false,
         "preferred-install": "dist",
         "sort-packages": true,
         "allow-plugins": {
