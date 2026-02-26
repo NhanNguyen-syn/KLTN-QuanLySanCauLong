@@ -91,15 +91,15 @@ class ForecastingController extends BaseController
                 ->count();
             $totalCourts = \Illuminate\Support\Facades\DB::table('courts')->where('status', 'published')->count();
 
-            $prompt = 'Ban la chuyen gia co van kinh doanh cho mot he thong dat san cau long. '
-                . 'Dua vao so lieu kinh doanh ben duoi, hay dua ra 3 goi y chien luoc ngan gon, thiet thuc de tang doanh thu va cham soc khach hang tot hon. '
-                . 'Tra loi bang tieng Viet co dau, dinh dang HTML don gian (dung <h5>, <ul>, <li>, <strong>, <p>). '
-                . 'KHONG tra loi bang markdown, chi HTML thuan. '
-                . "\n\nDu lieu kinh doanh:\n"
-                . "- Tong so san dang hoat dong: {$totalCourts}\n"
-                . "- Luot dat tuan nay: {$totalBookingsThisWeek} | Tuan truoc: {$totalBookingsLastWeek}\n"
-                . "- Cac gio cao diem (luot TB/ngay): " . ($peakHoursStr ?: 'Chua co du lieu') . "\n"
-                . "- Du bao luot dat tuan toi: " . ($weeklyTrendStr ?: 'Chua co du lieu') . "\n";
+            $prompt = 'Ban la chuyen gia co van kinh doanh san cau long. '
+                . 'Dua vao so lieu ben duoi, dua ra DUNG 3 goi y chi tiet nhung ngan gon (moi goi y 3-4 cau, neu ro van de va giai phap cu the). '
+                . 'Tra loi bang tieng Viet co dau. Dinh dang HTML thuan (chi dung <h5>, <ul>, <li>, <strong>). '
+                . 'KHONG dung markdown. Di thang vao trong tam. '
+                . "\n\nSo lieu:\n"
+                . "- San hoat dong: {$totalCourts}\n"
+                . "- Dat tuan nay: {$totalBookingsThisWeek} | Tuan truoc: {$totalBookingsLastWeek}\n"
+                . "- Gio cao diem: " . ($peakHoursStr ?: 'Chua co') . "\n"
+                . "- Du bao tuan toi: " . ($weeklyTrendStr ?: 'Chua co') . "\n";
 
             // Determine which AI provider to use (same as AI Chatbot settings)
             $provider = setting('ai_chatbot_llm_provider', 'gemini');
@@ -129,13 +129,13 @@ class ForecastingController extends BaseController
     {
         $response = \Illuminate\Support\Facades\Http::withHeaders([
             'Content-Type' => 'application/json',
-        ])->timeout(60)->post("https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$apiKey}", [
+        ])->connectTimeout(10)->timeout(25)->post("https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$apiKey}", [
             'contents' => [
                 ['parts' => [['text' => $prompt]]]
             ],
             'generationConfig' => [
                 'temperature' => 0.7,
-                'maxOutputTokens' => 2048,
+                'maxOutputTokens' => 1024,
             ],
         ]);
 
@@ -155,13 +155,13 @@ class ForecastingController extends BaseController
         $response = \Illuminate\Support\Facades\Http::withHeaders([
             'Authorization' => "Bearer {$apiKey}",
             'Content-Type' => 'application/json',
-        ])->timeout(60)->post('https://api.openai.com/v1/chat/completions', [
+        ])->connectTimeout(10)->timeout(25)->post('https://api.openai.com/v1/chat/completions', [
             'model' => $model,
             'messages' => [
-                ['role' => 'system', 'content' => 'Ban la chuyen gia co van kinh doanh san cau long. Tra loi bang tieng Viet co dau, dinh dang HTML thuan (h5, ul, li, strong, p). Khong dung markdown.'],
+                ['role' => 'system', 'content' => 'Ban la chuyen gia co van kinh doanh san cau long. Tra loi ngan gon, toi da 3 goi y. Tieng Viet co dau, HTML thuan (h5, ul, li, strong). Khong markdown.'],
                 ['role' => 'user', 'content' => $prompt],
             ],
-            'max_tokens' => 2048,
+            'max_tokens' => 1024,
             'temperature' => 0.7,
         ]);
 
