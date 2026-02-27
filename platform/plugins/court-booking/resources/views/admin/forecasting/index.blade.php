@@ -28,10 +28,11 @@
                         </div>
 
                         <div id="ai-result-content" class="d-none">
-                            <div class="alert alert-info">
-                                <h4 class="alert-title"><i class="ti ti-bulb me-2"></i>Lời khuyên từ AI:</h4>
-                                <div id="ai-response-text" class="text-dark" style="line-height: 1.6; font-size: 15px;"></div>
+                            <div class="d-flex align-items-center mb-3 pb-2" style="border-bottom: 2px solid #e6e7e9;">
+                                <i class="ti ti-bulb text-warning me-2" style="font-size: 1.5rem;"></i>
+                                <h4 class="mb-0" style="font-weight: 600;">Lời khuyên từ AI:</h4>
                             </div>
+                            <div id="ai-response-text" style="line-height: 1.7; font-size: 14.5px;"></div>
                         </div>
                     </div>
                 </div>

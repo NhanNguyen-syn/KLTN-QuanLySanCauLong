@@ -79,49 +79,120 @@ class ForecastingController extends BaseController
             $weeklyTrend = $this->forecastService->getWeeklyTrend();
 
             // Format data into a prompt
-            $peakHoursStr = collect($peakHours)->map(fn($val, $key) => "{$key}:00 ({$val} luot)")->implode(', ');
-            $weeklyTrendStr = collect($weeklyTrend)->map(fn($val, $key) => "{$key}: {$val} luot")->implode(', ');
+            $peakHoursStr = collect($peakHours)->map(fn($val, $key) => "{$key}:00 ({$val} lượt)")->implode(', ');
+            $weeklyTrendStr = collect($weeklyTrend)->map(fn($val, $key) => "{$key}: {$val} lượt")->implode(', ');
 
-            // Get additional stats from database
+            // Get REAL stats from database
             $totalBookingsThisWeek = \Illuminate\Support\Facades\DB::table('court_bookings_list')
-                ->whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()])
+                ->whereBetween('date', [now()->startOfWeek()->toDateString(), now()->endOfWeek()->toDateString()])
+                ->whereIn('status', ['completed', 'confirmed', 'paid', 'processing'])
                 ->count();
             $totalBookingsLastWeek = \Illuminate\Support\Facades\DB::table('court_bookings_list')
-                ->whereBetween('created_at', [now()->subWeek()->startOfWeek(), now()->subWeek()->endOfWeek()])
+                ->whereBetween('date', [now()->subWeek()->startOfWeek()->toDateString(), now()->subWeek()->endOfWeek()->toDateString()])
+                ->whereIn('status', ['completed', 'confirmed', 'paid', 'processing'])
                 ->count();
             $totalCourts = \Illuminate\Support\Facades\DB::table('courts')->where('status', 'published')->count();
 
-            $prompt = 'Ban la chuyen gia co van kinh doanh san cau long. '
-                . 'Dua vao so lieu ben duoi, dua ra DUNG 3 goi y chi tiet nhung ngan gon (moi goi y 3-4 cau, neu ro van de va giai phap cu the). '
-                . 'Tra loi bang tieng Viet co dau. Dinh dang HTML thuan (chi dung <h5>, <ul>, <li>, <strong>). '
-                . 'KHONG dung markdown. Di thang vao trong tam. '
-                . "\n\nSo lieu:\n"
-                . "- San hoat dong: {$totalCourts}\n"
-                . "- Dat tuan nay: {$totalBookingsThisWeek} | Tuan truoc: {$totalBookingsLastWeek}\n"
-                . "- Gio cao diem: " . ($peakHoursStr ?: 'Chua co') . "\n"
-                . "- Du bao tuan toi: " . ($weeklyTrendStr ?: 'Chua co') . "\n";
+            // Bookings per day of week (real data from last 4 weeks)
+            $bookingsByDay = \Illuminate\Support\Facades\DB::table('court_bookings_list')
+                ->whereBetween('date', [now()->subWeeks(4)->toDateString(), now()->toDateString()])
+                ->whereIn('status', ['completed', 'confirmed', 'paid', 'processing'])
+                ->selectRaw('DAYNAME(date) as day_name, COUNT(*) as total')
+                ->groupBy('day_name')
+                ->orderByRaw('FIELD(day_name, "Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday")')
+                ->pluck('total', 'day_name');
 
-            // Determine which AI provider to use (same as AI Chatbot settings)
+            $dayNames = ['Monday' => 'Thứ Hai', 'Tuesday' => 'Thứ Ba', 'Wednesday' => 'Thứ Tư', 'Thursday' => 'Thứ Năm', 'Friday' => 'Thứ Sáu', 'Saturday' => 'Thứ Bảy', 'Sunday' => 'Chủ Nhật'];
+            $bookingsByDayStr = $bookingsByDay->map(fn($val, $key) => ($dayNames[$key] ?? $key) . ": {$val}")->implode(', ');
+
+            // Bookings per hour (real data)
+            $bookingsByHour = \Illuminate\Support\Facades\DB::table('court_bookings_list')
+                ->whereBetween('date', [now()->subWeeks(4)->toDateString(), now()->toDateString()])
+                ->whereIn('status', ['completed', 'confirmed', 'paid', 'processing'])
+                ->selectRaw('HOUR(start_time) as hour, COUNT(*) as total')
+                ->groupBy('hour')
+                ->orderBy('hour')
+                ->pluck('total', 'hour');
+            $bookingsByHourStr = $bookingsByHour->map(fn($val, $key) => "{$key}h({$val})")->implode(', ');
+
+            // Cancellation rate
+            $cancelledCount = \Illuminate\Support\Facades\DB::table('court_bookings_list')
+                ->whereBetween('date', [now()->subWeeks(4)->toDateString(), now()->toDateString()])
+                ->where('status', 'cancelled')
+                ->count();
+            $totalAll = \Illuminate\Support\Facades\DB::table('court_bookings_list')
+                ->whereBetween('date', [now()->subWeeks(4)->toDateString(), now()->toDateString()])
+                ->count();
+            $cancelRate = $totalAll > 0 ? round(($cancelledCount / $totalAll) * 100, 1) : 0;
+
+            // Total revenue this week
+            $revenueThisWeek = \Illuminate\Support\Facades\DB::table('court_bookings_list')
+                ->whereBetween('date', [now()->startOfWeek()->toDateString(), now()->endOfWeek()->toDateString()])
+                ->whereIn('status', ['completed', 'confirmed', 'paid'])
+                ->sum('price');
+
+            $avgPerDay = $totalAll > 0 ? round($totalAll / 28, 1) : 0;
+
+            // Build concise data block
+            $dataBlock = "Sân: {$totalCourts}. "
+                . "Tuần này: {$totalBookingsThisWeek} lượt, tuần trước: {$totalBookingsLastWeek}. "
+                . "TB/ngày: {$avgPerDay}. "
+                . "Doanh thu tuần: " . number_format($revenueThisWeek) . "đ. "
+                . "Hủy: {$cancelRate}%. "
+                . "Theo thứ(4 tuần): " . ($bookingsByDayStr ?: 'N/A') . ". "
+                . "Theo giờ(4 tuần): " . ($bookingsByHourStr ?: 'N/A') . ". "
+                . "Cao điểm dự báo: " . ($peakHoursStr ?: 'N/A') . ".";
+
+            $prompt = "Dữ liệu thực tế sân cầu lông: {$dataBlock}\n\n"
+                . "YÊU CẦU: Phân tích dữ liệu trên, đưa ra ĐÚNG 3 gợi ý. "
+                . "Tiếng Việt có dấu 100%. KHÔNG viết lời mở đầu hay giới thiệu. "
+                . "BẮT ĐẦU NGAY bằng thẻ <div> đầu tiên. "
+                . "Mỗi gợi ý dùng HTML:\n"
+                . '<div style="background:#f8f9fa;border-left:4px solid #206bc4;padding:14px 18px;margin-bottom:14px;border-radius:6px">'
+                . '<h5 style="margin:0 0 8px;color:#206bc4;font-size:15px">[emoji] Tiêu đề</h5>'
+                . '<p style="margin:0 0 8px;line-height:1.9"><strong>📊 Vấn đề:</strong><br>• ý 1<br>• ý 2</p>'
+                . '<p style="margin:0;line-height:1.9"><strong>💡 Giải pháp:</strong><br>• ý 1<br>• ý 2</p>'
+                . "</div>\n"
+                . "Quy tắc: Mỗi ý chỉ 1 câu ngắn, trích số liệu. KHÔNG markdown. Emoji tiêu đề: 🎯📈⚡🏸💰🔥.";
+
+            // Determine which AI provider to use
             $provider = setting('ai_chatbot_llm_provider', 'gemini');
             $apiKey = \Botble\AiChatbot\Models\ApiKey::getKeyForProvider($provider);
             $model = \Botble\AiChatbot\Models\ApiKey::getModelForProvider($provider);
 
             if (empty($apiKey)) {
                 return $this->httpResponse()->setError()
-                    ->setMessage('Chua cau hinh API Key AI. Vui long vao Tro Ly AI > Cai Dat de thiet lap.');
+                    ->setMessage('Chưa cấu hình API Key AI. Vui lòng vào Trợ Lý AI > Cài Đặt để thiết lập.');
             }
 
-            if ($provider === 'gemini') {
-                $aiResponse = $this->callGeminiApi($apiKey, $model, $prompt);
-            } else {
-                $aiResponse = $this->callOpenAiApi($apiKey, $model, $prompt);
+            // Try up to 3 times to get a complete response
+            $aiResponse = '';
+            for ($attempt = 1; $attempt <= 3; $attempt++) {
+                if ($provider === 'gemini') {
+                    $aiResponse = $this->callGeminiApi($apiKey, $model, $prompt);
+                } else {
+                    $aiResponse = $this->callOpenAiApi($apiKey, $model, $prompt);
+                }
+
+                // Clean: strip any text before first <div
+                $firstDiv = strpos($aiResponse, '<div');
+                if ($firstDiv !== false && $firstDiv > 0) {
+                    $aiResponse = substr($aiResponse, $firstDiv);
+                }
+
+                // Check completeness: need 3 opening AND 3 closing div tags
+                $openDivs = substr_count($aiResponse, '<div');
+                $closeDivs = substr_count($aiResponse, '</div>');
+                if ($openDivs >= 3 && $closeDivs >= 3) {
+                    break; // Complete response, stop retrying
+                }
             }
 
             return $this->httpResponse()
                 ->setData($aiResponse)
                 ->setMessage('AI analysis completed');
         } catch (\Exception $e) {
-            return $this->httpResponse()->setError()->setMessage('Loi AI: ' . $e->getMessage());
+            return $this->httpResponse()->setError()->setMessage('Lỗi AI: ' . $e->getMessage());
         }
     }
 
@@ -129,19 +200,20 @@ class ForecastingController extends BaseController
     {
         $response = \Illuminate\Support\Facades\Http::withHeaders([
             'Content-Type' => 'application/json',
-        ])->connectTimeout(10)->timeout(25)->post("https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$apiKey}", [
+        ])->connectTimeout(15)->timeout(90)->post("https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$apiKey}", [
             'contents' => [
                 ['parts' => [['text' => $prompt]]]
             ],
             'generationConfig' => [
-                'temperature' => 0.7,
-                'maxOutputTokens' => 1024,
+                'temperature' => 0.4,
+                'maxOutputTokens' => 4096,
             ],
         ]);
 
         if ($response->successful()) {
             $data = $response->json();
-            $text = $data['candidates'][0]['content']['parts'][0]['text'] ?? '';
+            $candidate = $data['candidates'][0] ?? [];
+            $text = $candidate['content']['parts'][0]['text'] ?? '';
             $text = preg_replace('/^```html\s*/s', '', $text);
             $text = preg_replace('/```\s*$/s', '', $text);
             return trim($text);
@@ -155,14 +227,14 @@ class ForecastingController extends BaseController
         $response = \Illuminate\Support\Facades\Http::withHeaders([
             'Authorization' => "Bearer {$apiKey}",
             'Content-Type' => 'application/json',
-        ])->connectTimeout(10)->timeout(25)->post('https://api.openai.com/v1/chat/completions', [
+        ])->connectTimeout(15)->timeout(90)->post('https://api.openai.com/v1/chat/completions', [
             'model' => $model,
             'messages' => [
-                ['role' => 'system', 'content' => 'Ban la chuyen gia co van kinh doanh san cau long. Tra loi ngan gon, toi da 3 goi y. Tieng Viet co dau, HTML thuan (h5, ul, li, strong). Khong markdown.'],
+                ['role' => 'system', 'content' => 'Bạn là cố vấn kinh doanh sân cầu lông. Trả lời ĐÚNG 3 gợi ý bằng HTML. Tiếng Việt có dấu 100%. BẮT ĐẦU NGAY bằng thẻ <div>, không viết lời mở đầu. Dùng <br> và bullet (• ) xuống dòng, mỗi ý 1 câu ngắn.'],
                 ['role' => 'user', 'content' => $prompt],
             ],
-            'max_tokens' => 1024,
-            'temperature' => 0.7,
+            'max_tokens' => 4096,
+            'temperature' => 0.4,
         ]);
 
         if ($response->successful()) {

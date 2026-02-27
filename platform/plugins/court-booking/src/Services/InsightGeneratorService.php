@@ -37,7 +37,7 @@ class InsightGeneratorService
             AiInsight::create([
                 'insight_type' => 'peak_hours',
                 'title' => 'Giờ cao điểm tuần tới',
-                'description' => "Khung giờ dự kiến đông nhất: {$hoursList}. Hãy chuẩn bị nhân lực và sân đầy đủ.",
+                'description' => "Các khung giờ dự kiến đông khách nhất trong tuần tới: {$hoursList}. Đây là thời điểm cần đảm bảo đầy đủ nhân lực phục vụ, kiểm tra tình trạng sân và trang thiết bị. Nên ưu tiên bố trí nhân viên trực ca đông trong các khung giờ này để đảm bảo chất lượng dịch vụ và tối đa hóa công suất sân.",
                 'data' => ['peak_hours' => $peakHours->toArray()],
                 'priority' => 'high',
             ]);
@@ -65,7 +65,7 @@ class InsightGeneratorService
             AiInsight::create([
                 'insight_type' => 'trend',
                 'title' => 'Xu hướng đặt sân',
-                'description' => "Tuần này {$direction} " . abs(round($change, 1)) . "% so với tuần trước ({$thisWeek} vs {$lastWeek} lượt đặt).",
+                'description' => "Lượt đặt sân tuần này {$direction} " . abs(round($change, 1)) . "% so với tuần trước (tuần này: {$thisWeek} lượt, tuần trước: {$lastWeek} lượt). " . ($change > 0 ? "Xu hướng tăng cho thấy nhu cầu đang phát triển tốt, nên duy trì chất lượng dịch vụ và cân nhắc mở rộng khung giờ hoạt động." : "Xu hướng giảm có thể do thay đổi thời tiết, mùa vụ hoặc cạnh tranh. Nên xem xét triển khai các chương trình khuyến mãi để kích cầu."),
                 'data' => [
                     'this_week' => $thisWeek,
                     'last_week' => $lastWeek,
@@ -77,7 +77,7 @@ class InsightGeneratorService
             AiInsight::create([
                 'insight_type' => 'trend',
                 'title' => 'Thống kê tuần này',
-                'description' => "Tuần này có {$thisWeek} lượt đặt sân.",
+                'description' => "Tuần này ghi nhận {$thisWeek} lượt đặt sân. Chưa có dữ liệu tuần trước để so sánh xu hướng. Hệ thống sẽ tự động cập nhật phân tích xu hướng khi có thêm dữ liệu lịch sử trong các tuần tiếp theo.",
                 'data' => ['this_week' => $thisWeek, 'last_week' => 0],
                 'priority' => 'low',
             ]);
@@ -101,7 +101,7 @@ class InsightGeneratorService
             AiInsight::create([
                 'insight_type' => 'recommendation',
                 'title' => 'Khuyến nghị khuyến mãi',
-                'description' => "Khung giờ vắng dự kiến: {$hoursList}. Nên tung khuyến mãi để tối ưu doanh thu.",
+                'description' => "Các khung giờ dự kiến vắng khách trong tuần tới: {$hoursList}. Đây là cơ hội để triển khai chương trình khuyến mãi giảm giá 20-30% hoặc ưu đãi đặt sân theo gói để lấp đầy các khung giờ trống. Việc tận dụng hiệu quả các giờ vắng sẽ giúp tối ưu hóa công suất sân và tăng doanh thu tổng thể.",
                 'data' => ['low_demand_hours' => $lowDemandHours->toArray()],
                 'priority' => 'medium',
             ]);
@@ -125,8 +125,8 @@ class InsightGeneratorService
         if ($avg7Days > 0 && $yesterday < ($avg7Days * 0.5)) {
             AiInsight::create([
                 'insight_type' => 'anomaly',
-                'title' => '⚠️ Giảm booking bất thường',
-                'description' => "Hôm qua chỉ có {$yesterday} lượt đặt, giảm hơn 50% so với trung bình (" . round($avg7Days, 1) . "). Cần kiểm tra nguyên nhân.",
+                'title' => '⚠️ Giảm lượt đặt bất thường',
+                'description' => "Hôm qua chỉ ghi nhận {$yesterday} lượt đặt sân, giảm hơn 50% so với trung bình 7 ngày trước đó (" . round($avg7Days, 1) . " lượt/ngày). Nguyên nhân có thể do thời tiết xấu, sự kiện đặc biệt hoặc vấn đề về dịch vụ. Cần kiểm tra lại hệ thống đặt sân, đánh giá phản hồi khách hàng và cân nhắc triển khai khuyến mãi đặc biệt để phục hồi lượng đặt.",
                 'data' => [
                     'yesterday' => $yesterday,
                     'avg_7days' => round($avg7Days, 1),
