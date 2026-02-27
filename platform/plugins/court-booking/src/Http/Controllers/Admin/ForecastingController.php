@@ -128,8 +128,8 @@ class ForecastingController extends BaseController
             // Total revenue this week
             $revenueThisWeek = \Illuminate\Support\Facades\DB::table('court_bookings_list')
                 ->whereBetween('date', [now()->startOfWeek()->toDateString(), now()->endOfWeek()->toDateString()])
-                ->whereIn('status', ['completed', 'confirmed', 'paid'])
-                ->sum('price');
+                ->whereIn('status', ['completed', 'confirmed', 'paid', 'processing'])
+                ->sum('paid_amount');
 
             $avgPerDay = $totalAll > 0 ? round($totalAll / 28, 1) : 0;
 
