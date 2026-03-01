@@ -57,7 +57,7 @@ export default defineComponent({
     },
     template: `
         <section class="section-box">
-            <div class="container mt-120">
+            <div class="container mt-5">
                 <div class="row">
                     <div class="col-lg-12">
                         <div class="text-center">
@@ -66,7 +66,7 @@ export default defineComponent({
                         </div>
                     </div>
                 </div>
-                <div class="row mt-140">
+                <div class="row mt-5">
                     <div v-for="(tab, index) in tabs" :key="index" class="col-lg-3 col-md-6 col-sm-6 col-12">
                         <div class="card-small-square">
                             <div class="card-image">

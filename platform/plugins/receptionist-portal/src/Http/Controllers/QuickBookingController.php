@@ -195,8 +195,10 @@ class QuickBookingController extends BaseController
             ], 409);
         }
 
+        $slotCount = $slots->count();
         // Standardize price: 70,000 VND per 30min slot (140,000 VND/hour)
-        $pricePerSlot = 70000;
+        // Discount 15%: 60,000 VND per 30min slot (120,000 VND/hour) for >= 4 slots
+        $pricePerSlot = $slotCount >= 4 ? 60000 : 70000;
         $totalPrice = $slotCount * $pricePerSlot;
 
         // Create booking

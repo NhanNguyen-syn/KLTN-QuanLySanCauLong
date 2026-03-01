@@ -1,13 +1,61 @@
-.banner-for-yard{position:relative;background-size:cover;background-position:center;border-radius:8px;overflow:hidden}
-.banner-for-yard__overlay{position:absolute;inset:0}
-.banner-for-yard__inner{position:relative;z-index:2;min-height:320px;display:flex;align-items:center;justify-content:center;text-align:center;padding:40px 20px}
-.banner-for-yard__title{font-weight:800;font-size:32px;line-height:1.25;margin:0}
-.banner-for-yard__desc{max-width:900px;margin:16px auto 0;color:#fff;font-size:16px}
-.banner-for-yard__btn{margin-top:20px}
-.banner-for-yard__btn .btn{padding:12px 22px;border-radius:6px}
-@media (min-width:768px){
-  .banner-for-yard__inner{min-height:420px;padding:60px 24px}
-  .banner-for-yard__title{font-size:40px}
-  .banner-for-yard__desc{font-size:18px}
+.banner-for-yard {
+  position: relative;
+  background-size: cover;
+  background-position: center;
+  border-radius: 8px;
+  overflow: hidden
 }
 
+.banner-for-yard__overlay {
+  position: absolute;
+  inset: 0
+}
+
+.banner-for-yard__inner {
+  position: relative;
+  z-index: 2;
+  min-height: 320px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 40px 20px
+}
+
+.banner-for-yard__title {
+  font-weight: 800;
+  font-size: 32px;
+  line-height: 1.25;
+  margin: 0
+}
+
+.banner-for-yard__desc {
+  max-width: 900px;
+  margin: 16px auto 0;
+  color: #fff;
+  font-size: 16px
+}
+
+.banner-for-yard__btn {
+  margin-top: 20px
+}
+
+.banner-for-yard__btn .btn {
+  padding: 12px 22px;
+  border-radius: 6px
+}
+
+@media (min-width:768px) {
+  .banner-for-yard__inner {
+    min-height: 420px;
+    padding: 60px 24px
+  }
+
+  .banner-for-yard__title {
+    font-size: 40px
+  }
+
+  .banner-for-yard__desc {
+    font-size: 18px
+  }
+}

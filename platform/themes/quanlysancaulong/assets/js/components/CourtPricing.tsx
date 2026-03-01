@@ -31,17 +31,9 @@ export default defineComponent({
     },
     setup(props) {
         const handleButtonClick = (e: MouseEvent, url: string, text: string) => {
-            const ctaTexts = ['đặt sân', 'dat san', 'bắt đầu ngay', 'bat dau ngay'];
-            const buttonText = (text || '').trim().toLowerCase();
-
-            if (ctaTexts.some(t => buttonText.includes(t))) {
+            if (url && url !== '#') {
                 e.preventDefault();
-                const bookingUrl = (window as any).BOOKING_URL || (window as any).App?.bookingUrl || 'http://kltn-quan-ly-san-cau-long.test/san-gia';
-                window.location.assign(bookingUrl);
-            } else if (url) {
                 window.location.href = url;
-            } else {
-                e.preventDefault();
             }
         };
 
@@ -74,7 +66,7 @@ export default defineComponent({
 
                     <div class="cards-wrapper" style={{
                         display: 'grid',
-                        gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+                        gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))',
                         gap: '2rem',
                         maxWidth: '1200px',
                         margin: '0 auto',
@@ -82,9 +74,7 @@ export default defineComponent({
                         {props.cards.map((card, index) => {
                             const headerBg = card.card_bg_color || '#0E6B5C';
                             const headerText = (card.card_text_color && card.card_text_color.trim() !== headerBg.trim()) ? card.card_text_color : '#FFFFFF';
-                            const ctaTexts = ['đặt sân', 'dat san', 'đặt sân ngay', 'dat san ngay', 'bắt đầu ngay', 'bat dau ngay'];
-                            const isCta = ctaTexts.some(t => (card.button_text || '').toLowerCase().includes(t));
-                            const href = isCta ? '/san-gia' : (card.button_url || '#');
+                            const href = card.button_url || '#';
                             return (
                                 <div key={index} class="pricing-card court-pricing-item" style={{
                                     backgroundColor: '#fff',

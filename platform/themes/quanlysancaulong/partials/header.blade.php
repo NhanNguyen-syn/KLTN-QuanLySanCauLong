@@ -453,13 +453,68 @@
         /* Mobile Responsive */
         @media (max-width: 991.98px) {
             .header-wrapper {
-                flex-wrap: wrap;
+                flex-wrap: wrap !important;
+                justify-content: space-between !important;
+                gap: 8px !important;
+                padding: 10px 0 !important;
+            }
+
+            .logo-wrapper {
+                flex: 0 0 auto !important;
+                max-width: 50% !important;
+                display: flex !important;
+                align-items: center !important;
+                visibility: visible !important;
+            }
+            .logo-wrapper .navbar-brand {
+                display: flex !important;
+                width: 100% !important;
+            }
+            .logo-wrapper img {
+                max-height: 40px !important; 
+                width: auto !important;
+                max-width: 100% !important;
+                object-fit: contain !important;
+                display: block !important;
+            }
+
+            .header-actions {
+                flex: 0 0 auto !important;
+                display: flex !important;
+                justify-content: flex-end !important;
+                align-items: center !important;
+                gap: 8px !important; 
+            }
+
+            /* Hide text securely on small screens */
+            .header-phone-btn span,
+            .header-register-btn span,
+            .header-login-btn span {
+                display: none !important;
+            }
+
+            .header-phone-btn,
+            .header-register-btn,
+            .header-login-btn {
+                padding: 8px 12px;
+            }
+
+            .user-name, 
+            .user-menu-trigger .ti-chevron-down {
+                display: none !important;
+            }
+            
+            .user-menu-trigger {
+                padding: 4px;
+                border-radius: 50%;
             }
 
             .nav-wrapper {
-                order: 3;
-                width: 100%;
-                justify-content: flex-start;
+                flex: 0 0 100% !important;
+                order: 3 !important;
+                width: 100% !important;
+                justify-content: flex-start !important;
+                margin-top: 10px !important;
             }
 
             .navbar-collapse {
@@ -469,7 +524,9 @@
             .navbar-collapse.show {
                 display: block !important;
                 width: 100%;
-                padding-top: 16px;
+                padding-top: 10px;
+                border-top: 1px solid #e5e7eb;
+                margin-top: 10px;
             }
 
             .navbar-nav {
@@ -478,8 +535,33 @@
                 gap: 4px;
             }
 
+            .navbar-nav .nav-link {
+                padding: 12px 16px !important;
+                display: flex !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+                color: #065F46 !important;
+                font-size: 16px !important;
+                line-height: 1.5 !important;
+                background-color: #f8fafc !important;
+                border: 1px solid #e5e7eb !important;
+                border-radius: 8px !important;
+                margin-bottom: 4px !important;
+            }
+
             .navbar-nav .nav-link::after {
                 display: none;
+            }
+            
+            .navbar-toggler {
+                display: inline-flex !important;
+                align-items: center;
+                justify-content: center;
+                border: none;
+                background: #f8fafc;
+                border-radius: 8px;
+                padding: 6px;
+                color: #059669;
             }
         }
 
@@ -553,10 +635,6 @@
 
                 <!-- Navigation -->
                 <nav class="nav-wrapper navbar navbar-expand-lg">
-                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-                        aria-controls="navbarNav" aria-expanded="false" aria-label="{{ __('Toggle navigation') }}">
-                        <span class="navbar-toggler-icon"></span>
-                    </button>
                     <div class="collapse navbar-collapse" id="navbarNav">
 
                         <!-- Main Menu Items -->
@@ -704,10 +782,15 @@
                         @if(!request()->routeIs('public.member.login'))
                             <a href="{{ route('public.member.login') }}" class="header-login-btn">
                                 <i class="ti ti-login"></i>
-                                Đăng nhập
+                                <span>Đăng nhập</span>
                             </a>
                         @endif
                     @endauth
+
+                    <button class="navbar-toggler d-lg-none" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                        aria-controls="navbarNav" aria-expanded="false" aria-label="{{ __('Toggle navigation') }}">
+                        <i class="ti ti-menu-2" style="font-size: 24px; color: #059669;"></i>
+                    </button>
                 </div>
             </div>
         </div>
@@ -748,6 +831,19 @@
                         userDropdown.classList.remove('show');
                         userMenuTrigger.setAttribute('aria-expanded', 'false');
                     }
+                });
+            }
+
+            // Mobile Menu Toggle Fallback
+            const navbarToggler = document.querySelector('.navbar-toggler');
+            const navbarCollapse = document.getElementById('navbarNav');
+
+            if (navbarToggler && navbarCollapse) {
+                navbarToggler.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    navbarCollapse.classList.toggle('show');
+                    const isExpanded = navbarCollapse.classList.contains('show');
+                    navbarToggler.setAttribute('aria-expanded', isExpanded);
                 });
             }
         });

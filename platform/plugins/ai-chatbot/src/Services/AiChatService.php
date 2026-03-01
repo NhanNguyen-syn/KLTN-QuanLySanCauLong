@@ -1034,12 +1034,16 @@ Khi đã có ĐẦY ĐỦ: sân, ngày, giờ, tên, SĐT, email → thêm field
 }
 
 **LƯU Ý QUAN TRỌNG:**
-- KHÔNG trả booking_data nếu chưa có đủ thông tin (sân + giờ + ngày + tên + SĐT + email)
+**LƯU Ý QUAN TRỌNG VỀ GIÁ TỀN:**
 - Giá hiển thị ở trên là GIÁ MỖI SLOT 30 PHÚT, ví dụ: 70.000đ/slot
 - 1 giờ = 2 slot = 70.000 x 2 = 140.000đ. 30 phút = 1 slot = 70.000đ
-- Trong booking_data, price là TỔNG TIỀN = số slot x giá/slot
-- Nếu khách đặt 15:00-16:00 = 2 slots x 70.000 = 140.000đ
-- Nếu khách đặt 15:00-15:30 = 1 slot x 70.000 = 70.000đ
+- NẾU KHÁCH CHỌN TỪ 4 SLOT (2 GIỜ) TRỞ LÊN: Giảm giá còn 120.000đ/giờ (tức 60.000đ/slot). (Giảm ~15%)
+- Trong booking_data, price là TỔNG TIỀN = (giá/slot sau giảm/không giảm) x số slot
+- Ví dụ 1: khách đặt 15:00-16:00 (2 slot) = 2 x 70.000 = 140.000đ
+- Ví dụ 2: khách đặt 15:00-15:30 (1 slot) = 1 x 70.000 = 70.000đ
+- Ví dụ 3: khách đặt 15:00-17:00 (4 slot) = 4 x 60.000 = 240.000đ (Đã áp dụng giảm giá 120k/giờ)
+
+**LƯU Ý KHÁC:**
 - Nếu khách chọn giờ đã bị đặt, thông báo và gợi ý giờ khác
 - Tự chọn sân trống phù hợp nhất cho khách (ưu tiên sân có nhiều giờ trống)
 - Khách có thể đặt cho NGÀY MAI hoặc ngày khác, không chỉ hôm nay

@@ -1,0 +1,29 @@
+
+> dev
+> mix
+
+i Compiling Mix
+
+[1;1H[0J
+                         
+   Laravel Mix v6.0.49   
+                         
+
+✔ Compiled Successfully in 10749ms
+[90m┌───────────────────────────────────[39m[90m┬──────────┐[39m
+[90m│[39m                              File [90m│[39m Size     [90m│[39m
+[90m├───────────────────────────────────[39m[90m┼──────────┤[39m
+[90m│[39m  …/quanlysancaulong/js/booking.js [90m│[39m 961 KiB  [90m│[39m
+[90m│[39m  …quanlysancaulong/js/checkout.js [90m│[39m 712 KiB  [90m│[39m
+[90m│[39m  …mes/quanlysancaulong/js/main.js [90m│[39m 1.19 MiB [90m│[39m
+[90m│[39m  …ysancaulong/js/personal-info.js [90m│[39m 703 KiB  [90m│[39m
+[90m│[39m  …sancaulong\public\css\style.css [90m│[39m 43 KiB   [90m│[39m
+[90m│[39m  …sancaulong\public\js\booking.js [90m│[39m 961 KiB  [90m│[39m
+[90m│[39m  …ancaulong\public\js\checkout.js [90m│[39m 712 KiB  [90m│[39m
+[90m│[39m  …nlysancaulong\public\js\main.js [90m│[39m 1.19 MiB [90m│[39m
+[90m│[39m  …long\public\js\personal-info.js [90m│[39m 703 KiB  [90m│[39m
+[90m│[39m  …/quanlysancaulong/css/style.css [90m│[39m 43 KiB   [90m│[39m
+[90m└───────────────────────────────────[39m[90m┴──────────┘[39m
+√ Mix: Compiled successfully in 11.45s
+[1m[33m16 WARNINGS in child compilations (Use 'stats.children: true' resp. '--stats-children' for more details)[39m[22m
+webpack compiled with [1m[33m16 warnings[39m[22m

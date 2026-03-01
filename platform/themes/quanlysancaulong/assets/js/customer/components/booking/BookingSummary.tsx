@@ -13,14 +13,40 @@ export default defineComponent({
         onCheckout: { type: Function as PropType<() => void>, required: true },
     },
     setup(props) {
-        const total = computed(() => {
-            let sum = 0
+        const totalInfos = computed(() => {
+            let originalSum = 0
+            let finalSum = 0
+            const slotCount = props.selectedSlots.length
+
             for (const slot of props.selectedSlots) {
                 const courtId = slot.substring(0, slot.lastIndexOf('-'))
                 const court = props.courts.find((c) => String(c.id) === courtId)
-                if (court) sum += (court.price / 2)
+                if (court) {
+                    const originalSlotPrice = court.price / 2 // Standard price per 30 mins
+                    let slotPrice = originalSlotPrice
+
+                    // Apply discount: reduce 10k per slot (20k/hr) if 4+ slots
+                    if (slotCount >= 4) {
+                        // Assuming the user meant standard 15% or 20k/hr reduction. Let's just deduct 10,000 VND per slot, or 15%.
+                        // Original request: "giảm 120.000đ trên 1 giờ chơi thay vì 140.000đ" -> meaning court.price is 140k/hr, and it becomes 120k/hr. So a 20k/hr discount.
+                        // Let's do: (court.price / 2) - 10000 if price is >= 100000, or explicitly mapping:
+                        slotPrice = Math.max(0, originalSlotPrice - 10000)
+                    }
+
+                    originalSum += originalSlotPrice
+                    finalSum += slotPrice
+                }
             }
-            return sum
+
+            const hasDiscount = finalSum < originalSum
+            const percentage = hasDiscount && originalSum > 0 ? Math.round(((originalSum - finalSum) / originalSum) * 100) : 0
+
+            return {
+                originalSum,
+                finalSum,
+                hasDiscount,
+                percentage
+            }
         })
 
         const ShoppingBag = () => (
@@ -55,8 +81,22 @@ export default defineComponent({
                                     </div>
                                     <div class="summary-divider"></div>
                                     <div class="summary-total-price">
-                                        <div class="summary-label">Tổng tiền</div>
-                                        <div class="summary-value-xl">{total.value.toLocaleString('vi-VN')}đ</div>
+                                        <div class="summary-label">
+                                            Tổng tiền
+                                            {totalInfos.value.hasDiscount && (
+                                                <span class="badge bg-success ms-2 text-white px-2 py-1 rounded" style={{ fontSize: '0.8rem' }}>
+                                                    Giảm {totalInfos.value.percentage}%
+                                                </span>
+                                            )}
+                                        </div>
+                                        <div class="summary-value-xl">
+                                            {totalInfos.value.hasDiscount && (
+                                                <span class="text-decoration-line-through text-muted small me-2" style={{ fontSize: '1rem', fontWeight: 'normal' }}>
+                                                    {totalInfos.value.originalSum.toLocaleString('vi-VN')}đ
+                                                </span>
+                                            )}
+                                            {totalInfos.value.finalSum.toLocaleString('vi-VN')}đ
+                                        </div>
                                     </div>
                                 </div>
                                 <button

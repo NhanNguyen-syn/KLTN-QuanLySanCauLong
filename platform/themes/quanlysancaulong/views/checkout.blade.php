@@ -139,7 +139,10 @@
                     <h3>Tóm Tắt Đơn Hàng</h3>
                     <div id="summary-personal" style="margin-bottom:12px;border-bottom:1px solid #eee;padding-bottom:12px;display:none"></div>
                     <div id="summary-booking" style="margin-bottom:12px;border-bottom:1px solid #eee;padding-bottom:12px;display:none"></div>
-                    <div class="row"><span class="muted">Tổng tiền sân:</span><strong id="sum-total">0đ</strong></div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:4px; margin:12px 0;">
+                        <span class="muted">Tổng tiền sân:</span>
+                        <strong id="sum-total" style="display:flex; align-items:center; gap:8px;">0đ</strong>
+                    </div>
                     <div class="row" id="sum-deposit-wrap" style="display:none"><span class="muted">Đặt cọc 30%:</span><strong id="sum-deposit">0đ</strong></div>
                     <div class="row" id="sum-remaining-wrap" style="display:none"><span class="muted">Còn lại khi đến sân:</span><strong id="sum-remaining">0đ</strong></div>
                     <div class="total"><span>Cần thanh toán:</span><span id="sum-pay">0đ</span></div>
@@ -397,7 +400,23 @@ const syncPaymentDetails = () => {
             };
             const updateSummary = ()=>{
                 syncPaymentDetails();
-                qs('#sum-total').textContent = fmt(total);
+                
+                let originalTotal = total;
+                if (state.booking && state.booking.length >= 4) {
+                    originalTotal = state.booking.reduce((s, it) => s + ((Number(it.price) || 0) + 10000), 0);
+                }
+
+                if (originalTotal > total) {
+                    const pct = Math.round(((originalTotal - total) / originalTotal) * 100);
+                    qs('#sum-total').innerHTML = `
+                        <span style="background:#10b981; color:#fff; padding:3px 8px; border-radius:4px; font-size:12px; font-weight:700;">Giảm ${pct}%</span>
+                        <span style="text-decoration:line-through; color:#9ca3af; font-size:14px; font-weight:normal;">${fmt(originalTotal)}</span>
+                        <span>${fmt(total)}</span>
+                    `;
+                } else {
+                    qs('#sum-total').textContent = fmt(total);
+                }
+
                 const payType = state.type;
                 const showDeposit = payType === 'deposit';
                 const needPay = showDeposit ? deposit : total;

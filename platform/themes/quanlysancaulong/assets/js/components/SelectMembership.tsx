@@ -47,26 +47,21 @@ export default defineComponent<Props>({
 
     const renderCheckIcon = () => (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ marginRight: '8px', color: defaultFeaturedColor, flexShrink: 0 }}>
-        <path d="M17.33 8.66998L10.5 15.5L7.66998 12.67" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M12 21C16.9706 21 21 16.9706 21 12C21 7.02944 16.9706 3 12 3C7.02944 3 3 7.02944 3 12C3 16.9706 7.02944 21 12 21Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M17.33 8.66998L10.5 15.5L7.66998 12.67" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+        <path d="M12 21C16.9706 21 21 16.9706 21 12C21 7.02944 16.9706 3 12 3C7.02944 3 3 7.02944 3 12C3 16.9706 7.02944 21 12 21Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
       </svg>
     );
 
     const renderArrowIcon = () => (
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ marginLeft: '8px' }}>
-            <path d="M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M12 5L19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ marginLeft: '8px' }}>
+        <path d="M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+        <path d="M12 5L19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
     );
 
     const handleCta = (e: MouseEvent, text?: string | null, url?: string | null) => {
-      const ctaTexts = ['đặt sân', 'dat san', 'đặt sân ngay', 'dat san ngay', 'bắt đầu ngay', 'bat dau ngay'];
-      const btnText = (text || '').toLowerCase();
-      if (ctaTexts.some(t => btnText.includes(t))) {
+      if (url && url !== '#') {
         e.preventDefault();
-        const bookingUrl = (window as any).App?.baseUrl ? `${(window as any).App.baseUrl}/san-gia` : '/san-gia';
-        window.location.href = bookingUrl;
-      } else if (url) {
         window.location.href = url;
       }
     };
@@ -100,11 +95,11 @@ export default defineComponent<Props>({
                 </div>
 
                 {card.discount_badge_text && (
-                    <div class="discount-badge-wrap">
-                        <span class="discount-badge" style={{ backgroundColor: card.discount_badge_bg, color: card.discount_badge_color }}>
-                            {card.discount_badge_text}
-                        </span>
-                    </div>
+                  <div class="discount-badge-wrap">
+                    <span class="discount-badge" style={{ backgroundColor: card.discount_badge_bg, color: card.discount_badge_color }}>
+                      {card.discount_badge_text}
+                    </span>
+                  </div>
                 )}
 
                 <ul class="features-list" style={{ color: card.features_color || (card.is_featured ? 'rgba(255,255,255,0.95)' : '#333') }}>

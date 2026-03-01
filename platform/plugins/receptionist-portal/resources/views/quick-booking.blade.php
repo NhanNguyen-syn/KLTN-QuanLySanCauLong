@@ -525,7 +525,7 @@
                                             data-court-id="{{ $court->id }}" 
                                             data-court-name="{{ $court->name }}"
                                             data-slot="{{ $slot }}" 
-                                            data-price="140000"
+                                            data-price="70000"
                                             title="{{ $tooltip }}"
                                             @if($status === 'available') onclick="toggleSlot(this)" @endif>
                                             <span class="slot-status {{ $cellClass }}">
@@ -682,11 +682,37 @@
             document.getElementById('summaryEnd').textContent = end;
             
             // Duration & Price
-            const hours = selectedSlots.length * 0.5;
+            const slotCount = selectedSlots.length;
+            const hours = slotCount * 0.5;
             document.getElementById('summaryDuration').textContent = hours + ' giờ';
             
-            const total = hours * selectedPricePerHour;
-            document.getElementById('summaryPrice').textContent = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(total);
+            let originalPrice = slotCount * selectedPricePerHour;
+            let finalPrice = originalPrice;
+
+            if (slotCount >= 4 && selectedPricePerHour > 0) {
+                // Discount 10,000 VND per slot (~15%)
+                finalPrice = Math.max(0, originalPrice - (10000 * slotCount));
+            }
+
+            let priceHtml = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(finalPrice);
+            if (finalPrice < originalPrice) {
+                const percentage = Math.round(((originalPrice - finalPrice) / originalPrice) * 100);
+                priceHtml = `
+                    <div style="display: flex; flex-direction: column; align-items: flex-end;">
+                        <span style="text-decoration: line-through; color: #9ca3af; font-size: 0.85rem; font-weight: normal;">
+                            ${new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(originalPrice)}
+                        </span>
+                        <div>
+                            <span style="background: #10b981; color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; margin-right: 4px;">
+                                Giảm ${percentage}%
+                            </span>
+                            ${priceHtml}
+                        </div>
+                    </div>
+                `;
+            }
+
+            document.getElementById('summaryPrice').innerHTML = priceHtml;
         }
 
         function clearSelectionUI() {

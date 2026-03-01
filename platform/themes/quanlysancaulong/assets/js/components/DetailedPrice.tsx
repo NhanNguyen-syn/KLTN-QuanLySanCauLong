@@ -37,8 +37,8 @@ export default defineComponent({
     const container: CSSProperties = { maxWidth: '1100px', margin: '0 auto', padding: '0 20px' };
     const heading: CSSProperties = { textAlign: 'center', color: props.titleColor, fontSize: '32px', fontWeight: 700, margin: 0 };
     const sub: CSSProperties = { textAlign: 'center', color: '#6b7f74', marginTop: '8px', fontSize: '15px' };
-    // Căn đều 2 card và giữ chúng ở giữa
-    const grid: CSSProperties = { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginTop: '40px', alignItems: 'stretch' };
+    // CSS classes in _detailed-price.scss lo việc chia cột responsive
+    const grid: CSSProperties = { alignItems: 'stretch' };
 
     const baseCard: CSSProperties = {
       background: '#fff',
@@ -137,16 +137,11 @@ export default defineComponent({
     };
 
     const handleBtnClick = (e: MouseEvent, text?: string, url?: string | null) => {
-      const ctaTexts = ['đặt sân', 'dat san', 'đặt sân ngay', 'dat san ngay', 'bắt đầu ngay', 'bat dau ngay'];
-      const btnText = (text || '').toLowerCase();
-      if (ctaTexts.some(t => btnText.includes(t))) {
+      if (url && url !== '#') {
+        // If it's a standard link, we can just let the browser handle it,
+        // or we can explicitly redirect. We'll explicitly navigate:
         e.preventDefault();
-        const bookingUrl = (window as any).App?.baseUrl ? `${(window as any).App.baseUrl}/san-gia` : '/san-gia';
-        window.location.href = bookingUrl;
-      } else if (url) {
         window.location.href = url;
-      } else {
-        e.preventDefault();
       }
     };
 
@@ -157,48 +152,47 @@ export default defineComponent({
           <p class="dp-subtitle" style={sub}>{props.sectionSubtitle}</p>
           <div class="dp-grid" style={grid}>
             {props.plans.map((plan, idx) => {
-              const ctaTexts = ['đặt sân', 'dat san', 'đặt sân ngay', 'dat san ngay', 'bắt đầu ngay', 'bat dau ngay'];
-              const isCta = ctaTexts.some(t => (plan.buttonText || '').toLowerCase().includes(t));
-              const href = isCta ? '/san-gia' : (plan.buttonUrl || '/');
+              const href = plan.buttonUrl || '/';
               return (
-              <div class="dp-card" style={baseCard} key={idx}>
-                <div class="dp-card-header" style={makeHeader(plan)}>
-                  {plan.isFeatured && plan.featuredText && plan.featuredText.trim() !== '' && (
-                    <div class="dp-featured-badge" style={makeFeaturedBadge(plan)}>{plan.featuredText}</div>
-                  )}
-                  <h3 class="dp-plan-title" style={planTitle}>{plan.title}</h3>
-                  {plan.badge && plan.badge.trim() !== '' && <div class="dp-plan-badge" style={makePlanBadge(plan)}>{plan.badge}</div>}
-                  <div class="dp-price-wrap" style={priceWrap}>
-                    <span class="dp-price" style={price}>{plan.price}</span>
-                    <span class="dp-suffix" style={suffix}>{plan.priceSuffix}</span>
+                <div class="dp-card" style={baseCard} key={idx}>
+                  <div class="dp-card-header" style={makeHeader(plan)}>
+                    {plan.isFeatured && plan.featuredText && plan.featuredText.trim() !== '' && (
+                      <div class="dp-featured-badge" style={makeFeaturedBadge(plan)}>{plan.featuredText}</div>
+                    )}
+                    <h3 class="dp-plan-title" style={planTitle}>{plan.title}</h3>
+                    {plan.badge && plan.badge.trim() !== '' && <div class="dp-plan-badge" style={makePlanBadge(plan)}>{plan.badge}</div>}
+                    <div class="dp-price-wrap" style={priceWrap}>
+                      <span class="dp-price" style={price}>{plan.price}</span>
+                      <span class="dp-suffix" style={suffix}>{plan.priceSuffix}</span>
+                    </div>
+                    {plan.note && <div class="dp-note" style={note}>{plan.note}</div>}
                   </div>
-                  {plan.note && <div class="dp-note" style={note}>{plan.note}</div>}
-                </div>
-                <div class="dp-card-body" style={cardBody}>
-                  {plan.features && plan.features.length > 0 && (
-                    <ul style={featureList}>
-                      {plan.features.map((f, i) => (
-                        <li key={i} style={featureItem}>
-                          <span style={checkIcon}>
-                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                              <circle cx="12" cy="12" r="10" stroke="#158a68" stroke-width="2" />
-                              <path d="M7 12l3 3 7-7" stroke="#158a68" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                            </svg>
-                          </span>
-                          <span>{f}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                  <div style={btnContainer}>
-                    <a href={href} class="dp-btn" style={btnSingle}
-                       onClick={(e) => handleBtnClick(e, plan.buttonText || 'Bắt Đầu Ngay', href)}>
-                      {plan.buttonText || 'Bắt Đầu Ngay'}
-                    </a>
+                  <div class="dp-card-body" style={cardBody}>
+                    {plan.features && plan.features.length > 0 && (
+                      <ul style={featureList}>
+                        {plan.features.map((f, i) => (
+                          <li key={i} style={featureItem}>
+                            <span style={checkIcon}>
+                              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <circle cx="12" cy="12" r="10" stroke="#158a68" stroke-width="2" />
+                                <path d="M7 12l3 3 7-7" stroke="#158a68" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                              </svg>
+                            </span>
+                            <span>{f}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                    <div style={btnContainer}>
+                      <a href={href} class="dp-btn" style={btnSingle}
+                        onClick={(e) => handleBtnClick(e, plan.buttonText || 'Bắt Đầu Ngay', href)}>
+                        {plan.buttonText || 'Bắt Đầu Ngay'}
+                      </a>
+                    </div>
                   </div>
                 </div>
-              </div>
-            )})}
+              )
+            })}
           </div>
         </div>
       </div>

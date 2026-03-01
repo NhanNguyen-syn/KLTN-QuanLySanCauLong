@@ -155,8 +155,6 @@ Route::get('invoice/download/{code}', function ($code) {
 });
 
     Route::get('thanh-toan', function () {
-        Theme::asset()->container('footer')->usePath()->add('checkout-script', 'js/checkout.js');
-
         // Resolve the page by slug using SlugHelper to ensure compatibility with Botble's slug system
         $page = null;
         try {

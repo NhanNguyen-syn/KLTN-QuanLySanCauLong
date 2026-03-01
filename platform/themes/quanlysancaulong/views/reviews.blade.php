@@ -45,6 +45,12 @@
         margin-bottom: 2rem;
     }
     
+    .reviews-grid {
+        display: grid;
+        grid-template-columns: 1fr 380px;
+        gap: 2rem;
+    }
+    
     
     /* Rating Overview Card */
     .rating-overview {
@@ -499,7 +505,7 @@
     data-api-submit="{{ route('api.reviews.store') }}">
 
     <div class="container mx-auto px-4 py-12">
-        <div class="reviews-grid" style="display: grid; grid-template-columns: 1fr 380px; gap: 2rem;">
+        <div class="reviews-grid">
             <!-- Left Column - Overview & Reviews -->
             <div>
                 <!-- Rating Overview -->

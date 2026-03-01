@@ -115,18 +115,26 @@ export default defineComponent({
         alert('Vui lòng chọn ít nhất một khung giờ')
         return
       }
+      const slotCount = selectedSlots.value.length
       const bookingData = selectedSlots.value.map((slot) => {
         const lastDashIndex = slot.lastIndexOf('-')
         const courtId = slot.substring(0, lastDashIndex)
         const time = slot.substring(lastDashIndex + 1)
         const court = courts.value.find((c) => c.id === courtId)
+
+        let originalSlotPrice = (court?.price || 0) / 2
+        let slotPrice = originalSlotPrice
+        if (slotCount >= 4 && originalSlotPrice > 0) {
+          slotPrice = Math.max(0, originalSlotPrice - 10000)
+        }
+
         return {
           court: court?.name,
           courtId,
           type: court?.type,
           date: selectedDate.value,
           time,
-          price: (court?.price || 0) / 2,
+          price: slotPrice,
         }
       })
       // Clear old booking flags so the checkout page treats this as a fresh booking

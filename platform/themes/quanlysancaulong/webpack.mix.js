@@ -15,8 +15,6 @@ mix
     .js(source + '/assets/js/pages/booking.ts', dist + '/js/booking.js')
     // Personal info page bundle
     .js(source + '/assets/js/pages/personal-info.ts', dist + '/js/personal-info.js')
-    // Checkout page bundle
-    .js(source + '/assets/js/pages/checkout.ts', dist + '/js/checkout.js')
     .vue(3)
     .webpackConfig({
         module: {
@@ -38,7 +36,6 @@ mix
 
 // Luôn copy file build sang thư mục public của theme để Theme::asset()->usePath() dùng được
 mix.copy(dist + '/css/style.css', source + '/public/css')
-   .copy(dist + '/js/main.js', source + '/public/js')
-   .copy(dist + '/js/booking.js', source + '/public/js')
-   .copy(dist + '/js/personal-info.js', source + '/public/js')
-   .copy(dist + '/js/checkout.js', source + '/public/js')
+    .copy(dist + '/js/main.js', source + '/public/js')
+    .copy(dist + '/js/booking.js', source + '/public/js')
+    .copy(dist + '/js/personal-info.js', source + '/public/js')
