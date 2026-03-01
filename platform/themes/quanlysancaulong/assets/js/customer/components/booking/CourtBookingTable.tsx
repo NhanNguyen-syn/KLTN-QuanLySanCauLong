@@ -1,4 +1,4 @@
-import { defineComponent, PropType, ref } from 'vue'
+import { defineComponent, PropType, ref, onMounted } from 'vue'
 import type { Court, TimePeriod } from './constants'
 
 export default defineComponent({
@@ -12,8 +12,35 @@ export default defineComponent({
     },
     setup(props) {
         const hoveredSlot = ref<string | null>(null)
+        const tableContainerRef = ref<HTMLElement | null>(null)
 
         const getPeriodForTime = (time: string) => props.periods.find((p) => p.times.includes(time))
+
+        onMounted(() => {
+            if (!tableContainerRef.value || props.allTimeSlots.length === 0) return
+
+            const now = new Date()
+            const currentHour = now.getHours()
+            const currentMinute = now.getMinutes()
+
+            let targetIdx = props.allTimeSlots.findIndex(time => {
+                const [hour, minute] = time.split(':').map(Number)
+                return hour > currentHour || (hour === currentHour && minute >= currentMinute)
+            })
+
+            if (targetIdx === -1) {
+                targetIdx = props.allTimeSlots.length - 1
+            }
+
+            const thead = tableContainerRef.value.querySelector('thead tr')
+            if (thead && targetIdx >= 0 && thead.children.length > targetIdx + 1) {
+                const targetTh = thead.children[targetIdx + 1] as HTMLElement
+                tableContainerRef.value.scrollTo({
+                    left: Math.max(0, targetTh.offsetLeft - 80),
+                    behavior: 'smooth'
+                })
+            }
+        })
 
         const getButtonClass = (status: string) => {
             const base = 'slot-button'
@@ -32,7 +59,7 @@ export default defineComponent({
 
         return () => (
             <div class="court-booking-table-wrapper">
-                <div class="court-booking-table-container">
+                <div class="court-booking-table-container" ref={tableContainerRef}>
                     <table class="court-booking-table">
                         <thead>
                             <tr class="table-header-row">

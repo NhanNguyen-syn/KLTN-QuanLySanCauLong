@@ -1,0 +1,1 @@
+const fs = require('fs'); const html = fs.readFileSync('temp_render.txt', 'utf8'); const match = html.match(/id=\"shortcode-blog-post-[^\"]*\"\s+data-props=\"([^\"]+)\"/); if(match) { fs.writeFileSync('props.txt', match[1]); console.log('Found'); } else { console.log('Not found'); }
