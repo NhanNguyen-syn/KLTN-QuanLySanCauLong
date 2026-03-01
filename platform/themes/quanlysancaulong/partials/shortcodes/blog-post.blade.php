@@ -28,6 +28,6 @@
 @endphp
 
 <section class="blog-post-section">
-    <div id="{{ $containerId }}" data-props='@json($props)'></div>
+    <div id="{{ $containerId }}" data-props="{{ json_encode($props, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP | JSON_UNESCAPED_UNICODE) }}"></div>
 </section>
 
