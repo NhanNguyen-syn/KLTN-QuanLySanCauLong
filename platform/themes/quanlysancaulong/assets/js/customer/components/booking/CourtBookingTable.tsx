@@ -17,33 +17,43 @@ export default defineComponent({
         const getPeriodForTime = (time: string) => props.periods.find((p) => p.times.includes(time))
 
         onMounted(() => {
-            nextTick(() => {
-                setTimeout(() => {
-                    if (!tableContainerRef.value || props.allTimeSlots.length === 0) return
+            let attempts = 0;
+            const tryScroll = () => {
+                if (!tableContainerRef.value || props.allTimeSlots.length === 0) return
 
-                    const now = new Date()
-                    const currentHour = now.getHours()
-                    const currentMinute = now.getMinutes()
+                const now = new Date()
+                const currentHour = now.getHours()
+                const currentMinute = now.getMinutes()
 
-                    let targetIdx = props.allTimeSlots.findIndex(time => {
-                        const [hour, minute] = time.split(':').map(Number)
-                        return hour > currentHour || (hour === currentHour && minute >= currentMinute)
+                let targetIdx = props.allTimeSlots.findIndex(time => {
+                    const [hour, minute] = time.split(':').map(Number)
+                    return hour > currentHour || (hour === currentHour && minute >= currentMinute)
+                })
+
+                if (targetIdx === -1) {
+                    targetIdx = props.allTimeSlots.length - 1
+                }
+
+                const thead = tableContainerRef.value.querySelector('thead tr')
+                if (thead && targetIdx >= 0 && thead.children.length > targetIdx + 1) {
+                    const targetTh = thead.children[targetIdx + 1] as HTMLElement
+
+                    // If CSS has not fully painted the grid yet, offsetLeft will be 0.
+                    // Retry up to 10 seconds (100 * 100ms)
+                    if (targetTh.offsetLeft === 0 && targetIdx > 0 && attempts < 100) {
+                        attempts++;
+                        setTimeout(tryScroll, 100)
+                        return
+                    }
+
+                    tableContainerRef.value.scrollTo({
+                        left: Math.max(0, targetTh.offsetLeft - 80),
+                        behavior: 'smooth'
                     })
+                }
+            }
 
-                    if (targetIdx === -1) {
-                        targetIdx = props.allTimeSlots.length - 1
-                    }
-
-                    const thead = tableContainerRef.value.querySelector('thead tr')
-                    if (thead && targetIdx >= 0 && thead.children.length > targetIdx + 1) {
-                        const targetTh = thead.children[targetIdx + 1] as HTMLElement
-                        tableContainerRef.value.scrollTo({
-                            left: Math.max(0, targetTh.offsetLeft - 80),
-                            behavior: 'smooth'
-                        })
-                    }
-                }, 500)
-            })
+            nextTick(() => { setTimeout(tryScroll, 100) })
         })
 
         const getButtonClass = (status: string) => {
