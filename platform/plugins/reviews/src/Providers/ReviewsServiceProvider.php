@@ -14,6 +14,7 @@ class ReviewsServiceProvider extends ServiceProvider
     {
         $this
             ->setNamespace('plugins/reviews')
+            ->loadAndPublishConfigurations(['permissions'])
             ->loadRoutes(['web'])
             ->loadAndPublishViews()
             ->loadMigrations();

@@ -5,12 +5,16 @@ namespace Botble\AiChatbot\Providers;
 use Botble\AiChatbot\Commands\CancelExpiredBookingsCommand;
 use Botble\Base\Facades\DashboardMenu;
 use Botble\Base\Supports\ServiceProvider;
+use Botble\Base\Traits\LoadAndPublishDataTrait;
 use Illuminate\Console\Scheduling\Schedule;
 
 class AiChatbotServiceProvider extends ServiceProvider
 {
+    use LoadAndPublishDataTrait;
+
     public function boot(): void
     {
+        $this->setNamespace('plugins/ai-chatbot')->loadAndPublishConfigurations(['permissions']);
         $this->loadRoutesFrom(__DIR__ . '/../../routes/web.php');
         $this->loadViewsFrom(__DIR__ . '/../../resources/views', 'plugins/ai-chatbot');
 

@@ -27940,28 +27940,32 @@ function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
       });
     };
     (0,vue__WEBPACK_IMPORTED_MODULE_0__.onMounted)(function () {
-      if (!tableContainerRef.value || props.allTimeSlots.length === 0) return;
-      var now = new Date();
-      var currentHour = now.getHours();
-      var currentMinute = now.getMinutes();
-      var targetIdx = props.allTimeSlots.findIndex(function (time) {
-        var _time$split$map = time.split(':').map(Number),
-          _time$split$map2 = _slicedToArray(_time$split$map, 2),
-          hour = _time$split$map2[0],
-          minute = _time$split$map2[1];
-        return hour > currentHour || hour === currentHour && minute >= currentMinute;
+      (0,vue__WEBPACK_IMPORTED_MODULE_0__.nextTick)(function () {
+        setTimeout(function () {
+          if (!tableContainerRef.value || props.allTimeSlots.length === 0) return;
+          var now = new Date();
+          var currentHour = now.getHours();
+          var currentMinute = now.getMinutes();
+          var targetIdx = props.allTimeSlots.findIndex(function (time) {
+            var _time$split$map = time.split(':').map(Number),
+              _time$split$map2 = _slicedToArray(_time$split$map, 2),
+              hour = _time$split$map2[0],
+              minute = _time$split$map2[1];
+            return hour > currentHour || hour === currentHour && minute >= currentMinute;
+          });
+          if (targetIdx === -1) {
+            targetIdx = props.allTimeSlots.length - 1;
+          }
+          var thead = tableContainerRef.value.querySelector('thead tr');
+          if (thead && targetIdx >= 0 && thead.children.length > targetIdx + 1) {
+            var targetTh = thead.children[targetIdx + 1];
+            tableContainerRef.value.scrollTo({
+              left: Math.max(0, targetTh.offsetLeft - 80),
+              behavior: 'smooth'
+            });
+          }
+        }, 500);
       });
-      if (targetIdx === -1) {
-        targetIdx = props.allTimeSlots.length - 1;
-      }
-      var thead = tableContainerRef.value.querySelector('thead tr');
-      if (thead && targetIdx >= 0 && thead.children.length > targetIdx + 1) {
-        var targetTh = thead.children[targetIdx + 1];
-        tableContainerRef.value.scrollTo({
-          left: Math.max(0, targetTh.offsetLeft - 80),
-          behavior: 'smooth'
-        });
-      }
     });
     var getButtonClass = function getButtonClass(status) {
       var base = 'slot-button';

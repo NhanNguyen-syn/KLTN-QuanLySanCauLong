@@ -1,4 +1,4 @@
-import { defineComponent, PropType, ref, onMounted } from 'vue'
+import { defineComponent, PropType, ref, onMounted, nextTick } from 'vue'
 import type { Court, TimePeriod } from './constants'
 
 export default defineComponent({
@@ -17,29 +17,33 @@ export default defineComponent({
         const getPeriodForTime = (time: string) => props.periods.find((p) => p.times.includes(time))
 
         onMounted(() => {
-            if (!tableContainerRef.value || props.allTimeSlots.length === 0) return
+            nextTick(() => {
+                setTimeout(() => {
+                    if (!tableContainerRef.value || props.allTimeSlots.length === 0) return
 
-            const now = new Date()
-            const currentHour = now.getHours()
-            const currentMinute = now.getMinutes()
+                    const now = new Date()
+                    const currentHour = now.getHours()
+                    const currentMinute = now.getMinutes()
 
-            let targetIdx = props.allTimeSlots.findIndex(time => {
-                const [hour, minute] = time.split(':').map(Number)
-                return hour > currentHour || (hour === currentHour && minute >= currentMinute)
+                    let targetIdx = props.allTimeSlots.findIndex(time => {
+                        const [hour, minute] = time.split(':').map(Number)
+                        return hour > currentHour || (hour === currentHour && minute >= currentMinute)
+                    })
+
+                    if (targetIdx === -1) {
+                        targetIdx = props.allTimeSlots.length - 1
+                    }
+
+                    const thead = tableContainerRef.value.querySelector('thead tr')
+                    if (thead && targetIdx >= 0 && thead.children.length > targetIdx + 1) {
+                        const targetTh = thead.children[targetIdx + 1] as HTMLElement
+                        tableContainerRef.value.scrollTo({
+                            left: Math.max(0, targetTh.offsetLeft - 80),
+                            behavior: 'smooth'
+                        })
+                    }
+                }, 500)
             })
-
-            if (targetIdx === -1) {
-                targetIdx = props.allTimeSlots.length - 1
-            }
-
-            const thead = tableContainerRef.value.querySelector('thead tr')
-            if (thead && targetIdx >= 0 && thead.children.length > targetIdx + 1) {
-                const targetTh = thead.children[targetIdx + 1] as HTMLElement
-                tableContainerRef.value.scrollTo({
-                    left: Math.max(0, targetTh.offsetLeft - 80),
-                    behavior: 'smooth'
-                })
-            }
         })
 
         const getButtonClass = (status: string) => {
