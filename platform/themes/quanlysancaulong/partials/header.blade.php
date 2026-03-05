@@ -686,9 +686,13 @@
                         @endphp
 
                         @if($isPhone)
-                            <a href="{{ $item->url }}" target="{{ $item->target }}" class="header-phone-btn">
+                            @php
+                                $phoneNumber = theme_option('phone', '0886 264 644');
+                                $phoneClean = preg_replace('/[^0-9+]/', '', $phoneNumber);
+                            @endphp
+                            <a href="tel:{{ $phoneClean }}" class="header-phone-btn">
                                 <i class="ti ti-phone"></i>
-                                <span>{{ theme_option('phone', '0886 264 644') }}</span>
+                                <span>{{ $phoneNumber }}</span>
                             </a>
                         @elseif($isTraCuu)
                             <a href="{{ $item->url }}" target="{{ $item->target }}" class="header-action-icon" title="Tra cứu">

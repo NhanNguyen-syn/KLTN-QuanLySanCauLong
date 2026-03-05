@@ -1,6 +1,7 @@
 <div class="mt-3 text-center">
-    {{ __("Don't have an account?") }}
+    Chưa có tài khoản?
     <a href="{{ route('public.member.register') }}" class="text-decoration-underline">
-        {{ __('Register now') }}
+        Đăng ký ngay
     </a>
 </div>
+

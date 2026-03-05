@@ -588,15 +588,15 @@
                     <h3>Bảng giá</h3>
                     <div style="border-bottom: 1px solid #e5e7eb; padding-bottom: 16px; margin-bottom: 16px;">
                         <div class="court-price-row">
-                            <span class="court-price-label">Khách vãng lai</span>
+                            <span class="court-price-label">Chơi nhanh</span>
                             <span class="court-price-value">
-                                {{ number_format($court->default_price ?: 150000, 0, ',', '.') }}đ<span>/giờ</span>
+                                {{ number_format($court->default_price ?: 140000, 0, ',', '.') }}đ<span>/giờ</span>
                             </span>
                         </div>
                         <div class="court-price-row">
                             <span class="court-price-label">
-                                Khách cố định
-                                <span class="court-price-discount">-20%</span>
+                                Chơi dài giờ
+                                <span class="court-price-discount">-14%</span>
                             </span>
                             <span class="court-price-value member">
                                 {{ number_format($court->member_price ?: 120000, 0, ',', '.') }}đ<span>/giờ</span>
@@ -610,7 +610,7 @@
                         <div class="court-hours-box">
                             <i class="ti ti-clock"></i>
                             <div>
-                                <div class="court-hours-title">{{ $court->availability ?: '5:00 - 23:00 hàng ngày' }}</div>
+                                <div class="court-hours-title">{{ $court->availability ?: '5:00 - 22:30 hàng ngày' }}</div>
                                 <div class="court-hours-sub">Bao gồm cả ngày lễ và cuối tuần</div>
                             </div>
                         </div>

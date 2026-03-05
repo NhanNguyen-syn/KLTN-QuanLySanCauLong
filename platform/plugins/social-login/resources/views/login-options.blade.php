@@ -1,46 +1,165 @@
 <div class="login-options">
-    <div class="login-options-title">
-        <p>{{ __('Login with social networks') }}</p>
+    <div class="social-login-divider">
+        <span>Hoặc</span>
     </div>
 
-    @if(setting('social_login_style', 'default') === 'basic')
-        <ul class="social-login-basic">
-            @foreach (SocialService::getProviderKeys() as $item)
-                @continue(! SocialService::getProviderEnabled($item))
+    <style>
+        .social-login-divider {
+            display: flex;
+            align-items: center;
+            margin: 24px 0 20px;
+            gap: 16px;
+        }
+        .social-login-divider::before,
+        .social-login-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(to right, transparent, #e2e8f0, transparent);
+        }
+        .social-login-divider span {
+            font-size: 13px;
+            font-weight: 500;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            white-space: nowrap;
+        }
 
-                @if ($item === 'google' && setting('social_login_google_use_google_button', false) && false)
-                    @include('plugins/social-login::google-sign-in-button')
-                    @continue
-                @endif
+        .social-login-buttons {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
 
-                <li>
-                    <a href="{{ route('auth.social', array_merge([$item], $params)) }}" class="social-login {{ $item }}-login">
-                        @php
-                            $iconName = $item === 'linkedin-openid' ? 'linkedin' : $item;
-                        @endphp
+        .social-login-buttons li {
+            list-style: none;
+        }
 
-                        <img src="{{ asset('vendor/core/plugins/social-login/images/icons/logo-' . $iconName . '.svg') }}" alt="{{ Str::ucfirst($item) }}" />
-                        <span>{{ trans('plugins/social-login::social-login.sign_in_with', ['provider' => trans('plugins/social-login::social-login.socials.' . $item)]) }}</span>
-                    </a>
-                </li>
-            @endforeach
-        </ul>
-    @else
-        <ul @class(['social-icons', 'social-login-lg' => setting('social_login_style', 'default') === 'default'])>
-            @foreach (SocialService::getProviderKeys() as $item)
-                @continue(! SocialService::getProviderEnabled($item))
+        .social-login-buttons a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 12px 20px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.25s ease;
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+        }
 
-                @if ($item === 'google' && setting('social_login_google_use_google_button', false) && false)
-                    @include('plugins/social-login::google-sign-in-button')
-                    @continue
-                @endif
+        .social-login-buttons a::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            opacity: 0;
+            transition: opacity 0.25s ease;
+        }
 
-                {!! apply_filters(
-                    'social_login_' . $item . '_render',
-                    view('plugins/social-login::social-login-item', ['social' => $item, 'url' => route('auth.social', isset($params) ? array_merge([$item], $params) : $item)])->render(),
-                    $item
-                ) !!}
-            @endforeach
-        </ul>
-    @endif
+        /* Google */
+        .social-login-buttons a.google {
+            background: #ffffff;
+            color: #3c4043;
+            border: 1.5px solid #e2e8f0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        }
+        .social-login-buttons a.google:hover {
+            border-color: #4285f4;
+            box-shadow: 0 4px 12px rgba(66, 133, 244, 0.15);
+            transform: translateY(-1px);
+        }
+        .social-login-buttons a.google svg,
+        .social-login-buttons a.google .icon {
+            color: #4285f4;
+        }
+
+        /* Facebook */
+        .social-login-buttons a.facebook {
+            background: #1877f2;
+            color: #fff;
+            border: 1.5px solid #1877f2;
+        }
+        .social-login-buttons a.facebook:hover {
+            background: #166fe5;
+            box-shadow: 0 4px 12px rgba(24, 119, 242, 0.3);
+            transform: translateY(-1px);
+        }
+
+        /* GitHub */
+        .social-login-buttons a.github {
+            background: #24292e;
+            color: #fff;
+            border: 1.5px solid #24292e;
+        }
+        .social-login-buttons a.github:hover {
+            background: #1b1f23;
+            box-shadow: 0 4px 12px rgba(36, 41, 46, 0.3);
+            transform: translateY(-1px);
+        }
+
+        /* LinkedIn */
+        .social-login-buttons a.linkedin,
+        .social-login-buttons a.linkedin-openid {
+            background: #0a66c2;
+            color: #fff;
+            border: 1.5px solid #0a66c2;
+        }
+        .social-login-buttons a.linkedin:hover,
+        .social-login-buttons a.linkedin-openid:hover {
+            background: #0959aa;
+            box-shadow: 0 4px 12px rgba(10, 102, 194, 0.3);
+            transform: translateY(-1px);
+        }
+
+        /* Google logo SVG inline */
+        .google-logo-svg {
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+        }
+
+        .social-login-buttons a svg {
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+        }
+    </style>
+
+    <ul class="social-login-buttons">
+        @foreach (SocialService::getProviderKeys() as $item)
+            @continue(! SocialService::getProviderEnabled($item))
+
+            @php
+                $iconName = $item === 'linkedin-openid' ? 'linkedin' : $item;
+                $label = trans('plugins/social-login::social-login.sign_in_with', ['provider' => trans('plugins/social-login::social-login.socials.' . $item)]);
+                $url = route('auth.social', isset($params) ? array_merge([$item], $params) : $item);
+            @endphp
+
+            <li>
+                <a href="{{ $url }}" class="{{ $item }}" title="{{ $label }}">
+                    @if($item === 'google')
+                        <svg class="google-logo-svg" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/>
+                            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                        </svg>
+                    @else
+                        <x-core::icon name="ti ti-brand-{{ $iconName }}" />
+                    @endif
+                    <span>{{ $label }}</span>
+                </a>
+            </li>
+        @endforeach
+    </ul>
 </div>

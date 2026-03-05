@@ -204,8 +204,8 @@
         display: block;
     }
 
-    .settings-card .form-control,
-    .settings-card input[type="text"],
+    .settings-card .form-control:not(.datepicker > .form-control),
+    .settings-card input[type="text"]:not(.datepicker > input),
     .settings-card input[type="email"],
     .settings-card input[type="password"],
     .settings-card input[type="tel"],
@@ -223,6 +223,31 @@
         box-shadow: none !important;
     }
 
+    /* Fix input-group styling for datepicker */
+    .settings-card .input-group.datepicker {
+        display: flex;
+        width: 100%;
+    }
+    .settings-card .input-group.datepicker > .form-control {
+        flex: 1;
+        width: auto !important;
+        border-top-right-radius: 0 !important;
+        border-bottom-right-radius: 0 !important;
+        padding: 12px 16px !important;
+        font-size: 14px !important;
+        border: 1.5px solid #e2e8f0 !important;
+        background: #f8fafc !important;
+        color: #0f172a !important;
+        transition: all 0.2s ease !important;
+    }
+    .settings-card .input-group.datepicker > button {
+        border-top-left-radius: 0 !important;
+        border-bottom-left-radius: 0 !important;
+        padding: 12px 16px !important;
+        margin-left: -1px;
+        z-index: 2;
+    }
+
     .settings-card .form-control:focus,
     .settings-card input:focus,
     .settings-card textarea:focus,
@@ -233,7 +258,7 @@
     }
 
     .settings-card .btn-primary,
-    .settings-card button[type="submit"],
+    .settings-card button[type="submit"]:not(.datepicker-button):not([data-action]),
     .settings-card .btn-info {
         background: #059669 !important;
         border: none !important;
@@ -247,11 +272,40 @@
     }
 
     .settings-card .btn-primary:hover,
-    .settings-card button[type="submit"]:hover,
+    .settings-card button[type="submit"]:not(.datepicker-button):not([data-action]):hover,
     .settings-card .btn-info:hover {
         background: #047857 !important;
         transform: translateY(-1px);
         box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3) !important;
+    }
+
+    /* Date picker buttons */
+    .settings-card .input-group-btn button,
+    .settings-card .input-group .btn,
+    .settings-card button[data-action],
+    .settings-card .datepicker-button {
+        background: #f8fafc !important;
+        border: 1.5px solid #e2e8f0 !important;
+        padding: 8px 12px !important;
+        font-size: 16px !important;
+        font-weight: 400 !important;
+        border-radius: 8px !important;
+        color: #64748b !important;
+        cursor: pointer !important;
+        transition: all 0.2s ease !important;
+        box-shadow: none !important;
+        transform: none !important;
+    }
+
+    .settings-card .input-group-btn button:hover,
+    .settings-card .input-group .btn:hover,
+    .settings-card button[data-action]:hover,
+    .settings-card .datepicker-button:hover {
+        background: #f0fdfa !important;
+        border-color: #a7f3d0 !important;
+        color: #059669 !important;
+        transform: none !important;
+        box-shadow: none !important;
     }
 
     /* Avatar section */
@@ -1016,6 +1070,101 @@
             statusText.textContent = message;
         }
 
+        // ===== Date Picker (Flatpickr) =====
+        (function() {
+            // Load Flatpickr CSS
+            var link = document.createElement('link');
+            link.rel = 'stylesheet';
+            link.href = 'https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css';
+            document.head.appendChild(link);
+
+            // Add custom styles for year visibility
+            var style = document.createElement('style');
+            style.textContent = `
+                .flatpickr-months {
+                    display: flex;
+                    align-items: center;
+                }
+                .flatpickr-months .flatpickr-month {
+                    flex: 1;
+                }
+                .flatpickr-current-month {
+                    display: flex !important;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 4px;
+                }
+                .flatpickr-current-month .numInputWrapper {
+                    display: inline-flex !important;
+                    width: 80px !important;
+                }
+                .flatpickr-current-month .numInputWrapper input.cur-year {
+                    font-weight: 600;
+                    font-size: 14px;
+                    padding: 0 4px;
+                }
+                .flatpickr-monthDropdown-months {
+                    font-weight: 600;
+                    font-size: 14px;
+                }
+            `;
+            document.head.appendChild(style);
+
+            // Load Flatpickr JS
+            var script = document.createElement('script');
+            script.src = 'https://cdn.jsdelivr.net/npm/flatpickr';
+            script.onload = function() {
+                // Load Vietnamese locale
+                var vnScript = document.createElement('script');
+                vnScript.src = 'https://npmcdn.com/flatpickr/dist/l10n/vn.js';
+                vnScript.onload = function() {
+                    initDatePickers();
+                };
+                vnScript.onerror = function() {
+                    initDatePickers();
+                };
+                document.head.appendChild(vnScript);
+            };
+            document.head.appendChild(script);
+
+            function initDatePickers() {
+                var containers = document.querySelectorAll('.datepicker');
+                containers.forEach(function(container) {
+                    var input = container.querySelector('input[data-input]');
+                    if (!input) input = container.querySelector('input');
+                    var toggleBtn = container.querySelector('[data-toggle]');
+                    var clearBtn = container.querySelector('[data-clear]');
+
+                    if (input && typeof flatpickr !== 'undefined') {
+                        var fp = flatpickr(input, {
+                            dateFormat: 'Y-m-d',
+                            locale: typeof flatpickr.l10ns !== 'undefined' && flatpickr.l10ns.vn ? 'vn' : 'default',
+                            allowInput: true,
+                            monthSelectorType: 'dropdown',
+                            minDate: '1930-01-01',
+                            maxDate: 'today'
+                        });
+
+                        if (toggleBtn) {
+                            toggleBtn.addEventListener('click', function(e) {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                fp.toggle();
+                            });
+                        }
+
+                        if (clearBtn) {
+                            clearBtn.addEventListener('click', function(e) {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                fp.clear();
+                            });
+                        }
+                    }
+                });
+            }
+        })();
+
         // ===== Delete account modal =====
         const showModalBtn = document.getElementById('btn-show-delete-modal');
         const overlay = document.getElementById('delete-modal-overlay');
@@ -1058,7 +1207,5 @@
     });
 </script>
 
-@push('scripts')
-    {!! JsValidator::formRequest(Botble\Member\Http\Requests\SettingRequest::class) !!}
-    {!! JsValidator::formRequest(Botble\Member\Http\Requests\UpdatePasswordRequest::class) !!}
-@endpush
+
+

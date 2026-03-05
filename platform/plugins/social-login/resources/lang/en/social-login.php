@@ -59,5 +59,5 @@ return [
     ],
     'menu' => 'Social Login',
     'description' => 'View and update your social login settings',
-    'sign_in_with' => 'Sign in with :provider',
+    'sign_in_with' => 'Đăng nhập với :provider',
 ];

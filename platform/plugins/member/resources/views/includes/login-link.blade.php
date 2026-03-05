@@ -1,6 +1,7 @@
 <div class="mt-3 text-center">
-    {{ __('Already have an account?') }}
+    Đã có tài khoản?
     <a href="{{ route('public.member.login') }}" class="text-decoration-underline">
-        {{ __('Login') }}
+        Đăng nhập
     </a>
 </div>
+
