@@ -244,6 +244,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const text = (el.textContent || '').trim().toLowerCase();
         if (!ctaTexts.some(t => text.includes(t))) return;
 
+        // Prevent accidental redirection on FAQ accordion buttons, etc.
+        if (el.classList.contains('aq-question') || el.closest('.asked-questions')) {
+            return;
+        }
+
         console.log('[Debug] Found CTA button:', el);
 
         el.addEventListener('click', (e) => {

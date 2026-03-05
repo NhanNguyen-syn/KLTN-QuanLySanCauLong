@@ -11,21 +11,21 @@
 
 @php
     $casualBenefits = [
-        ['title' => 'Nước Uống 10L', 'description' => 'Nước uống miễn phí 10 lít cho mỗi buổi chơi', 'icon' => 'droplets'],
-        ['title' => 'Khăn Ướt', 'description' => 'Khăn lau mặt ướt chất lượng cao cấp', 'icon' => 'shirt'],
-        ['title' => 'Ưu Tiên Đặt Sân', 'description' => 'Được ưu tiên đặt sân trước 1 giờ', 'icon' => 'clock'],
-        ['title' => 'Quà Tặng Hàng Tháng', 'description' => 'Nhận voucher ưu đãi đặc biệt mỗi tháng', 'icon' => 'gift'],
+        ['title' => 'Nước Uống Miễn Phí', 'description' => 'Nước uống phục vụ trong buổi chơi', 'icon' => 'droplets'],
+        ['title' => 'Khăn Lau Mặt', 'description' => 'Khăn sạch hỗ trợ trong giờ chơi', 'icon' => 'shirt'],
+        ['title' => 'Đặt Sân Nhanh', 'description' => 'Đặt sân dễ dàng qua hệ thống online', 'icon' => 'zap'],
+        ['title' => 'Phù Hợp Trận Đấu Ngắn', 'description' => 'Thích hợp cho các trận đấu dưới 2 giờ', 'icon' => 'timer'],
     ];
 
     $fixedBenefits = [
-        ['title' => 'Nước Ion Cao Cấp', 'description' => 'Nước ion miễn phí không giới hạn', 'icon' => 'droplets', 'highlight' => true],
-        ['title' => 'Khăn Khô Cao Cấp', 'description' => 'Khăn lau khô cao cấp thấm hút tốt', 'icon' => 'shirt', 'highlight' => false],
-        ['title' => 'Ăn Nhẹ 4-6 Người', 'description' => 'Buffet ăn nhẹ dành cho nhóm mỗi tuần', 'icon' => 'utensils-crossed', 'highlight' => true],
-        ['title' => 'Ưu Tiên Giờ Vàng', 'description' => 'Ưu tiên đặt sân vào khung giờ cao điểm', 'icon' => 'clock', 'highlight' => false],
-        ['title' => 'Hỗ Trợ VIP 24/7', 'description' => 'Chăm sóc khách hàng VIP 24/7', 'icon' => 'headphones', 'highlight' => true],
-        ['title' => 'Quà Tặng Đặc Biệt', 'description' => 'Quà tặng cao cấp và voucher độc quyền', 'icon' => 'gift', 'highlight' => false],
-        ['title' => 'Giá Ưu Đãi', 'description' => 'Chỉ 120.000đ/giờ, tiết kiệm 30.000đ', 'icon' => 'dollar-sign', 'highlight' => true],
-        ['title' => 'Huấn Luyện 1-1', 'description' => 'Tư vấn và huấn luyện 1 lần/tháng', 'icon' => 'award', 'highlight' => true],
+        ['title' => 'Nước Uống Không Giới Hạn', 'description' => 'Phục vụ nước uống trong suốt buổi chơi', 'icon' => 'droplets', 'highlight' => true],
+        ['title' => 'Khăn Cao Cấp', 'description' => 'Khăn lau khô chất lượng tốt', 'icon' => 'shirt', 'highlight' => false],
+        ['title' => 'Phù Hợp Nhóm 4–6 Người', 'description' => 'Không gian phù hợp cho nhóm chơi lâu', 'icon' => 'users', 'highlight' => true],
+        ['title' => 'Ưu Tiên Khung Giờ Đẹp', 'description' => 'Dễ đặt sân trong giờ cao điểm', 'icon' => 'clock', 'highlight' => false],
+        ['title' => 'Tiết Kiệm Chi Phí', 'description' => 'Giảm 20.000đ mỗi giờ so với chơi nhanh', 'icon' => 'dollar-sign', 'highlight' => true],
+        ['title' => 'Khu Nghỉ Cho Đội', 'description' => 'Không gian nghỉ giữa các hiệp', 'icon' => 'coffee', 'highlight' => false],
+        ['title' => 'Hỗ Trợ Tổ Chức Giao Lưu', 'description' => 'Phù hợp luyện tập hoặc thi đấu nhóm', 'icon' => 'award', 'highlight' => true],
+        ['title' => 'Setup Sân Nhanh', 'description' => 'Chuẩn bị sân sẵn sàng cho buổi chơi dài', 'icon' => 'check-circle', 'highlight' => true],
     ];
 @endphp
 
@@ -49,11 +49,11 @@
                             <span class="text-sm font-bold text-[#059669]">Linh Hoạt & Tiện Lợi</span>
                         </div>
                         <h2 class="text-3xl md:text-4xl font-extrabold font-serif text-foreground mb-3 text-balance">
-                            Khách Vãng Lai
+                            Chơi Nhanh
                         </h2>
                         <p class="text-base md:text-lg text-muted-foreground text-pretty">
                             
-                  Đặt sân theo nhu cầu với giá chuẩn <span class="font-bold text-foreground">150.000đ/giờ</span>
+                  Đặt sân linh hoạt với giá <span class="font-bold text-foreground">140.000đ / giờ</span>
                 
                         </p>
                     </div>
@@ -84,15 +84,14 @@
                         <div class="absolute top-0 right-0 w-40 h-40 bg-gradient-to-br from-[#065f46]/10 to-[#059669]/10 rounded-full blur-3xl"></div>
                         <div class="relative">
                             <div class="inline-block mb-4 px-4 py-1.5 rounded-full bg-[#065f46]/20 border border-[#065f46]/30">
-                                <span class="text-sm font-bold text-[#065f46]">Premium & Ưu Đãi</span>
+                                <span class="text-sm font-bold text-[#065f46]">Tiết Kiệm & Trải Nghiệm Tốt Hơn</span>
                             </div>
                             <h2 class="text-3xl md:text-4xl font-extrabold font-serif text-foreground mb-3 text-balance">
-                                Khách Hàng Cố Định
+                                Chơi Dài Giờ
                             </h2>
                             <p class="text-base md:text-lg text-muted-foreground text-pretty">
                                 
-                    Đặt sân cố định với giá ưu đãi chỉ <span class="font-bold text-[#065f46]">120.000đ/giờ</span> và
-                    hàng loạt quyền lợi cao cấp
+                    Giá ưu đãi <span class="font-bold text-[#065f46]">120.000đ / giờ</span> khi đặt từ 2 giờ trở lên
                   
                             </p>
                         </div>
