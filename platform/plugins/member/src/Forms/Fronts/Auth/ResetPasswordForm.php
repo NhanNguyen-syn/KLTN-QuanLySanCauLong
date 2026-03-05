@@ -24,7 +24,7 @@ class ResetPasswordForm extends AuthForm
             ->setUrl(route('public.member.password.update'))
             ->icon('ti ti-lock')
             ->setValidatorClass(ResetPasswordRequest::class)
-            ->heading(__('Reset Password'))
+            ->heading('Đặt lại mật khẩu')
             ->add(
                 'token',
                 'hidden',
@@ -35,7 +35,7 @@ class ResetPasswordForm extends AuthForm
                 'email',
                 EmailField::class,
                 EmailFieldOption::make()
-                    ->label(__('Email address'))
+                    ->label('Địa chỉ email')
                     ->value($this->request->input('email'))
                     ->icon('ti ti-mail')
             )
@@ -43,24 +43,24 @@ class ResetPasswordForm extends AuthForm
                 'password',
                 PasswordField::class,
                 TextFieldOption::make()
-                    ->label(__('Password'))
-                    ->placeholder(__('Password'))
+                    ->label('Mật khẩu mới')
+                    ->placeholder('Nhập mật khẩu mới')
                     ->icon('ti ti-lock')
             )
             ->add(
                 'password_confirmation',
                 PasswordField::class,
                 TextFieldOption::make()
-                    ->label(__('Password confirmation'))
-                    ->placeholder(__('Password confirmation'))
+                    ->label('Xác nhận mật khẩu')
+                    ->placeholder('Nhập lại mật khẩu mới')
                     ->icon('ti ti-lock')
             )
-            ->submitButton(__('Reset Password'))
+            ->submitButton('Đặt lại mật khẩu')
             ->add('back_to_login', HtmlField::class, [
                 'html' => sprintf(
                     '<div class="mt-3 text-center"><a href="%s" class="text-decoration-underline">%s</a></div>',
                     route('public.member.login'),
-                    __('Back to login page')
+                    'Quay lại trang đăng nhập'
                 ),
             ]);
     }

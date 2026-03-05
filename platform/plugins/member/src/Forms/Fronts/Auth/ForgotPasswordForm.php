@@ -23,22 +23,22 @@ class ForgotPasswordForm extends AuthForm
             ->setUrl(route('public.member.password.email'))
             ->setValidatorClass(ForgotPasswordRequest::class)
             ->icon('ti ti-lock-question')
-            ->heading(__('Forgot Password'))
-            ->description(__('Lost your password? Please enter your username or email address. You will receive a link to create a new password via email.'))
+            ->heading('Quên mật khẩu')
+            ->description('Quên mật khẩu? Vui lòng nhập địa chỉ email của bạn. Bạn sẽ nhận được liên kết để tạo mật khẩu mới qua email.')
             ->add(
                 'email',
                 EmailField::class,
                 EmailFieldOption::make()
-                    ->label(__('Email'))
-                    ->placeholder(__('Email address'))
+                    ->label('Email')
+                    ->placeholder('Nhập địa chỉ email')
                     ->icon('ti ti-mail')
             )
-            ->submitButton(sprintf('%s %s', __('Send Password Reset Link'), BaseHelper::renderIcon('ti ti-arrow-narrow-right', null, ['class' => 'ms-1'])))
+            ->submitButton('Gửi liên kết đặt lại mật khẩu')
             ->add('back_to_login', HtmlField::class, [
                 'html' => sprintf(
                     '<div class="mt-3 text-center"><a href="%s" class="text-decoration-underline">%s</a></div>',
                     route('public.member.login'),
-                    __('Back to login page')
+                    'Quay lại trang đăng nhập'
                 ),
             ]);
     }
