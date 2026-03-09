@@ -54,10 +54,11 @@ app()->booted(function () {
         ->usePath()
         ->add('quanlysancaulong-style', 'css/style.css');
 
+    $version = time();
     Theme::asset()
         ->container('footer')
         ->usePath()
-        ->add('quanlysancaulong-script', 'js/main.js');
+        ->add('quanlysancaulong-script', 'js/main.js?v=' . $version);
 
     Theme::asset()
         ->container('footer')

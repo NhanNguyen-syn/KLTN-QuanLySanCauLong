@@ -36,12 +36,12 @@ Shortcode::register('testimonials', __('Testimonials'), __('Testimonials'), func
                 if ($review->member->avatar->url) {
                     $avatar = RvMedia::url($review->member->avatar->url);
                 } else {
-                    try {
-                        $avatar = \Botble\Base\Supports\Avatar::createBase64Image($review->member->name);
-                    } catch (\Throwable $e) {
-                        $avatar = '';
-                    }
+                    $name = urlencode($review->member->name);
+                    $avatar = "https://ui-avatars.com/api/?name={$name}&color=FFFFFF&background=111827";
                 }
+            } else {
+                $name = urlencode($review->name ?? 'Guest');
+                $avatar = "https://ui-avatars.com/api/?name={$name}&color=FFFFFF&background=111827";
             }
 
             $testimonials[] = [
