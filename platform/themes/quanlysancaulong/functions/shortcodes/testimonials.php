@@ -25,16 +25,15 @@ Shortcode::register('testimonials', __('Testimonials'), __('Testimonials'), func
 
     if (!empty($selectedIds)) {
         $reviews = Review::query()
+            ->with('member')
             ->whereIn('id', $selectedIds)
             ->where('is_approved', true)
             ->get();
 
         foreach ($reviews as $review) {
-            // Get avatar from first image if available
             $avatar = '';
-            $images = $review->images;
-            if (!empty($images) && is_array($images) && !empty($images[0])) {
-                $avatar = RvMedia::getImageUrl($images[0]);
+            if ($review->member_id && $review->member) {
+                $avatar = $review->member->avatar_url;
             }
 
             $testimonials[] = [

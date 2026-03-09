@@ -159,7 +159,7 @@ class Member extends BaseModel implements
     {
         return Attribute::make(
             get: function () {
-                $folder = $this->getKey() ? 'members/' . $this->getKey() : 'members';
+                $folder = 'members-avatars';
 
                 return apply_filters('member_account_upload_folder', $folder, $this);
             }

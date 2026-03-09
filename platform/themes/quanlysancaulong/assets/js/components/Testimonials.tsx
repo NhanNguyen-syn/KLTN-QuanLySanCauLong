@@ -32,7 +32,7 @@ export default defineComponent({
     buttonTextColor: { type: String, default: '#153E35' },
   },
   setup(props) {
-    const duplicateItems = (items: TestimonialItem[], times: number = 3) => {
+    const duplicateItems = (items: TestimonialItem[], times: number = 10) => {
       const result: TestimonialItem[] = [];
       for (let i = 0; i < times; i++) {
         result.push(...items);
@@ -41,40 +41,40 @@ export default defineComponent({
     };
 
     const baseSwiperOptions: any = {
-        modules: [Autoplay],
-        loop: true,
-        loopAdditionalSlides: 3,
-        slidesPerView: 'auto',
-        spaceBetween: 24,
-        centeredSlides: true,
-        allowTouchMove: false,
-        autoplay: {
-            delay: 0,
-            disableOnInteraction: false,
-            pauseOnMouseEnter: true,
-            reverseDirection: false,
+      modules: [Autoplay],
+      loop: true,
+      loopAdditionalSlides: 3,
+      slidesPerView: 'auto',
+      spaceBetween: 24,
+      centeredSlides: true,
+      allowTouchMove: false,
+      autoplay: {
+        delay: 0,
+        disableOnInteraction: false,
+        pauseOnMouseEnter: true,
+        reverseDirection: false,
+      },
+      freeMode: true,
+      freeModeMomentum: false,
+      breakpoints: {
+        320: {
+          slidesPerView: 1,
+          spaceBetween: 16,
+          centeredSlides: false,
         },
-        freeMode: true,
-        freeModeMomentum: false,
-        breakpoints: {
-            320: {
-                slidesPerView: 1,
-                spaceBetween: 16,
-                centeredSlides: false,
-            },
-            768: {
-                slidesPerView: 2,
-                spaceBetween: 24,
-            },
-            1024: {
-                slidesPerView: 3,
-                spaceBetween: 24,
-            },
-            1200: {
-                slidesPerView: 'auto',
-                spaceBetween: 24,
-            }
+        768: {
+          slidesPerView: 2,
+          spaceBetween: 24,
+        },
+        1024: {
+          slidesPerView: 3,
+          spaceBetween: 24,
+        },
+        1200: {
+          slidesPerView: 'auto',
+          spaceBetween: 24,
         }
+      }
     };
 
     const swiperOptionsRow1: any = { ...baseSwiperOptions, speed: props.speed };
@@ -267,23 +267,23 @@ export default defineComponent({
         </Swiper>
 
         <div class="testimonials-container">
-            {props.buttonText && (
-                <a
-                href={props.buttonUrl}
-                class="testimonials-button"
-                style={{
-                    backgroundColor: props.buttonBgColor,
-                    color: props.buttonTextColor,
-                }}
-                >
-                <span>{props.buttonText}</span>
-                <span class="button-icon">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5-5 5M6 12h12"></path>
-                    </svg>
-                </span>
-                </a>
-            )}
+          {props.buttonText && (
+            <a
+              href={props.buttonUrl}
+              class="testimonials-button"
+              style={{
+                backgroundColor: props.buttonBgColor,
+                color: props.buttonTextColor,
+              }}
+            >
+              <span>{props.buttonText}</span>
+              <span class="button-icon">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M13 7l5 5-5 5M6 12h12"></path>
+                </svg>
+              </span>
+            </a>
+          )}
         </div>
       </section>
     );

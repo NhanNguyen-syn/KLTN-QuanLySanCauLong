@@ -146,7 +146,12 @@ class PublicController extends BaseController
         try {
             $account = auth('member')->user();
 
-            $result = RvMedia::uploadFromBlob($request->file('avatar_file'), folderSlug: $account->upload_folder);
+            $file = $request->file('avatar_file');
+            if (is_array($file)) {
+                $file = \Illuminate\Support\Arr::first($file);
+            }
+
+            $result = RvMedia::handleUpload($file, 0, $account->upload_folder);
 
             if ($result['error']) {
                 return $this

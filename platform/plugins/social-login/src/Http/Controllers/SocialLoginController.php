@@ -162,7 +162,7 @@ class SocialLoginController extends BaseController
             try {
                 $url = $oAuth->getAvatar();
                 if ($url) {
-                    $result = RvMedia::uploadFromUrl($url, 0, $model->upload_folder ?: 'accounts', 'image/png');
+                    $result = RvMedia::uploadFromUrl($url, 0, 'members-avatars', 'image/png');
                     if (! $result['error']) {
                         $avatarId = $result['data']->id;
                         $avatarUrl = $result['data']->url;
@@ -212,8 +212,9 @@ class SocialLoginController extends BaseController
 
         try {
             $url = $oAuth->getAvatar();
-            if ($url && (! $account->avatar_id || $account->avatar_id !== $avatarId)) {
-                $result = RvMedia::uploadFromUrl($url, 0, $model->upload_folder ?: 'accounts', 'image/png');
+            // Only update avatar from social provider if the user does NOT have an avatar currently
+            if ($url && ! $account->avatar_id) {
+                $result = RvMedia::uploadFromUrl($url, 0, 'members-avatars', 'image/png');
 
                 if (! $result['error']) {
                     if ($account->isFillable('avatar_id')) {
