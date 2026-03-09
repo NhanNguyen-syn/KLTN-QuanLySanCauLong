@@ -51,7 +51,7 @@ export default defineComponent({
       autoplay: {
         delay: 0,
         disableOnInteraction: false,
-        pauseOnMouseEnter: true,
+        pauseOnMouseEnter: false,
         reverseDirection: false,
       },
       freeMode: true,

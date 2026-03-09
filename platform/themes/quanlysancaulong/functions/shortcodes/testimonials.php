@@ -33,7 +33,15 @@ Shortcode::register('testimonials', __('Testimonials'), __('Testimonials'), func
         foreach ($reviews as $review) {
             $avatar = '';
             if ($review->member_id && $review->member) {
-                $avatar = $review->member->avatar_url;
+                if ($review->member->avatar->url) {
+                    $avatar = RvMedia::url($review->member->avatar->url);
+                } else {
+                    try {
+                        $avatar = \Botble\Base\Supports\Avatar::createBase64Image($review->member->name);
+                    } catch (\Throwable $e) {
+                        $avatar = '';
+                    }
+                }
             }
 
             $testimonials[] = [
