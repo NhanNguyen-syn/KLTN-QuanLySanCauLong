@@ -217,7 +217,67 @@ export default defineComponent<Props>({
             .bbc-card:hover { box-shadow: 0 16px 30px rgba(0,0,0,.12); transform: translateY(-2px); border-color: rgba(5, 150, 105, 0.35); }
             .bbc-card:hover .bbc-image { transform: scale(1.1); }
             .bbc-card:hover .bbc-title { color: #059669; }
-            .bbc-card:hover .bbc-circle { background: #059669 !important; color: #ffffff !important; }
+            .bbc-card:hover .bbc-circle { background: #059669 !important; color: #ffffff !important; transform: scale(1.15); box-shadow: 0 4px 12px rgba(5, 150, 105, 0.35); }
+
+            /* Light sweep on "Đặt Sân" view-all button */
+            .btn-view-all {
+              position: relative;
+              overflow: hidden;
+              transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
+            }
+            .btn-view-all::before {
+              content: '';
+              position: absolute;
+              top: 0;
+              left: -100%;
+              width: 80%;
+              height: 100%;
+              background: linear-gradient(
+                120deg,
+                transparent 0%,
+                rgba(255, 255, 255, 0.2) 30%,
+                rgba(255, 255, 255, 0.55) 50%,
+                rgba(255, 255, 255, 0.2) 70%,
+                transparent 100%
+              );
+              transition: left 0.7s ease;
+              z-index: 1;
+              pointer-events: none;
+            }
+            .btn-view-all:hover {
+              transform: translateY(-4px) scale(1.06) !important;
+              box-shadow: 0 14px 36px rgba(6, 95, 70, 0.45), 0 0 20px rgba(5, 150, 105, 0.25) !important;
+            }
+            .btn-view-all:hover::before {
+              left: 160%;
+            }
+
+            /* Circle arrow button enhanced hover */
+            .bbc-circle {
+              position: relative;
+              overflow: hidden;
+            }
+            .bbc-circle::before {
+              content: '';
+              position: absolute;
+              top: 50%;
+              left: 50%;
+              width: 0;
+              height: 0;
+              background: #059669;
+              border-radius: 50%;
+              transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+              transform: translate(-50%, -50%);
+              z-index: 0;
+            }
+            .bbc-card:hover .bbc-circle::before {
+              width: 100%;
+              height: 100%;
+            }
+            .bbc-circle svg {
+              position: relative;
+              z-index: 1;
+            }
           `}
         </style>
 

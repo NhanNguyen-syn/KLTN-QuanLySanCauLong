@@ -147,6 +147,41 @@ export default defineComponent({
 
     return () => (
       <div class="detailed-price-section detailed-price-wrapper" style={wrapper}>
+        <style>{`
+          .dp-btn {
+            position: relative;
+            overflow: hidden;
+          }
+          .dp-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 60%;
+            height: 100%;
+            background: linear-gradient(
+              120deg,
+              transparent 0%,
+              rgba(14, 107, 92, 0.08) 40%,
+              rgba(14, 107, 92, 0.15) 50%,
+              rgba(14, 107, 92, 0.08) 60%,
+              transparent 100%
+            );
+            transition: left 0.6s ease;
+            z-index: 1;
+            pointer-events: none;
+          }
+          .dp-btn:hover {
+            background: #0b5b40 !important;
+            color: #fff !important;
+            border-color: #0b5b40 !important;
+            transform: scale(1.03);
+            box-shadow: 0 6px 20px rgba(11, 91, 64, 0.25);
+          }
+          .dp-btn:hover::before {
+            left: 150%;
+          }
+        `}</style>
         <div class="dp-container" style={container}>
           <h2 class="dp-heading" style={heading}>{props.sectionTitle}</h2>
           <p class="dp-subtitle" style={sub}>{props.sectionSubtitle}</p>

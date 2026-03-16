@@ -7,6 +7,7 @@
         'title' => $shortcode->title,
         'titleColor' => $shortcode->title_color,
         'description' => $shortcode->description,
+        'descriptionColor' => $shortcode->description_color,
         'textAlign' => $shortcode->text_align,
         'backgroundImage' => $shortcode->background_image ? RvMedia::getImageUrl($shortcode->background_image) : null,
         'overlayColor' => $shortcode->overlay_color,

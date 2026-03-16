@@ -248,12 +248,39 @@
         align-items: center;
         justify-content: center;
         color: #059669;
-        transition: all 0.3s ease;
+        transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .court-card-arrow::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        background: #059669;
+        border-radius: 50%;
+        transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        transform: translate(-50%, -50%);
+        z-index: 0;
+    }
+
+    .court-card:hover .court-card-arrow::before {
+        width: 100%;
+        height: 100%;
     }
 
     .court-card:hover .court-card-arrow {
-        background: #059669;
         color: white;
+        transform: scale(1.1);
+        box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
+    }
+
+    .court-card-arrow i {
+        position: relative;
+        z-index: 1;
     }
 
     /* Pricing Section */
@@ -426,11 +453,40 @@
         color: #1f2937;
         text-decoration: none;
         transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .pricing-card-cta a::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 60%;
+        height: 100%;
+        background: linear-gradient(
+            120deg,
+            transparent 0%,
+            rgba(5, 150, 105, 0.06) 35%,
+            rgba(5, 150, 105, 0.12) 50%,
+            rgba(5, 150, 105, 0.06) 65%,
+            transparent 100%
+        );
+        transition: left 0.6s ease;
+        z-index: 0;
+        pointer-events: none;
     }
 
     .pricing-card-cta a:hover {
         border-color: #059669;
         color: #059669;
+        background: rgba(5, 150, 105, 0.04);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(5, 150, 105, 0.15);
+    }
+
+    .pricing-card-cta a:hover::before {
+        left: 150%;
     }
 
     /* CTA Section */
@@ -451,14 +507,46 @@
         font-weight: 700;
         font-size: 1rem;
         text-decoration: none;
-        transition: all 0.3s ease;
+        transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
         box-shadow: 0 4px 15px rgba(6, 95, 70, 0.3);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .courts-cta-section a::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 80%;
+        height: 100%;
+        background: linear-gradient(
+            120deg,
+            transparent 0%,
+            rgba(255, 255, 255, 0.25) 30%,
+            rgba(255, 255, 255, 0.6) 50%,
+            rgba(255, 255, 255, 0.25) 70%,
+            transparent 100%
+        );
+        transition: left 0.7s ease;
+        z-index: 1;
+        pointer-events: none;
     }
 
     .courts-cta-section a:hover {
         background: #047857;
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(6, 95, 70, 0.4);
+        transform: translateY(-4px) scale(1.06);
+        box-shadow: 0 12px 35px rgba(6, 95, 70, 0.5), 0 0 20px rgba(5, 150, 105, 0.3);
+    }
+
+    .courts-cta-section a:hover::before {
+        left: 160%;
+    }
+
+    .courts-cta-section a i,
+    .courts-cta-section a span {
+        position: relative;
+        z-index: 2;
     }
 </style>
 
@@ -622,6 +710,6 @@
 <section class="courts-cta-section">
     <a href="{{ route('public.booking') }}">
         <i class="ti ti-calendar-plus"></i>
-        Đặt Sân Ngay
+        <span>Đặt Sân</span>
     </a>
 </section>

@@ -1,4 +1,4 @@
-import { defineComponent, CSSProperties } from 'vue';
+import { defineComponent, CSSProperties, ref, onMounted } from 'vue';
 
 export default defineComponent({
     name: 'BannerPage',
@@ -9,10 +9,17 @@ export default defineComponent({
         buttonText: { type: String, required: false, default: 'Become a Member' },
         buttonUrl: { type: String, required: false, default: '#' },
         satisfiedText: { type: String, required: false, default: 'Satisfied by 1k Users' },
-        // Không dùng ảnh mẫu mặc định, để trống để hiển thị đúng dữ liệu truyền từ PHP
-
     },
     setup(props) {
+        const isVisible = ref(false);
+
+        onMounted(() => {
+            // Small delay to ensure the DOM is ready and initial styles are applied
+            requestAnimationFrame(() => {
+                isVisible.value = true;
+            });
+        });
+
         const sectionStyle: CSSProperties = {
             position: 'relative',
             minHeight: '50vh',
@@ -24,6 +31,7 @@ export default defineComponent({
             backgroundColor: '#222',
             padding: '4rem 5%',
             boxSizing: 'border-box',
+            overflow: 'hidden',
         };
 
         const overlayStyle: CSSProperties = {
@@ -87,8 +95,6 @@ export default defineComponent({
             letterSpacing: '0.02em',
         };
 
-
-
         const leftContentStyle: CSSProperties = {
             position: 'absolute',
             left: '5%',
@@ -106,9 +112,42 @@ export default defineComponent({
             textAlign: 'right',
         };
 
+        // --- Animation helpers ---
+        const animBaseHidden: CSSProperties = {
+            opacity: 0,
+            transform: 'translateY(35px)',
+            transition: 'opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1)',
+        };
 
+        const animBaseVisible: CSSProperties = {
+            opacity: 1,
+            transform: 'translateY(0)',
+        };
 
+        const animSlideLeftHidden: CSSProperties = {
+            opacity: 0,
+            transform: 'translateX(40px)',
+            transition: 'opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1), transform 0.9s cubic-bezier(0.16, 1, 0.3, 1)',
+        };
 
+        const animSlideLeftVisible: CSSProperties = {
+            opacity: 1,
+            transform: 'translateX(0)',
+        };
+
+        const getAnimStyle = (delay: number, direction: 'up' | 'left' = 'up'): CSSProperties => {
+            const hidden = direction === 'up' ? animBaseHidden : animSlideLeftHidden;
+            const visible = direction === 'up' ? animBaseVisible : animSlideLeftVisible;
+
+            if (!isVisible.value) {
+                return { ...hidden };
+            }
+            return {
+                ...hidden,
+                ...visible,
+                transitionDelay: `${delay}ms`,
+            };
+        };
 
         const handleCta = (e: MouseEvent) => {
             const text = (props.buttonText || '').toLowerCase();
@@ -122,14 +161,56 @@ export default defineComponent({
 
         return () => (
             <section class="banner-page-shortcode" style={sectionStyle}>
+                <style>{`
+                    .banner-cta-btn {
+                        position: relative;
+                        overflow: hidden;
+                    }
+                    .banner-cta-btn::before {
+                        content: '';
+                        position: absolute;
+                        top: 0;
+                        left: -100%;
+                        width: 60%;
+                        height: 100%;
+                        background: linear-gradient(
+                            120deg,
+                            transparent 0%,
+                            rgba(255, 255, 255, 0.3) 35%,
+                            rgba(255, 255, 255, 0.6) 50%,
+                            rgba(255, 255, 255, 0.3) 65%,
+                            transparent 100%
+                        );
+                        transition: left 0.6s ease;
+                        z-index: 1;
+                        pointer-events: none;
+                    }
+                    .banner-cta-btn:hover {
+                        box-shadow: 0 6px 24px rgba(255, 255, 255, 0.3) !important;
+                        transform: scale(1.05);
+                    }
+                    .banner-cta-btn:hover::before {
+                        left: 150%;
+                    }
+                    .banner-cta-btn > span,
+                    .banner-cta-btn > svg {
+                        position: relative;
+                        z-index: 2;
+                    }
+                `}</style>
                 <div style={overlayStyle}></div>
                 <div style={contentStyle}>
                     <div style={leftContentStyle}>
-                        {/* Satisfied text */}
-                        {props.satisfiedText && <p style={satisfiedTextStyle}>{props.satisfiedText}</p>}
+                        {/* Satisfied text — delay 0ms */}
+                        {props.satisfiedText && (
+                            <p style={{ ...satisfiedTextStyle, ...getAnimStyle(0) }}>
+                                {props.satisfiedText}
+                            </p>
+                        )}
 
+                        {/* Title — delay 200ms */}
                         {props.title && (
-                            <h1 style={titleStyle}>
+                            <h1 style={{ ...titleStyle, ...getAnimStyle(200) }}>
                                 {props.title.split('\n').map((line: string, index: number) => (
                                     <span key={index}>
                                         {line}
@@ -138,31 +219,39 @@ export default defineComponent({
                                 ))}
                             </h1>
                         )}
+
+                        {/* Button — delay 400ms */}
                         {props.buttonText && props.buttonUrl && (
-                            <a href={props.buttonUrl} onClick={handleCta} style={buttonStyle}>
-                                <span>{props.buttonText}</span>
-                                <svg
-                                    width="18"
-                                    height="18"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    stroke="currentColor"
-                                    stroke-width="2.5"
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                >
-                                    <path d="M5 12H19M19 12L13 6M19 12L13 18" />
-                                </svg>
-                            </a>
+                            <div style={getAnimStyle(400)}>
+                                <a href={props.buttonUrl} onClick={handleCta} class="banner-cta-btn" style={buttonStyle}>
+                                    <span>{props.buttonText}</span>
+                                    <svg
+                                        width="18"
+                                        height="18"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        stroke="currentColor"
+                                        stroke-width="2.5"
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                    >
+                                        <path d="M5 12H19M19 12L13 6M19 12L13 18" />
+                                    </svg>
+                                </a>
+                            </div>
                         )}
                     </div>
                     <div style={rightContentStyle}>
-                        {props.description && <p style={descriptionStyle}>{props.description}</p>}
+                        {/* Description — delay 500ms, slides in from right */}
+                        {props.description && (
+                            <p style={{ ...descriptionStyle, ...getAnimStyle(500, 'left') }}>
+                                {props.description}
+                            </p>
+                        )}
                     </div>
                 </div>
             </section>
         );
     },
 });
-

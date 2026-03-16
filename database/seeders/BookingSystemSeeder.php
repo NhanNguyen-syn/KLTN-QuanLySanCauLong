@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\{Court, CourtStatus, CourtType, PricingRule, TimeSlot};
+use Botble\CourtBooking\Models\{Court, CourtStatus, CourtType, PricingRule, TimeSlot};
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 

@@ -5,6 +5,8 @@ type Props = {
   title_color?: string; // from shortcode raw
   titleColor?: string;  // normalized
   description?: string;
+  description_color?: string;
+  descriptionColor?: string;
   text_align?: string;
   textAlign?: string;
   background_image?: string; // raw id/url
@@ -28,6 +30,8 @@ export default defineComponent<Props>({
     title_color: String,
     titleColor: String,
     description: String,
+    description_color: String,
+    descriptionColor: String,
     text_align: String,
     textAlign: String,
     background_image: String,
@@ -48,7 +52,7 @@ export default defineComponent<Props>({
     const hasBg = !!bg;
     const overlay = props.overlayColor || props.overlay_color || (hasBg ? 'rgba(0,0,0,.35)' : 'transparent');
     const titleColor = props.titleColor || props.title_color || (hasBg ? '#ffffff' : '#111111');
-    const descColor = hasBg ? '#ffffff' : '#444444';
+    const descColor = props.descriptionColor || props.description_color || (hasBg ? '#ffffff' : '#444444');
     const btnText = props.buttonText || props.button_text || '';
     const btnUrl = props.buttonUrl || props.button_url || '/dat-san';
     const btnBgColor = props.buttonBgColor || props.button_bg_color || '#065e45';
@@ -83,7 +87,12 @@ export default defineComponent<Props>({
     };
 
     return () => (
-      <section class="banner-for-yard" style={{ backgroundImage: bg ? `url('${bg}')` : undefined }}>
+      <section class="banner-for-yard" style={{
+          backgroundImage: bg ? `url('${bg}')` : undefined,
+          backgroundSize: bg ? 'cover' : undefined,
+          backgroundPosition: bg ? 'center' : undefined,
+          backgroundRepeat: bg ? 'no-repeat' : undefined,
+        }}>
         <div class="banner-for-yard__overlay" style={{ background: overlay }}></div>
         <div class="banner-for-yard__inner container" style={{ justifyContent }}>
           <div style={{ textAlign, width: '100%' }}>

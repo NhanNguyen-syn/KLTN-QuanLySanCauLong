@@ -186,14 +186,43 @@ export default defineComponent({
             font-weight: 600;
             font-size: 1rem;
             text-decoration: none;
-            transition: all 0.2s ease;
+            transition: all 0.3s ease;
             margin-top: 48px;
             border: none;
             cursor: pointer;
+            position: relative;
+            overflow: hidden;
+          }
+          .testimonials-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 60%;
+            height: 100%;
+            background: linear-gradient(
+              120deg,
+              transparent 0%,
+              rgba(255, 255, 255, 0.4) 40%,
+              rgba(255, 255, 255, 0.7) 50%,
+              rgba(255, 255, 255, 0.4) 60%,
+              transparent 100%
+            );
+            transition: left 0.6s ease;
+            z-index: 1;
+            pointer-events: none;
           }
           .testimonials-button:hover {
             transform: scale(1.05);
-            box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+            box-shadow: 0 6px 20px rgba(198, 244, 50, 0.35);
+          }
+          .testimonials-button:hover::before {
+            left: 150%;
+          }
+          .testimonials-button > span,
+          .testimonials-button > .button-icon {
+            position: relative;
+            z-index: 2;
           }
           .button-icon {
             width: 24px;

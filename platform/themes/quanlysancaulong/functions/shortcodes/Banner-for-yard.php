@@ -59,6 +59,14 @@ Shortcode::setAdminConfig('banner-for-yard', function (array $attributes) {
                 ->toArray()
         )
         ->add(
+            'description_color',
+            ShortcodeColorField::class,
+            InputFieldOption::make()
+                ->label(__('Description color'))
+                ->defaultValue('#ffffff')
+                ->toArray()
+        )
+        ->add(
             'text_align',
             SelectField::class,
             SelectFieldOption::make()

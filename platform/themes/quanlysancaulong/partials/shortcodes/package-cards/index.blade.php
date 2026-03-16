@@ -277,16 +277,42 @@
     border-radius: 0.75rem;
     font-weight: 700;
     font-size: 1rem;
-    transition: all 0.3s ease;
+    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     box-shadow: 0 4px 12px rgba(6, 94, 69, 0.3);
     margin-top: auto;
+    position: relative;
+    overflow: hidden;
+}
+
+.package-card-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 80%;
+    height: 100%;
+    background: linear-gradient(
+        120deg,
+        transparent 0%,
+        rgba(255, 255, 255, 0.2) 30%,
+        rgba(255, 255, 255, 0.55) 50%,
+        rgba(255, 255, 255, 0.2) 70%,
+        transparent 100%
+    );
+    transition: left 0.7s ease;
+    z-index: 1;
+    pointer-events: none;
 }
 
 .package-card-button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(6, 94, 69, 0.4);
+    transform: translateY(-3px) scale(1.04);
+    box-shadow: 0 12px 30px rgba(6, 94, 69, 0.45), 0 0 16px rgba(5, 150, 105, 0.2);
     background: #0A2918;
     color: white;
+}
+
+.package-card-button:hover::before {
+    left: 160%;
 }
 
 .package-card-button:active {
