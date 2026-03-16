@@ -51,8 +51,11 @@
         .contact-us-section .checkbox-group {display:flex;align-items:center;gap:10px}
         .contact-us-section .checkbox-group input[type="checkbox"] {width:16px;height:16px;cursor:pointer;flex-shrink:0}
         .contact-us-section .checkbox-group label {margin:0;cursor:pointer;font-weight:400;font-size:13px;color:#666}
-        .contact-us-section .btn-submit {background:#0E6B5C;color:#fff;padding:12px 24px;border:none;border-radius:6px;font-weight:600;font-size:14px;cursor:pointer;width:100%;transition:filter .2s}
-        .contact-us-section .btn-submit:hover {filter:brightness(1.08)}
+        .contact-us-section .btn-submit {background:#0E6B5C;color:#fff;padding:12px 24px;border:none;border-radius:6px;font-weight:600;font-size:14px;cursor:pointer;width:100%;transition:all .4s cubic-bezier(.25,.46,.45,.94);position:relative;overflow:hidden}
+        .contact-us-section .btn-submit::before {content:'';position:absolute;top:0;left:-100%;width:80%;height:100%;background:linear-gradient(120deg,transparent 0%,rgba(255,255,255,.2) 30%,rgba(255,255,255,.55) 50%,rgba(255,255,255,.2) 70%,transparent 100%);transition:left .7s ease;z-index:1;pointer-events:none}
+        .contact-us-section .btn-submit:hover {filter:brightness(1.12);transform:translateY(-3px) scale(1.03);box-shadow:0 10px 28px rgba(14,107,92,.4),0 0 16px rgba(14,107,92,.2)}
+        .contact-us-section .btn-submit:hover::before {left:160%}
+        .contact-us-section .btn-submit:active {transform:translateY(0) scale(1)}
         .contact-us-section .contact-form {display:block;margin:0}
         .contact-us-section .form-actions {margin-top:12px!important;padding-bottom:12px}
 
@@ -126,11 +129,15 @@
                             <div class="form-row">
                                 <div class="form-group">
                                     <label for="name">Họ và tên <span class="required">*</span></label>
-                                    <input type="text" id="name" name="name" class="form-control" placeholder="Nhập họ và tên của bạn" required>
+                                    <input type="text" id="name" name="name" class="form-control" placeholder="Nhập họ và tên của bạn" required
+                                        oninvalid="this.setCustomValidity('Vui lòng nhập họ và tên của bạn')"
+                                        oninput="this.setCustomValidity('')">
                                 </div>
                                 <div class="form-group">
                                     <label for="email">Email <span class="required">*</span></label>
-                                    <input type="email" id="email" name="email" class="form-control" placeholder="Nhập địa chỉ email của bạn" required>
+                                    <input type="email" id="email" name="email" class="form-control" placeholder="Nhập địa chỉ email của bạn" required
+                                        oninvalid="this.setCustomValidity(this.value ? 'Vui lòng nhập đúng định dạng email' : 'Vui lòng nhập địa chỉ email')"
+                                        oninput="this.setCustomValidity('')">
                                 </div>
                             </div>
                             <div class="form-row full">
@@ -141,11 +148,15 @@
                             </div>
                             <div class="form-group form-row full">
                                 <label for="content">Nội dung tin nhắn <span class="required">*</span></label>
-                                <textarea id="content" name="content" class="form-control" placeholder="Nhập nội dung tin nhắn của bạn" rows="5" required></textarea>
+                                <textarea id="content" name="content" class="form-control" placeholder="Nhập nội dung tin nhắn của bạn" rows="5" required
+                                    oninvalid="this.setCustomValidity('Vui lòng nhập nội dung tin nhắn')"
+                                    oninput="this.setCustomValidity('')"></textarea>
                             </div>
                             <div class="form-actions">
                                 <div class="checkbox-group">
-                                    <input type="checkbox" id="agree_terms_and_policy" name="agree_terms_and_policy" value="1" required>
+                                    <input type="checkbox" id="agree_terms_and_policy" name="agree_terms_and_policy" value="1" required
+                                        oninvalid="this.setCustomValidity('Vui lòng đồng ý với chính sách bảo mật để tiếp tục')"
+                                        onchange="this.setCustomValidity('')">
                                     <label for="agree_terms_and_policy">Tôi đồng ý với <a href="#">chính sách bảo mật</a> của chúng tôi</label>
                                 </div>
                                 <button type="submit" class="btn-submit">Gửi tin nhắn</button>

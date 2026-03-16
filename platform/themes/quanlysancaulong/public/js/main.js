@@ -32769,7 +32769,7 @@ __webpack_require__.r(__webpack_exports__);
           backgroundPosition: bg ? 'center' : undefined,
           backgroundRepeat: bg ? 'no-repeat' : undefined
         }
-      }, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)("div", {
+      }, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)("style", null, ["\n          .bfy-cta-btn {\n            position: relative;\n            overflow: hidden;\n            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;\n          }\n          .bfy-cta-btn::before {\n            content: '';\n            position: absolute;\n            top: 0;\n            left: -100%;\n            width: 80%;\n            height: 100%;\n            background: linear-gradient(\n              120deg,\n              transparent 0%,\n              rgba(255, 255, 255, 0.25) 30%,\n              rgba(255, 255, 255, 0.6) 50%,\n              rgba(255, 255, 255, 0.25) 70%,\n              transparent 100%\n            );\n            transition: left 0.7s ease;\n            z-index: 1;\n            pointer-events: none;\n          }\n          .bfy-cta-btn:hover {\n            transform: translateY(-3px) scale(1.05) !important;\n            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3) !important;\n            filter: brightness(1.15);\n          }\n          .bfy-cta-btn:hover::before {\n            left: 160%;\n          }\n        "]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)("div", {
         "class": "banner-for-yard__overlay",
         "style": {
           background: overlay
@@ -32806,12 +32806,17 @@ __webpack_require__.r(__webpack_exports__);
       }, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)("a", {
         "href": btnUrl,
         "onClick": handleCta,
-        "class": "btn",
+        "class": "btn bfy-cta-btn",
         "style": {
           backgroundColor: btnBgColor,
           color: btnTextColor
         }
-      }, [btnText])])])])]);
+      }, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)("span", {
+        "style": {
+          position: 'relative',
+          zIndex: 2
+        }
+      }, [btnText])])])])])]);
     };
   }
 }));
@@ -34543,8 +34548,40 @@ __webpack_require__.r(__webpack_exports__);
     }
   },
   setup: function setup(props) {
+    var sectionRef = (0,vue__WEBPACK_IMPORTED_MODULE_0__.ref)(null);
+    (0,vue__WEBPACK_IMPORTED_MODULE_0__.onMounted)(function () {
+      var el = sectionRef.value;
+      if (!el) return;
+      // Initially hide all items
+      var items = el.querySelectorAll('.why-choose-item');
+      items.forEach(function (item) {
+        item.style.opacity = '0';
+        item.style.transform = 'translateY(40px)';
+      });
+      // IntersectionObserver to reveal on scroll
+      var observer = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) {
+            // Stagger the animations
+            var cards = el.querySelectorAll('.why-choose-item');
+            cards.forEach(function (card, idx) {
+              setTimeout(function () {
+                card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+                card.style.opacity = '1';
+                card.style.transform = 'translateY(0)';
+              }, idx * 120);
+            });
+            observer.unobserve(entry.target);
+          }
+        });
+      }, {
+        threshold: 0.15
+      });
+      observer.observe(el);
+    });
     return function () {
       return (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)("section", {
+        "ref": sectionRef,
         "class": "why-choose-section",
         "style": {
           backgroundColor: '#F3F7F5',
@@ -34552,7 +34589,7 @@ __webpack_require__.r(__webpack_exports__);
           textAlign: 'center',
           fontFamily: "'Baloo 2', sans-serif"
         }
-      }, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)("div", {
+      }, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)("style", null, ["\n          .why-choose-item {\n            background: #ffffff;\n            border-radius: 16px;\n            padding: 32px 24px;\n            box-shadow: 0 2px 8px rgba(0,0,0,0.05);\n            transition: all 0.3s ease;\n          }\n          .why-choose-item:hover {\n            transform: translateY(-6px) !important;\n            box-shadow: 0 12px 28px rgba(0,0,0,0.1);\n          }\n          .why-choose-item h3 {\n            font-size: 20px;\n            font-weight: 700;\n            color: #153E35;\n            margin: 0 0 8px;\n          }\n          .why-choose-item p {\n            font-size: 14px;\n            color: #6b7280;\n            line-height: 1.6;\n            margin: 0;\n          }\n        "]), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)("div", {
         "class": "container"
       }, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)("h2", {
         "style": {

@@ -93,6 +93,41 @@ export default defineComponent<Props>({
           backgroundPosition: bg ? 'center' : undefined,
           backgroundRepeat: bg ? 'no-repeat' : undefined,
         }}>
+        {/* Scoped hover styles - uses !important to override inline backgroundColor */}
+        <style>{`
+          .bfy-cta-btn {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
+          }
+          .bfy-cta-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 80%;
+            height: 100%;
+            background: linear-gradient(
+              120deg,
+              transparent 0%,
+              rgba(255, 255, 255, 0.25) 30%,
+              rgba(255, 255, 255, 0.6) 50%,
+              rgba(255, 255, 255, 0.25) 70%,
+              transparent 100%
+            );
+            transition: left 0.7s ease;
+            z-index: 1;
+            pointer-events: none;
+          }
+          .bfy-cta-btn:hover {
+            transform: translateY(-3px) scale(1.05) !important;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3) !important;
+            filter: brightness(1.15);
+          }
+          .bfy-cta-btn:hover::before {
+            left: 160%;
+          }
+        `}</style>
         <div class="banner-for-yard__overlay" style={{ background: overlay }}></div>
         <div class="banner-for-yard__inner container" style={{ justifyContent }}>
           <div style={{ textAlign, width: '100%' }}>
@@ -110,8 +145,8 @@ export default defineComponent<Props>({
             )}
             {btnText && (
               <div class="banner-for-yard__btn">
-                <a href={btnUrl} onClick={handleCta} class="btn" style={{ backgroundColor: btnBgColor, color: btnTextColor }}>
-                  {btnText}
+                <a href={btnUrl} onClick={handleCta} class="btn bfy-cta-btn" style={{ backgroundColor: btnBgColor, color: btnTextColor }}>
+                  <span style={{ position: 'relative', zIndex: 2 }}>{btnText}</span>
                 </a>
               </div>
             )}

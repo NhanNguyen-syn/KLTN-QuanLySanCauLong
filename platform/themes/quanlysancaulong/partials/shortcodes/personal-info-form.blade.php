@@ -4,6 +4,17 @@
     $formFields = $props['formFields'] ?? [];
     $submitButtonText = $props['submitButtonText'] ?? 'Lưu Thông Tin';
     $submitButtonUrl = $props['submitButtonUrl'] ?? '';
+
+    // Auto-fill from logged-in member
+    $authName = '';
+    $authEmail = '';
+    $authPhone = '';
+    if (auth('member')->check()) {
+        $member = auth('member')->user();
+        $authName = $member->name ?? '';
+        $authEmail = $member->email ?? '';
+        $authPhone = $member->phone ?? '';
+    }
 @endphp
 
 <section class="personal-info-form-section">
@@ -61,10 +72,12 @@
 
 
         /* Submit */
-        .personal-info-form-section .pi-submit{width:100%;margin-top:20px;border:none;border-radius:12px;background:#059669;color:#fff;padding:14px 18px;font-weight:700;transition:filter .15s,transform .15s;display:block;text-align:center;text-decoration:none !important}
-        .personal-info-form-section .pi-submit[disabled]{background:#f3f4f6;color:#9ca3af;cursor:not-allowed;box-shadow:none}
-        .personal-info-form-section .pi-submit:hover{filter:brightness(1.05);text-decoration:none !important}
-        .personal-info-form-section .pi-submit:active{transform:scale(.98)}
+        .personal-info-form-section .pi-submit{width:100%;margin-top:20px;border:none;border-radius:12px;background:#059669;color:#fff;padding:14px 18px;font-weight:700;transition:all .4s cubic-bezier(.25,.46,.45,.94);display:block;text-align:center;text-decoration:none !important;position:relative;overflow:hidden;cursor:pointer}
+        .personal-info-form-section .pi-submit.is-disabled{background:#e5e7eb !important;color:#9ca3af !important;cursor:not-allowed !important;box-shadow:none !important;pointer-events:none !important;transform:none !important}
+        .personal-info-form-section .pi-submit:not(.is-disabled)::before{content:'';position:absolute;top:0;left:-100%;width:80%;height:100%;background:linear-gradient(120deg,transparent 0%,rgba(255,255,255,.2) 30%,rgba(255,255,255,.55) 50%,rgba(255,255,255,.2) 70%,transparent 100%);transition:left .7s ease;z-index:1;pointer-events:none}
+        .personal-info-form-section .pi-submit:not(.is-disabled):hover{filter:brightness(1.1);text-decoration:none !important;transform:translateY(-3px) scale(1.03);box-shadow:0 10px 28px rgba(5,150,105,.4),0 0 16px rgba(5,150,105,.2)}
+        .personal-info-form-section .pi-submit:not(.is-disabled):hover::before{left:160%}
+        .personal-info-form-section .pi-submit:not(.is-disabled):active{transform:translateY(0) scale(.98)}
 
         /* Summary column */
         .personal-info-form-section .pi-summary{position:relative}
@@ -240,7 +253,7 @@
                     </div>
                 </div>
 
-                                <form class="personal-info-form" onsubmit="event.preventDefault(); return false;">
+                                <form class="personal-info-form" novalidate>
                     @csrf
 
                     @foreach($formFields as $index => $field)
@@ -251,92 +264,134 @@
                                     <span class="required">*</span>
                                 @endif
                             </label>
+                            @php
+                                $inputType = 'text';
+                                $extraAttrs = '';
+                                $defaultValue = '';
+                                $flabel = mb_strtolower($field['label'] ?? '');
+                                if (str_contains($flabel, 'email')) {
+                                    $inputType = 'email';
+                                    $defaultValue = $authEmail;
+                                } elseif (str_contains($flabel, 'điện thoại') || str_contains($flabel, 'phone') || str_contains($flabel, 'sdt') || str_contains($flabel, 'số điện')) {
+                                    $inputType = 'tel';
+                                    $extraAttrs = 'maxlength="12" inputmode="numeric"';
+                                    $defaultValue = $authPhone;
+                                } elseif (str_contains($flabel, 'tên') || str_contains($flabel, 'name') || str_contains($flabel, 'họ')) {
+                                    $defaultValue = $authName;
+                                }
+                            @endphp
                             <input
-                                type="text"
+                                type="{{ $inputType }}"
                                 id="{{ $field['fieldName'] }}"
                                 name="{{ $field['fieldName'] }}"
                                 class="form-control"
                                 placeholder="{{ $field['placeholder'] }}"
+                                data-field-type="{{ $inputType }}"
+                                value="{{ $defaultValue }}"
                                 @if($field['required']) required @endif
+                                {!! $extraAttrs !!}
                             >
                         </div>
                     @endforeach
 
                     @if (!empty($submitButtonUrl))
-                        <a href="{{ url($submitButtonUrl) }}" class="pi-submit pi-submit-link" disabled aria-disabled="true">{{ $submitButtonText }}</a>
+                        <a href="{{ url($submitButtonUrl) }}" class="pi-submit pi-submit-link is-disabled" id="pi-submit-btn"><span style="position:relative;z-index:2">{{ $submitButtonText }}</span></a>
                     @else
-                        <button type="submit" class="pi-submit pi-submit-button">{{ $submitButtonText }}</button>
+                        <button type="submit" class="pi-submit pi-submit-button is-disabled" id="pi-submit-btn"><span style="position:relative;z-index:2">{{ $submitButtonText }}</span></button>
                     @endif
-
-                    <div class="form-message form-success"></div>
-                    <div class="form-message form-error"></div>
 
                 <script>
                     (function() {
-                        const form = document.querySelector('.personal-info-form');
+                        var form = document.querySelector('.personal-info-form');
                         if (!form) return;
 
-                        const btn = form.querySelector('.pi-submit');
-                        const requiredInputs = form.querySelectorAll('[required]');
+                        var btn = document.getElementById('pi-submit-btn');
+                        var allInputs = form.querySelectorAll('input[name]');
 
-                        const saveToLocalStorage = () => {
+                        function validateField(input) {
+                            var val = (input.value || '').trim();
+                            var type = input.getAttribute('data-field-type') || input.type;
+                            var isRequired = input.hasAttribute('required');
+                            var name = input.name.toLowerCase();
+
+                            if (isRequired && !val) return false;
+
+                            if (type === 'email' && val) {
+                                if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)) return false;
+                            }
+
+                            if (type === 'tel' && val) {
+                                if (!/^\d{9,12}$/.test(val)) return false;
+                            }
+
+                            if (type === 'text' && val && (name.includes('name') || name.includes('ten') || name.includes('ho'))) {
+                                if (/[^\p{L}\p{N}\s]/u.test(val)) return false;
+                            }
+
+                            return true;
+                        }
+
+                        // Phone: auto-strip non-digits
+                        allInputs.forEach(function(input) {
+                            if ((input.getAttribute('data-field-type') || input.type) === 'tel') {
+                                input.addEventListener('input', function() {
+                                    this.value = this.value.replace(/\D/g, '').slice(0, 12);
+                                });
+                            }
+                        });
+
+                        function saveToLS() {
                             try {
-                                const data = {};
-                                form.querySelectorAll('input,select,textarea').forEach(el => {
+                                var data = {};
+                                form.querySelectorAll('input,select,textarea').forEach(function(el) {
                                     if (el.name) data[el.name] = el.value;
                                 });
                                 localStorage.setItem('personalInfo', JSON.stringify(data));
-                            } catch (e) {
-                                console.error('Failed to save personal info to localStorage', e);
-                            }
-                        };
+                            } catch (e) {}
+                        }
 
-                        const checkInputs = () => {
-                            const allFilled = Array.from(requiredInputs).every(i => String(i.value || '').trim());
+                        function checkAll() {
+                            var valid = true;
+                            allInputs.forEach(function(input) {
+                                if (!validateField(input)) valid = false;
+                            });
+
                             if (btn) {
-                                if (allFilled) {
-                                    btn.removeAttribute('disabled');
-                                    btn.setAttribute('aria-disabled', 'false');
+                                if (valid) {
+                                    btn.classList.remove('is-disabled');
                                 } else {
-                                    btn.setAttribute('disabled', 'true');
-                                    btn.setAttribute('aria-disabled', 'true');
+                                    btn.classList.add('is-disabled');
                                 }
                             }
-                        };
+                        }
 
-                        requiredInputs.forEach(i => {
-                            i.addEventListener('input', checkInputs);
-                            i.addEventListener('change', checkInputs);
+                        allInputs.forEach(function(i) {
+                            i.addEventListener('input', checkAll);
+                            i.addEventListener('change', checkAll);
                         });
 
-                        // Add listener based on button type
-                        if (btn.classList.contains('pi-submit-link')) {
-                            // For <a> tag, just save data before navigating
-                            btn.addEventListener('click', (e) => {
-                                if (btn.hasAttribute('disabled')) {
-                                    e.preventDefault(); // Stop navigation if button is disabled
-                                } else {
-                                    saveToLocalStorage();
+                        // Block click on <a> when disabled
+                        if (btn) {
+                            btn.addEventListener('click', function(e) {
+                                if (btn.classList.contains('is-disabled')) {
+                                    e.preventDefault();
+                                    e.stopImmediatePropagation();
+                                    return false;
                                 }
-                            });
-                        } else {
-                            // For <button> tag, save data on form submit
-                            form.addEventListener('submit', (e) => {
-                                e.preventDefault(); // Always prevent default for button submit
-                                if (!btn.hasAttribute('disabled')) {
-                                    saveToLocalStorage();
-                                    // Optionally show a success message here
-                                    const successMsg = form.querySelector('.form-success');
-                                    if(successMsg) {
-                                        successMsg.textContent = 'Đã lưu thông tin!';
-                                        successMsg.style.display = 'block';
-                                    }
-                                }
+                                saveToLS();
                             });
                         }
 
-                        // Initial check
-                        checkInputs();
+                        // Block form submit when disabled
+                        form.addEventListener('submit', function(e) {
+                            e.preventDefault();
+                            if (btn && !btn.classList.contains('is-disabled')) {
+                                saveToLS();
+                                if (btn.href) window.location.href = btn.href;
+                            }
+                        });
+
+                        checkAll();
                     })();
                 </script>
 

@@ -21,17 +21,14 @@ export default defineComponent({
             const tryScroll = () => {
                 if (!tableContainerRef.value || props.allTimeSlots.length === 0) return
 
-                const now = new Date()
-                const currentHour = now.getHours()
-                const currentMinute = now.getMinutes()
+                // Find the first time slot where at least one court is available
+                let targetIdx = props.allTimeSlots.findIndex(time =>
+                    props.courts.some(court => props.getSlotStatus(court.id, time) === 'available')
+                )
 
-                let targetIdx = props.allTimeSlots.findIndex(time => {
-                    const [hour, minute] = time.split(':').map(Number)
-                    return hour > currentHour || (hour === currentHour && minute >= currentMinute)
-                })
-
+                // If no available slot found, default to start
                 if (targetIdx === -1) {
-                    targetIdx = props.allTimeSlots.length - 1
+                    targetIdx = 0
                 }
 
                 const thead = tableContainerRef.value.querySelector('thead tr')
@@ -41,7 +38,7 @@ export default defineComponent({
                     // If CSS has not fully painted the grid yet, offsetLeft will be 0.
                     // Retry up to 10 seconds (100 * 100ms)
                     if (targetTh.offsetLeft === 0 && targetIdx > 0 && attempts < 100) {
-                        attempts++;
+                        attempts++
                         setTimeout(tryScroll, 100)
                         return
                     }

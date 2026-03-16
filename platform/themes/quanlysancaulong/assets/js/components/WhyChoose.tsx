@@ -1,4 +1,4 @@
-import { defineComponent, PropType } from 'vue';
+import { defineComponent, PropType, onMounted, ref } from 'vue';
 
 interface Item {
   title: string;
@@ -17,9 +17,74 @@ export default defineComponent({
     subtitleColor: { type: String, default: '#6b7280' },
   },
   setup(props) {
+    const sectionRef = ref<HTMLElement | null>(null);
+
+    onMounted(() => {
+      const el = sectionRef.value;
+      if (!el) return;
+
+      // Initially hide all items
+      const items = el.querySelectorAll('.why-choose-item');
+      items.forEach((item) => {
+        (item as HTMLElement).style.opacity = '0';
+        (item as HTMLElement).style.transform = 'translateY(40px)';
+      });
+
+      // IntersectionObserver to reveal on scroll
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              // Stagger the animations
+              const cards = el.querySelectorAll('.why-choose-item');
+              cards.forEach((card, idx) => {
+                setTimeout(() => {
+                  (card as HTMLElement).style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+                  (card as HTMLElement).style.opacity = '1';
+                  (card as HTMLElement).style.transform = 'translateY(0)';
+                }, idx * 120);
+              });
+              observer.unobserve(entry.target);
+            }
+          });
+        },
+        { threshold: 0.15 }
+      );
+
+      observer.observe(el);
+    });
+
     return () => (
-      <section class="why-choose-section" style={{ backgroundColor: '#F3F7F5', padding: '80px 0', textAlign: 'center', fontFamily: "'Baloo 2', sans-serif" }}>
-        {/* Scoped styles for responsive 1-2-3 columns like the design */}
+      <section
+        ref={sectionRef}
+        class="why-choose-section"
+        style={{ backgroundColor: '#F3F7F5', padding: '80px 0', textAlign: 'center', fontFamily: "'Baloo 2', sans-serif" }}
+      >
+        <style>{`
+          .why-choose-item {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 32px 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+          }
+          .why-choose-item:hover {
+            transform: translateY(-6px) !important;
+            box-shadow: 0 12px 28px rgba(0,0,0,0.1);
+          }
+          .why-choose-item h3 {
+            font-size: 20px;
+            font-weight: 700;
+            color: #153E35;
+            margin: 0 0 8px;
+          }
+          .why-choose-item p {
+            font-size: 14px;
+            color: #6b7280;
+            line-height: 1.6;
+            margin: 0;
+          }
+        `}</style>
         <div class="container">
           <h2 style={{ fontSize: '40px', fontWeight: 800, color: props.titleColor, marginTop: 0, marginBottom: '0.5rem' }}>{props.title}</h2>
           {props.subtitle && (
@@ -39,4 +104,3 @@ export default defineComponent({
     );
   },
 });
-
