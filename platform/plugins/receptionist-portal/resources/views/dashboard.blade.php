@@ -285,6 +285,38 @@
     .modal-content { border-radius: 16px; border: none; }
     .modal-header { border-bottom: 1px solid #f3f4f6; }
     .modal-footer { border-top: 1px solid #f3f4f6; }
+
+    /* Date Picker */
+    .dashboard-date-picker {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        background: white;
+        border: 2px solid #e5e7eb;
+        border-radius: 10px;
+        padding: 0.375rem 0.75rem;
+        transition: all 0.2s;
+        cursor: pointer;
+    }
+    .dashboard-date-picker:hover,
+    .dashboard-date-picker:focus-within {
+        border-color: #4f46e5;
+        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+    }
+    .dashboard-date-picker input[type="date"] {
+        border: none;
+        outline: none;
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #1f2937;
+        background: transparent;
+        cursor: pointer;
+        padding: 0;
+    }
+    .dashboard-date-picker .date-icon {
+        color: #4f46e5;
+        font-size: 1rem;
+    }
 </style>
 
 <div class="receptionist-dashboard">
@@ -335,7 +367,7 @@
                 </div>
             </div>
             <div class="stat-value">{{ $stats['total_today'] }}</div>
-            <div class="stat-label">Đơn hôm nay</div>
+            <div class="stat-label">Đơn {{ $selectedDate->isToday() ? 'hôm nay' : $selectedDate->format('d/m') }}</div>
         </div>
         <div class="stat-card success">
             <div class="stat-header">
@@ -368,7 +400,7 @@
                 </div>
             </div>
             <div class="stat-value">{{ number_format($stats['revenue_today'] / 1000000, 1) }}M</div>
-            <div class="stat-label">Doanh thu hôm nay</div>
+            <div class="stat-label">Doanh thu {{ $selectedDate->isToday() ? 'hôm nay' : $selectedDate->format('d/m') }}</div>
         </div>
     </div>
 
@@ -378,7 +410,13 @@
         <div class="card">
             <div class="card-header">
                 <div class="d-flex align-items-center justify-content-between w-100">
-                    <h3 class="mb-0">📅 Lịch hôm nay ({{ Carbon\Carbon::today()->format('d/m/Y') }})</h3>
+                    <div class="d-flex align-items-center gap-3">
+                        <h3 class="mb-0">📅 {{ $selectedDate->isToday() ? 'Lịch hôm nay' : 'Lịch ngày' }} ({{ $selectedDate->format('d/m/Y') }})</h3>
+                        <div class="dashboard-date-picker">
+                            <span class="date-icon">📆</span>
+                            <input type="date" id="dashboardDatePicker" value="{{ $selectedDate->format('Y-m-d') }}" onchange="changeDashboardDate(this.value)">
+                        </div>
+                    </div>
                     <div class="d-flex align-items-center gap-3">
                         <div class="input-group input-group-sm" style="width: 250px;">
                             <span class="input-group-text bg-white border-end-0">
@@ -444,7 +482,7 @@
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
-                        <p>Chưa có đơn nào hôm nay</p>
+                        <p>Chưa có đơn nào {{ $selectedDate->isToday() ? 'hôm nay' : 'ngày ' . $selectedDate->format('d/m/Y') }}</p>
                     </div>
                     @endforelse
                 </div>
@@ -553,6 +591,14 @@
 
 @push('footer')
 <script>
+function changeDashboardDate(dateValue) {
+    if (dateValue) {
+        const url = new URL(window.location.href);
+        url.searchParams.set('date', dateValue);
+        window.location.href = url.toString();
+    }
+}
+
 function filterBookings() {
     const input = document.getElementById('bookingSearch');
     const filter = input.value.toLowerCase();

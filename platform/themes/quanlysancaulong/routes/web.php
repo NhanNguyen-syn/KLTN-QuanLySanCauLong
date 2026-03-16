@@ -69,7 +69,7 @@ Theme::registerRoutes(function (): void {
         });
 
         // Chỉ nạp bundle booking cho trang này
-        Theme::asset()->container('footer')->usePath()->add('booking-script', 'js/booking.js?v=1.3');
+        Theme::asset()->container('footer')->usePath()->add('booking-script', 'js/booking.js?v=1.6');
 
         return Theme::scope('booking', compact('courts', 'page'))->render();
     })->name('public.booking');

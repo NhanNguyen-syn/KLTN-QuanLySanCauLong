@@ -1,4 +1,4 @@
-import { defineComponent, PropType, ref, onMounted, nextTick } from 'vue'
+import { defineComponent, PropType, ref, watch, nextTick } from 'vue'
 import type { Court, TimePeriod } from './constants'
 
 export default defineComponent({
@@ -16,27 +16,27 @@ export default defineComponent({
 
         const getPeriodForTime = (time: string) => props.periods.find((p) => p.times.includes(time))
 
-        onMounted(() => {
-            let attempts = 0;
+        // Scroll to the first available slot, or to the end if no slots are available
+        const scrollToFirstAvailable = () => {
+            let attempts = 0
             const tryScroll = () => {
-                if (!tableContainerRef.value || props.allTimeSlots.length === 0) return
+                if (!tableContainerRef.value || props.allTimeSlots.length === 0 || props.courts.length === 0) return
 
                 // Find the first time slot where at least one court is available
                 let targetIdx = props.allTimeSlots.findIndex(time =>
                     props.courts.some(court => props.getSlotStatus(court.id, time) === 'available')
                 )
 
-                // If no available slot found, default to start
+                // If no available slot found (e.g. today all passed), scroll to END
                 if (targetIdx === -1) {
-                    targetIdx = 0
+                    targetIdx = props.allTimeSlots.length - 1
                 }
 
                 const thead = tableContainerRef.value.querySelector('thead tr')
                 if (thead && targetIdx >= 0 && thead.children.length > targetIdx + 1) {
                     const targetTh = thead.children[targetIdx + 1] as HTMLElement
 
-                    // If CSS has not fully painted the grid yet, offsetLeft will be 0.
-                    // Retry up to 10 seconds (100 * 100ms)
+                    // If CSS has not fully painted the grid yet, offsetLeft will be 0
                     if (targetTh.offsetLeft === 0 && targetIdx > 0 && attempts < 100) {
                         attempts++
                         setTimeout(tryScroll, 100)
@@ -44,14 +44,20 @@ export default defineComponent({
                     }
 
                     tableContainerRef.value.scrollTo({
-                        left: Math.max(0, targetTh.offsetLeft - 80),
+                        left: targetIdx === 0 ? 0 : Math.max(0, targetTh.offsetLeft - 80),
                         behavior: 'smooth'
                     })
                 }
             }
+            nextTick(() => { setTimeout(tryScroll, 150) })
+        }
 
-            nextTick(() => { setTimeout(tryScroll, 100) })
-        })
+        // Watch courts — fires on initial render AND when courts reload after date change
+        watch(() => props.courts, (newCourts) => {
+            if (newCourts && newCourts.length > 0) {
+                scrollToFirstAvailable()
+            }
+        }, { immediate: true, flush: 'post' })
 
         const getButtonClass = (status: string) => {
             const base = 'slot-button'

@@ -21,10 +21,13 @@ class ReceptionistDashboardController extends BaseController
         Assets::addScriptsDirectly('vendor/core/plugins/receptionist-portal/js/dashboard.js')
             ->addStylesDirectly('vendor/core/plugins/receptionist-portal/css/dashboard.css');
 
-        $today = Carbon::today();
+        // Support date picker: use ?date= query param, default to today
+        $selectedDate = $request->input('date')
+            ? Carbon::parse($request->input('date'))->startOfDay()
+            : Carbon::today();
 
-        // Get today's bookings
-        $todayBookings = BookingList::whereDate('date', $today)
+        // Get bookings for selected date
+        $todayBookings = BookingList::whereDate('date', $selectedDate)
             ->orderBy('start_time')
             ->get();
 
@@ -38,22 +41,25 @@ class ReceptionistDashboardController extends BaseController
             'waiting_checkin' => $todayBookings->where('status', 'confirmed')->count(),
         ];
 
-        // Revenue today
+        // Revenue for selected date
         $stats['revenue_today'] = $todayBookings
             ->whereIn('status', ['completed', 'paid'])
             ->sum('paid_amount');
 
-        // Upcoming bookings (next 2 hours) - Exclude checked-in/completed/cancelled
-        $upcomingBookings = $todayBookings->filter(function ($booking) {
-            if (in_array($booking->status, ['confirmed', 'completed', 'cancelled'])) {
-                return false;
-            }
-            $startTime = Carbon::parse($booking->date->format('Y-m-d') . ' ' . $booking->start_time);
-            $now = Carbon::now();
-            return $startTime->isFuture() && $startTime->diffInMinutes($now) <= 120;
-        });
+        // Upcoming bookings (next 2 hours) - only relevant for today
+        $upcomingBookings = collect();
+        if ($selectedDate->isToday()) {
+            $upcomingBookings = $todayBookings->filter(function ($booking) {
+                if (in_array($booking->status, ['confirmed', 'completed', 'cancelled'])) {
+                    return false;
+                }
+                $startTime = Carbon::parse($booking->date->format('Y-m-d') . ' ' . $booking->start_time);
+                $now = Carbon::now();
+                return $startTime->isFuture() && $startTime->diffInMinutes($now) <= 120;
+            });
+        }
 
-        // Pending payments (All bookings today that are NOT fully paid and NOT cancelled)
+        // Pending payments (All bookings that are NOT fully paid and NOT cancelled)
         $pendingPayments = $todayBookings->filter(function ($booking) {
             return !$booking->isFullyPaid() && !in_array($booking->status, ['cancelled']);
         });
@@ -62,7 +68,8 @@ class ReceptionistDashboardController extends BaseController
             'todayBookings',
             'stats',
             'upcomingBookings',
-            'pendingPayments'
+            'pendingPayments',
+            'selectedDate'
         ));
     }
 

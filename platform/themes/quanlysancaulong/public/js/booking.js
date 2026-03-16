@@ -27933,39 +27933,50 @@ __webpack_require__.r(__webpack_exports__);
         return p.times.includes(time);
       });
     };
-    (0,vue__WEBPACK_IMPORTED_MODULE_0__.onMounted)(function () {
+    // Scroll to the first available slot, or to the end if no slots are available
+    var scrollToFirstAvailable = function scrollToFirstAvailable() {
       var attempts = 0;
       var _tryScroll = function tryScroll() {
-        if (!tableContainerRef.value || props.allTimeSlots.length === 0) return;
+        if (!tableContainerRef.value || props.allTimeSlots.length === 0 || props.courts.length === 0) return;
         // Find the first time slot where at least one court is available
         var targetIdx = props.allTimeSlots.findIndex(function (time) {
           return props.courts.some(function (court) {
             return props.getSlotStatus(court.id, time) === 'available';
           });
         });
-        // If no available slot found, default to start
+        // If no available slot found (e.g. today all passed), scroll to END
         if (targetIdx === -1) {
-          targetIdx = 0;
+          targetIdx = props.allTimeSlots.length - 1;
         }
         var thead = tableContainerRef.value.querySelector('thead tr');
         if (thead && targetIdx >= 0 && thead.children.length > targetIdx + 1) {
           var targetTh = thead.children[targetIdx + 1];
-          // If CSS has not fully painted the grid yet, offsetLeft will be 0.
-          // Retry up to 10 seconds (100 * 100ms)
+          // If CSS has not fully painted the grid yet, offsetLeft will be 0
           if (targetTh.offsetLeft === 0 && targetIdx > 0 && attempts < 100) {
             attempts++;
             setTimeout(_tryScroll, 100);
             return;
           }
           tableContainerRef.value.scrollTo({
-            left: Math.max(0, targetTh.offsetLeft - 80),
+            left: targetIdx === 0 ? 0 : Math.max(0, targetTh.offsetLeft - 80),
             behavior: 'smooth'
           });
         }
       };
       (0,vue__WEBPACK_IMPORTED_MODULE_0__.nextTick)(function () {
-        setTimeout(_tryScroll, 100);
+        setTimeout(_tryScroll, 150);
       });
+    };
+    // Watch courts — fires on initial render AND when courts reload after date change
+    (0,vue__WEBPACK_IMPORTED_MODULE_0__.watch)(function () {
+      return props.courts;
+    }, function (newCourts) {
+      if (newCourts && newCourts.length > 0) {
+        scrollToFirstAvailable();
+      }
+    }, {
+      immediate: true,
+      flush: 'post'
     });
     var getButtonClass = function getButtonClass(status) {
       var base = 'slot-button';

@@ -370,7 +370,7 @@ const syncPaymentDetails = () => {
                     img.style.borderRadius = '6px';
 
                     const labelTop = document.createElement('img');
-                    labelTop.src = "{{ asset('themes/quanlysancaulong/Logo-VNPAY-QR.png') }}";
+                    labelTop.src = "https://kltn-media.s3.ap-southeast-1.amazonaws.com/logo/logo-vnpay-qr.png";
                     labelTop.alt = 'VNPAY QR';
                     labelTop.style.height = '24px';
                     labelTop.style.width = 'auto';
