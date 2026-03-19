@@ -165,8 +165,8 @@ class BookingListController extends BaseController
                     ->first();
 
                 if ($conflictingBookings) {
-                    $timeStr = \Carbon\Carbon::createFromFormat('H:i:s', $item['start_time'])->format('H:i') . ' - ' . 
-                               \Carbon\Carbon::createFromFormat('H:i:s', $item['end_time'])->format('H:i');
+                    $timeStr = \Carbon\Carbon::parse($item['start_time'])->format('H:i') . ' - ' . 
+                               \Carbon\Carbon::parse($item['end_time'])->format('H:i');
                     throw new \RuntimeException("⚠️ Rất tiếc, Khung giờ {$timeStr} đã bị người khác giữ hoặc đặt trước đó 1 xíu. Vui lòng chọn giờ khác.");
                 }
             }
