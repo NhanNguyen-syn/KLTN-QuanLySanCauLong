@@ -47,7 +47,8 @@ class BookingListController extends BaseController
         }
 
         try {
-            $items = $validator->validated()['items'];
+            return \Illuminate\Support\Facades\Cache::lock('court_booking_process', 10)->block(7, function () use ($request, $validator) {
+                $items = $validator->validated()['items'];
 
             $requestedOrderCode = trim((string) $request->input('order_code', ''));
             if ($requestedOrderCode !== '') {
@@ -227,15 +228,21 @@ class BookingListController extends BaseController
                 'order_code' => $orderCode,
                 'email_sent' => $emailSent,
             ]);
+            }); // End Cache::lock
 
+        } catch (\Illuminate\Contracts\Cache\LockTimeoutException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Hệ thống đang xử lý một giao dịch khác cùng lúc, vui lòng thử lại sau vài giây.',
+            ], 409);
         } catch (\RuntimeException $e) {
-            DB::rollBack();
+            if (DB::transactionLevel() > 0) { DB::rollBack(); }
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage(),
             ], 409); // Conflict
         } catch (\Throwable $e) {
-            DB::rollBack();
+            if (DB::transactionLevel() > 0) { DB::rollBack(); }
 
             // LOG lỗi chi tiết
             Log::error('[BOOKING LIST ERROR]', [
