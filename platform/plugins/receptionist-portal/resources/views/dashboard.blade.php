@@ -541,12 +541,12 @@
                         } elseif ($allCancelled) {
                             $orderStatus = 'cancelled';
                             $orderStatusLabel = 'Đã hủy';
-                        } elseif ($bookings->contains(fn($b) => $b->status === 'confirmed')) {
-                            $orderStatus = 'confirmed';
-                            $orderStatusLabel = 'Đã Check-in';
                         } elseif ($allPaid) {
                             $orderStatus = 'paid';
                             $orderStatusLabel = 'Đã Thanh Toán';
+                        } elseif ($bookings->contains(fn($b) => $b->status === 'confirmed')) {
+                            $orderStatus = 'confirmed';
+                            $orderStatusLabel = 'Đã Check-in';
                         } else {
                             $orderStatus = 'pending';
                             $orderStatusLabel = 'Chờ xử lý';

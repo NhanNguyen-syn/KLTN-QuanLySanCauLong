@@ -46,7 +46,7 @@ class AvailabilityController extends BaseController
         if (Schema::hasTable('court_bookings_list')) {
             $bookedSlots = DB::table('court_bookings_list')
                 ->whereDate('date', $date) // dùng whereDate để so khớp đúng ngày & tối ưu index
-                ->whereIn('status', ['processing', 'paid', 'completed'])
+                ->whereIn('status', ['processing', 'paid', 'completed', 'confirmed'])
                 ->get();
 
             // 3. Đánh dấu tương ứng trong grid là "booked".

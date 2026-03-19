@@ -69,6 +69,7 @@ class BookingListTable extends TableAbstract
                 $labels = [
                     'pending' => 'Chờ xử lý',
                     'processing' => 'Đang xử lý',
+                    'confirmed' => 'Đã Check-in',
                     'paid' => 'Đã cọc',
                     'completed' => 'Hoàn tất',
                     'cancelled' => 'Đã hủy',
@@ -76,6 +77,7 @@ class BookingListTable extends TableAbstract
                 $colors = [
                     'pending' => 'warning',
                     'processing' => 'warning',
+                    'confirmed' => 'primary',
                     'paid' => 'info',
                     'completed' => 'success',
                     'cancelled' => 'danger',

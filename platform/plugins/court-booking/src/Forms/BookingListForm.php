@@ -25,6 +25,7 @@ class BookingListForm extends FormAbstract
             $statusLabels = [
                 'pending' => 'Chờ xử lý',
                 'processing' => 'Đang xử lý',
+                'confirmed' => 'Đã Check-in',
                 'paid' => 'Đã cọc',
                 'completed' => 'Hoàn tất',
                 'cancelled' => 'Đã hủy',
@@ -32,6 +33,7 @@ class BookingListForm extends FormAbstract
             $statusColors = [
                 'pending' => 'warning',
                 'processing' => 'warning',
+                'confirmed' => 'primary',
                 'paid' => 'info',
                 'completed' => 'success',
                 'cancelled' => 'danger',
@@ -54,6 +56,7 @@ class BookingListForm extends FormAbstract
                 'choices' => [
                     'pending' => 'Chờ xử lý',
                     'processing' => 'Đang xử lý',
+                    'confirmed' => 'Đã Check-in',
                     'paid' => 'Đã cọc',
                     'completed' => 'Hoàn tất',
                     'cancelled' => 'Đã hủy',
