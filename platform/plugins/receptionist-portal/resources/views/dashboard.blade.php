@@ -521,7 +521,12 @@
             </div>
             <div class="card-body">
                 <div class="booking-list" id="bookingList">
-                    @forelse($groupedBookings as $orderCode => $bookings)
+                    @php
+                        $visibleBookings = $groupedBookings->filter(function($bookings) {
+                            return !$bookings->every(fn($b) => $b->status === 'completed');
+                        });
+                    @endphp
+                    @forelse($visibleBookings as $orderCode => $bookings)
                     @php
                         $firstBooking = $bookings->first();
                         $orderTotal = $bookings->sum('grand_total');
@@ -592,24 +597,20 @@
                                 @endif
                             </div>
                             <div class="order-actions">
-                                @if($allCompleted)
-                                    <span class="btn-action btn-done" style="cursor:default;">✓ Hoàn tất</span>
-                                @else
-                                    @if($needsCheckIn && !$allCompleted)
-                                    <button class="btn-action btn-checkin" onclick="batchCheckin('{{ $orderCode }}')">
-                                        <i class="fas fa-check"></i> Check In Tất Cả
-                                    </button>
-                                    @endif
-                                    @if($hasUnpaid)
-                                    <button class="btn-action btn-payment" onclick="openBatchPayment('{{ $orderCode }}', {{ $orderRemaining }})">
-                                        <i class="fas fa-money-bill-wave"></i> Thanh Toán Tất Cả
-                                    </button>
-                                    @endif
-                                    @if($canCheckOut)
-                                    <button class="btn-action btn-checkout" onclick="batchCheckout('{{ $orderCode }}')">
-                                        <i class="fas fa-sign-out-alt"></i> Check Out Tất Cả
-                                    </button>
-                                    @endif
+                                @if($needsCheckIn && !$allCompleted)
+                                <button class="btn-action btn-checkin" onclick="batchCheckin('{{ $orderCode }}')">
+                                    <i class="fas fa-check"></i> Check In Tất Cả
+                                </button>
+                                @endif
+                                @if($hasUnpaid)
+                                <button class="btn-action btn-payment" onclick="openBatchPayment('{{ $orderCode }}', {{ $orderRemaining }})">
+                                    <i class="fas fa-money-bill-wave"></i> Thanh Toán Tất Cả
+                                </button>
+                                @endif
+                                @if($canCheckOut)
+                                <button class="btn-action btn-checkout" onclick="batchCheckout('{{ $orderCode }}')">
+                                    <i class="fas fa-sign-out-alt"></i> Check Out Tất Cả
+                                </button>
                                 @endif
                             </div>
                         </div>
