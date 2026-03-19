@@ -224,7 +224,7 @@ if (paymentDetails) {
             notes: null,
             paid_amount: paymentDetails ? paymentDetails.amountPaid : 0,
             payment_method: vnpIsReturn ? 'vnpay' : (paymentDetails?.paymentMethod || 'bank-transfer'),
-            status: vnpIsReturn ? (vnpSuccess ? ((paymentDetails && paymentDetails.paymentType === 'full') ? 'completed' : 'paid') : 'failed') : 'processing',
+            status: vnpIsReturn ? (vnpSuccess ? 'paid' : 'failed') : 'processing',
             items: (booking||[])
                 .map(it => {
                     const courtId = it.court_id ?? it.courtId ?? it.id ?? null;
