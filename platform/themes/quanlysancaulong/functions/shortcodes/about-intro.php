@@ -154,5 +154,20 @@ Shortcode::setAdminConfig('about-intro', function (array $attributes) {
             InputFieldOption::make()
                 ->label(__('Image'))
                 ->toArray()
+        )
+        ->add(
+            'button_text',
+            TextField::class,
+            TextFieldOption::make()
+                ->label(__('Button Text (Leave empty to hide)'))
+                ->toArray()
+        )
+        ->add(
+            'button_link',
+            TextField::class,
+            TextFieldOption::make()
+                ->label(__('Button Link'))
+                ->defaultValue('#')
+                ->toArray()
         );
 });

@@ -1,3 +1,27 @@
+<style>
+    @keyframes lightSweep {
+        0% { transform: translateX(-100%) skewX(-15deg); }
+        100% { transform: translateX(200%) skewX(-15deg); }
+    }
+    .btn-light-sweep::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 30%;
+        height: 100%;
+        background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.4) 50%, rgba(255,255,255,0) 100%);
+        transform: translateX(-100%) skewX(-15deg);
+        animation: lightSweep 3s infinite;
+    }
+    @keyframes revealImage {
+        0% { opacity: 0; transform: translateY(40px) scale(0.95); }
+        100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .animate-reveal-image {
+        animation: revealImage 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+</style>
 <section class="py-20" style="background-color: {{ $shortcode->background_color ?? '#ffffff' }};">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="grid md:grid-cols-2 gap-12 items-center">
@@ -46,9 +70,18 @@
                              style="color: {{ $shortcode->stat_label_color ?? '#4b7d70' }};">{{ $shortcode->stat_2_label }}</div>
                     </div>
                 </div>
+                </div>
+
+                @if($shortcode->button_text)
+                    <div class="pt-6">
+                        <a href="{{ $shortcode->button_link ?: '#' }}" class="btn-light-sweep px-8 py-3 bg-primary text-white font-bold rounded-full relative overflow-hidden inline-flex items-center justify-center shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                            {{ $shortcode->button_text }}
+                        </a>
+                    </div>
+                @endif
             </div>
 
-            <div class="relative h-[500px] rounded-2xl overflow-hidden shadow-2xl border-4 border-white">
+            <div class="animate-reveal-image relative h-[500px] rounded-2xl overflow-hidden shadow-2xl border-4 border-white">
                 <div class="absolute inset-0 bg-gradient-to-br from-primary/20 to-secondary/20 z-10"></div>
                 @if($image = $shortcode->image)
                     <img src="{{ RvMedia::getImageUrl($image) }}" alt="{{ $shortcode->title }}" class="absolute inset-0 w-full h-full object-cover">

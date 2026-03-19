@@ -71,8 +71,7 @@ class ContactController extends BaseController
         $emailHandler = EmailHandler::setModule(CONTACT_MODULE_SCREEN_NAME)
             ->setVariableValues($args);
 
-        $adminEmail = get_admin_email()->first() ?: env('MAIL_FROM_ADDRESS', 'tuan212104@gmail.com');
-        $emailHandler->sendUsingTemplate('admin-reply', $adminEmail);
+        $emailHandler->sendUsingTemplate('admin-reply', $contact->email);
 
         ContactReply::query()->create([
             'message' => $message,
