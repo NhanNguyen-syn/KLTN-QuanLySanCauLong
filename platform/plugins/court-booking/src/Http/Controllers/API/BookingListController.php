@@ -160,7 +160,13 @@ class BookingListController extends BaseController
                         $query->where('start_time', '<', $item['end_time'])
                               ->where('end_time', '>', $item['start_time']);
                     })
-                    ->whereIn('status', ['processing', 'paid', 'completed', 'confirmed'])
+                    ->where(function ($query) {
+                        $query->whereIn('status', ['paid', 'completed', 'confirmed'])
+                              ->orWhere(function ($sub) {
+                                  $sub->where('status', 'processing')
+                                      ->where('created_at', '>=', now()->subMinutes(15));
+                              });
+                    })
                     ->lockForUpdate()
                     ->first();
 

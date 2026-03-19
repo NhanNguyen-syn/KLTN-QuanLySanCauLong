@@ -46,7 +46,13 @@ class AvailabilityController extends BaseController
         if (Schema::hasTable('court_bookings_list')) {
             $bookedSlots = DB::table('court_bookings_list')
                 ->whereDate('date', $date) // dùng whereDate để so khớp đúng ngày & tối ưu index
-                ->whereIn('status', ['processing', 'paid', 'completed', 'confirmed'])
+                ->where(function ($query) {
+                    $query->whereIn('status', ['paid', 'completed', 'confirmed'])
+                          ->orWhere(function ($sub) {
+                              $sub->where('status', 'processing')
+                                  ->where('created_at', '>=', now()->subMinutes(15));
+                          });
+                })
                 ->get();
 
             // 3. Đánh dấu tương ứng trong grid là "booked".
@@ -66,7 +72,7 @@ class AvailabilityController extends BaseController
                         $slot->start_at >= $bookingStart &&
                         $slot->start_at <  $bookingEnd
                     ) {
-                        $slot->status = 'booked';
+                        $slot->status = $booking->status === 'processing' ? 'processing' : 'booked';
                     }
                     return $slot;
                 });

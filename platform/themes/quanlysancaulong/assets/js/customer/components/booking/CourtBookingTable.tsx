@@ -62,6 +62,7 @@ export default defineComponent({
         const getButtonClass = (status: string) => {
             const base = 'slot-button'
             if (status === 'booked') return `${base} booked`
+            if (status === 'processing') return `${base} processing`
             if (status === 'closed') return `${base} closed`
             if (status === 'selected') return `${base} selected`
             return `${base} available`
@@ -109,6 +110,7 @@ export default defineComponent({
                                         const status = props.getSlotStatus(court.id, time)
                                         const isSelected = status === 'selected'
                                         const isBooked = status === 'booked'
+                                        const isProcessing = status === 'processing'
                                         const isClosed = status === 'closed'
 
                                         return (
@@ -117,15 +119,16 @@ export default defineComponent({
                                                     onClick={() => props.onToggleSlot(court.id, time)}
                                                     onMouseenter={() => hoveredSlot.value = slotKey}
                                                     onMouseleave={() => hoveredSlot.value = null}
-                                                    disabled={isBooked || isClosed}
+                                                    disabled={isBooked || isProcessing || isClosed}
                                                     class={getButtonClass(status)}
                                                     aria-label={`${court.name} at ${time} - ${status}`}
                                                     aria-pressed={isSelected}
                                                 >
                                                     {isSelected && <span class="slot-icon">✓</span>}
                                                     {isBooked && <span class="slot-text">Đã đặt</span>}
+                                                    {isProcessing && <span class="slot-text">Đang giữ chỗ</span>}
                                                     {isClosed && <span class="slot-text">Đóng</span>}
-                                                    {!isBooked && !isClosed && !isSelected && hoveredSlot.value === slotKey && (
+                                                    {!isBooked && !isProcessing && !isClosed && !isSelected && hoveredSlot.value === slotKey && (
                                                         <span class="slot-icon">+</span>
                                                     )}
                                                 </button>
@@ -141,6 +144,7 @@ export default defineComponent({
                 <div class="table-legend">
                     <LegendItem className="available" text="Trống" />
                     <LegendItem className="booked" text="Đã đặt" />
+                    <LegendItem className="processing" text="Đang giữ chỗ" />
                     <LegendItem className="selected" text="Đã chọn" />
                     <LegendItem className="closed" text="Đóng cửa" />
                 </div>
