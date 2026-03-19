@@ -521,12 +521,7 @@
             </div>
             <div class="card-body">
                 <div class="booking-list" id="bookingList">
-                    @php
-                        $visibleBookings = $groupedBookings->filter(function($bookings) {
-                            return !$bookings->every(fn($b) => $b->status === 'completed');
-                        });
-                    @endphp
-                    @forelse($visibleBookings as $orderCode => $bookings)
+                    @forelse($groupedBookings as $orderCode => $bookings)
                     @php
                         $firstBooking = $bookings->first();
                         $orderTotal = $bookings->sum('grand_total');
@@ -597,6 +592,11 @@
                                 @endif
                             </div>
                             <div class="order-actions">
+                                @if($allCompleted)
+                                    <button class="btn-action btn-done" onclick="dismissOrder('{{ $orderCode }}')">
+                                        <i class="fas fa-check-double"></i> Hoàn tất
+                                    </button>
+                                @else
                                 @if($needsCheckIn && !$allCompleted)
                                 <button class="btn-action btn-checkin" onclick="batchCheckin('{{ $orderCode }}')">
                                     <i class="fas fa-check"></i> Check In Tất Cả
@@ -611,6 +611,7 @@
                                 <button class="btn-action btn-checkout" onclick="batchCheckout('{{ $orderCode }}')">
                                     <i class="fas fa-sign-out-alt"></i> Check Out Tất Cả
                                 </button>
+                                @endif
                                 @endif
                             </div>
                         </div>
@@ -845,7 +846,33 @@ function submitBatchPayment() {
             Botble.showError(data.message);
         }
     })
-    .catch(() => Botble.showError('Có lỗi xảy ra!'));
 }
+
+// Hide Order (Dismiss from dashboard)
+function dismissOrder(orderCode) {
+    if (!confirm('Bạn có chắc muốn ẩn đơn ' + orderCode + ' khỏi màn hình làm việc không?')) return;
+    
+    // Save to localStorage
+    const hiddenOrders = JSON.parse(localStorage.getItem('hidden_dashboard_orders') || '[]');
+    if (!hiddenOrders.includes(orderCode)) {
+        hiddenOrders.push(orderCode);
+        localStorage.setItem('hidden_dashboard_orders', JSON.stringify(hiddenOrders));
+    }
+    
+    // Hide UI
+    const el = document.querySelector(`.order-group[data-order="${orderCode}"]`);
+    if (el) el.remove();
+    
+    Botble.showSuccess('Đã ẩn đơn hàng. Bạn có thể xem lại trong màn hình Xem tất cả đơn.');
+    // Optionally update the count badge but not strictly necessary
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const hiddenOrders = JSON.parse(localStorage.getItem('hidden_dashboard_orders') || '[]');
+    hiddenOrders.forEach(code => {
+        const el = document.querySelector(`.order-group[data-order="${code}"]`);
+        if (el) el.remove();
+    });
+});
 </script>
 @endpush
