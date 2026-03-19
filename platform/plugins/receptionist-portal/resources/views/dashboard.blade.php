@@ -155,8 +155,96 @@
     }
     .card-body { padding: 0; }
     
-    /* Booking Items */
-    .booking-list { max-height: 450px; overflow-y: auto; }
+    /* Order Group */
+    .order-group {
+        border-bottom: 2px solid #e5e7eb;
+        padding: 1rem 1.25rem;
+        transition: background 0.15s;
+    }
+    .order-group:last-child { border-bottom: none; }
+    .order-group:hover { background: #fafbfc; }
+
+    .order-group-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.75rem;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    .order-group-header .order-info {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        flex-wrap: wrap;
+    }
+    .order-group-header .order-code {
+        font-weight: 700;
+        color: #4f46e5;
+        font-size: 0.875rem;
+        background: #eef2ff;
+        padding: 0.125rem 0.5rem;
+        border-radius: 6px;
+    }
+    .order-group-header .customer-info {
+        font-size: 0.8125rem;
+        color: #6b7280;
+    }
+    .order-group-header .customer-info .name { font-weight: 600; color: #1f2937; }
+
+    .order-slots {
+        display: flex;
+        flex-direction: column;
+        gap: 0.375rem;
+        margin-bottom: 0.75rem;
+    }
+    .slot-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.375rem 0.625rem;
+        background: #f9fafb;
+        border-radius: 8px;
+        font-size: 0.8125rem;
+    }
+    .slot-item .time-badge {
+        background: #eef2ff;
+        color: #4f46e5;
+        padding: 0.125rem 0.5rem;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+    .slot-item .court { font-weight: 600; color: #1f2937; }
+    .slot-item .slot-price { margin-left: auto; font-weight: 600; color: #6b7280; font-size: 0.75rem; }
+
+    .order-summary {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    .order-summary .price-info {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        font-size: 0.8125rem;
+    }
+    .order-summary .price-info .total { font-weight: 700; color: #1f2937; }
+    .order-summary .price-info .remaining { color: #dc2626; font-weight: 600; }
+    .order-summary .price-info .paid-badge { color: #047857; font-weight: 600; }
+    
+    .order-actions {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+
+    /* Booking Items (keep for individual items in sidebar) */
+    .booking-list { max-height: 600px; overflow-y: auto; }
     .booking-item {
         padding: 1rem 1.25rem;
         border-bottom: 1px solid #f3f4f6;
@@ -217,6 +305,7 @@
         letter-spacing: 0.025em;
     }
     .status-pending { background: #fef3c7; color: #b45309; }
+    .status-processing { background: #fef3c7; color: #b45309; }
     .status-confirmed { background: #dbeafe; color: #1d4ed8; }
     .status-paid { background: #d1fae5; color: #047857; }
     .status-completed { background: #e5e7eb; color: #374151; }
@@ -233,6 +322,7 @@
         display: inline-flex;
         align-items: center;
         gap: 0.375rem;
+        white-space: nowrap;
     }
     .btn-action svg { width: 14px; height: 14px; }
     .btn-checkin { background: #10b981; color: white; }
@@ -241,6 +331,7 @@
     .btn-payment:hover { background: #4338ca; }
     .btn-checkout { background: #f59e0b; color: white; }
     .btn-checkout:hover { background: #d97706; }
+    .btn-done { background: #6b7280; color: white; }
     
     /* Sidebar Cards */
     .sidebar-card { margin-bottom: 1rem; }
@@ -406,7 +497,7 @@
 
     <!-- Content Grid -->
     <div class="content-grid">
-        <!-- Today's Bookings -->
+        <!-- Today's Bookings - Grouped by Order -->
         <div class="card">
             <div class="card-header">
                 <div class="d-flex align-items-center justify-content-between w-100">
@@ -424,57 +515,103 @@
                             </span>
                             <input type="text" id="bookingSearch" class="form-control border-start-0 ps-0" placeholder="Tìm tên hoặc SĐT..." onkeyup="filterBookings()">
                         </div>
-                        <span class="badge bg-primary text-white">{{ $todayBookings->count() }} đơn</span>
+                        <span class="badge bg-primary text-white">{{ $groupedBookings->count() }} đơn</span>
                     </div>
                 </div>
             </div>
             <div class="card-body">
                 <div class="booking-list" id="bookingList">
-                    @forelse($todayBookings as $booking)
-                    <div class="booking-item" data-id="{{ $booking->id }}">
-                        <div class="booking-info">
-                            <h4>
-                                <span class="time-badge">{{ $booking->start_time }} - {{ $booking->end_time }}</span>
-                                {{ $booking->court_name }}
-                            </h4>
-                            <div class="meta">
-                                <span class="customer-name">👤 {{ $booking->customer_name }}</span>
-                                <span class="divider">•</span>
-                                <span class="customer-phone">📞 {{ $booking->contact }}</span>
-                                <span class="divider">•</span>
-                                <span class="price">💰 {{ number_format($booking->grand_total) }}đ</span>
-                                @if($booking->paid_amount < $booking->grand_total)
-                                <span class="divider">•</span>
-                                <span class="remaining">⚠️ Còn {{ number_format($booking->remaining_amount) }}đ</span>
-                                @endif
+                    @forelse($groupedBookings as $orderCode => $bookings)
+                    @php
+                        $firstBooking = $bookings->first();
+                        $orderTotal = $bookings->sum('grand_total');
+                        $orderPaid = $bookings->sum('paid_amount');
+                        $orderRemaining = max(0, $orderTotal - $orderPaid);
+                        $allCompleted = $bookings->every(fn($b) => $b->status === 'completed');
+                        $allPaid = $bookings->every(fn($b) => $b->isFullyPaid());
+                        $hasUnpaid = $bookings->contains(fn($b) => $b->remaining_amount > 0);
+                        $needsCheckIn = $bookings->contains(fn($b) => in_array($b->status, ['pending', 'processing', 'paid']));
+                        $canCheckOut = $allPaid && !$allCompleted && $bookings->contains(fn($b) => in_array($b->status, ['confirmed', 'paid']));
+                        $allCancelled = $bookings->every(fn($b) => $b->status === 'cancelled');
+                        
+                        // Determine overall order status
+                        if ($allCompleted) {
+                            $orderStatus = 'completed';
+                            $orderStatusLabel = 'Xong';
+                        } elseif ($allCancelled) {
+                            $orderStatus = 'cancelled';
+                            $orderStatusLabel = 'Đã hủy';
+                        } elseif ($allPaid) {
+                            $orderStatus = 'paid';
+                            $orderStatusLabel = 'Đã Thanh Toán';
+                        } elseif ($bookings->contains(fn($b) => $b->status === 'confirmed')) {
+                            $orderStatus = 'confirmed';
+                            $orderStatusLabel = 'Đã Check-in';
+                        } else {
+                            $orderStatus = 'pending';
+                            $orderStatusLabel = 'Chờ xử lý';
+                        }
+                    @endphp
+                    <div class="order-group" data-order="{{ $orderCode }}" data-customer="{{ strtolower($firstBooking->customer_name ?? '') }}" data-phone="{{ strtolower($firstBooking->contact ?? '') }}">
+                        <!-- Order Header -->
+                        <div class="order-group-header">
+                            <div class="order-info">
+                                <span class="order-code">{{ $orderCode }}</span>
+                                <span class="customer-info">
+                                    <span class="name">👤 {{ $firstBooking->customer_name }}</span>
+                                    • 📞 {{ $firstBooking->contact }}
+                                </span>
+                                <span class="status-badge status-{{ $orderStatus }}">{{ $orderStatusLabel }}</span>
                             </div>
                         </div>
-                        <div class="booking-actions">
-                            <span class="status-badge status-{{ $booking->status }}">
-                                @switch($booking->status)
-                                    @case('processing') <span style="background:#fef3c7; color:#b45309; padding:2px 6px; border-radius:4px;">Chờ Thanh Toán</span> @break
-                                    @case('pending') Chờ Thanh Toán @break
-                                    @case('confirmed') <span style="background:#dbeafe; color:#1d4ed8; padding:2px 6px; border-radius:4px;">Đã Check-in</span> @break
-                                    @case('paid') Đã Thanh Toán @break
-                                    @case('completed') Xong @break
-                                    @default {{ $booking->status }}
-                                @endswitch
-                            </span>
-                            @if($booking->status === 'pending' || $booking->status === 'processing')
-                            <button class="btn-action btn-checkin" onclick="checkin({{ $booking->id }})" style="min-width: 80px; justify-content: center;">
-                                <i class="fas fa-check"></i> Check In
-                            </button>
-                            @endif
-                            @if($booking->remaining_amount > 0)
-                            <button class="btn-action btn-payment" onclick="openPayment({{ $booking->id }}, {{ $booking->remaining_amount }})" style="min-width: 100px; justify-content: center;">
-                                <i class="fas fa-money-bill-wave"></i> Thanh Toán
-                            </button>
-                            @endif
-                            @if(($booking->isFullyPaid() || $booking->status == 'paid') && $booking->status !== 'completed' && $booking->status !== 'processing' && $booking->status !== 'pending')
-                            <button class="btn-action btn-checkout" onclick="checkout({{ $booking->id }})" style="min-width: 80px; justify-content: center;">
-                                <i class="fas fa-sign-out-alt"></i> Check Out
-                            </button>
-                            @endif
+
+                        <!-- Time Slots -->
+                        <div class="order-slots">
+                            @foreach($bookings as $booking)
+                            <div class="slot-item">
+                                <span class="time-badge">{{ $booking->start_time }} - {{ $booking->end_time }}</span>
+                                <span class="court">{{ $booking->court_name }}</span>
+                                <span class="slot-price">{{ number_format($booking->grand_total) }}đ</span>
+                                @if($booking->status === 'completed')
+                                    <span class="status-badge status-completed" style="font-size:0.625rem; padding:1px 4px;">Xong</span>
+                                @elseif($booking->status === 'confirmed')
+                                    <span class="status-badge status-confirmed" style="font-size:0.625rem; padding:1px 4px;">Đã Check-in</span>
+                                @endif
+                            </div>
+                            @endforeach
+                        </div>
+
+                        <!-- Order Summary & Actions -->
+                        <div class="order-summary">
+                            <div class="price-info">
+                                <span class="total">💰 {{ number_format($orderTotal) }}đ</span>
+                                @if($orderRemaining > 0)
+                                    <span class="remaining">⚠️ Còn {{ number_format($orderRemaining) }}đ</span>
+                                @else
+                                    <span class="paid-badge">✅ Đã thanh toán đủ</span>
+                                @endif
+                            </div>
+                            <div class="order-actions">
+                                @if($allCompleted)
+                                    <span class="btn-action btn-done" style="cursor:default;">✓ Hoàn tất</span>
+                                @else
+                                    @if($needsCheckIn && !$allCompleted)
+                                    <button class="btn-action btn-checkin" onclick="batchCheckin('{{ $orderCode }}')">
+                                        <i class="fas fa-check"></i> Check In Tất Cả
+                                    </button>
+                                    @endif
+                                    @if($hasUnpaid)
+                                    <button class="btn-action btn-payment" onclick="openBatchPayment('{{ $orderCode }}', {{ $orderRemaining }})">
+                                        <i class="fas fa-money-bill-wave"></i> Thanh Toán Tất Cả
+                                    </button>
+                                    @endif
+                                    @if($canCheckOut)
+                                    <button class="btn-action btn-checkout" onclick="batchCheckout('{{ $orderCode }}')">
+                                        <i class="fas fa-sign-out-alt"></i> Check Out Tất Cả
+                                    </button>
+                                    @endif
+                                @endif
+                            </div>
                         </div>
                     </div>
                     @empty
@@ -498,18 +635,23 @@
                     <span class="badge bg-warning text-dark">{{ $pendingPayments->count() }}</span>
                 </div>
                 <div class="card-body">
-                    @forelse($pendingPayments as $booking)
+                    @forelse($pendingPayments->groupBy('order_code') as $code => $items)
+                    @php
+                        $first = $items->first();
+                        $totalRemain = $items->sum(fn($b) => $b->remaining_amount);
+                        $totalPaidSidebar = $items->sum('paid_amount');
+                    @endphp
                     <div class="sidebar-item">
                         <div class="info">
-                            <h5>{{ $booking->court_name }}</h5>
+                            <h5>{{ $code }} ({{ $items->count() }} slot)</h5>
                             <div class="sub">
-                                {{ $booking->customer_name }} • <span class="text-danger">Còn {{ number_format($booking->remaining_amount) }}đ</span>
-                                @if($booking->paid_amount > 0)
-                                    <span class="badge bg-info text-white" style="font-size: 0.65rem;">Đã cọc {{ number_format($booking->paid_amount) }}đ</span>
+                                {{ $first->customer_name }} • <span class="text-danger">Còn {{ number_format($totalRemain) }}đ</span>
+                                @if($totalPaidSidebar > 0)
+                                    <span class="badge bg-info text-white" style="font-size: 0.65rem;">Đã cọc {{ number_format($totalPaidSidebar) }}đ</span>
                                 @endif
                             </div>
                         </div>
-                        <button class="btn-action btn-payment" onclick="openPayment({{ $booking->id }}, {{ $booking->remaining_amount }})" style="padding: 0.25rem 0.5rem; font-size: 0.7rem; white-space: nowrap;">
+                        <button class="btn-action btn-payment" onclick="openBatchPayment('{{ $code }}', {{ $totalRemain }})" style="padding: 0.25rem 0.5rem; font-size: 0.7rem; white-space: nowrap;">
                             Thanh Toán
                         </button>
                     </div>
@@ -551,28 +693,32 @@
     </div>
 </div>
 
-<!-- Payment Modal -->
-<div id="paymentModal" class="modal fade" tabindex="-1">
+<!-- Batch Payment Modal -->
+<div id="batchPaymentModal" class="modal fade" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">💳 Thanh toán</h5>
+                <h5 class="modal-title">💳 Thanh toán đơn hàng</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <form id="paymentForm">
-                    <input type="hidden" id="payment_booking_id">
+                <form id="batchPaymentForm">
+                    <input type="hidden" id="batch_order_code">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Mã đơn hàng</label>
+                        <input type="text" id="batch_order_display" class="form-control" readonly style="background:#f3f4f6;">
+                    </div>
                     <div class="mb-3">
                         <label class="form-label">Số tiền còn lại</label>
-                        <input type="text" id="remaining_display" class="form-control form-control-lg text-end fw-bold text-danger" readonly>
+                        <input type="text" id="batch_remaining_display" class="form-control form-control-lg text-end fw-bold text-danger" readonly>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Số tiền thanh toán</label>
-                        <input type="number" id="payment_amount" class="form-control form-control-lg" required>
+                        <input type="number" id="batch_payment_amount" class="form-control form-control-lg" required>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Phương thức</label>
-                        <select id="payment_method" class="form-select form-select-lg" required>
+                        <select id="batch_payment_method" class="form-select form-select-lg" required>
                             <option value="cash">💵 Tiền mặt</option>
                             <option value="transfer">🏦 Chuyển khoản</option>
                             <option value="card">💳 Thẻ</option>
@@ -582,7 +728,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                <button type="button" class="btn btn-primary btn-lg" onclick="submitPayment()">✓ Xác nhận thanh toán</button>
+                <button type="button" class="btn btn-primary btn-lg" onclick="submitBatchPayment()">✓ Xác nhận thanh toán</button>
             </div>
         </div>
     </div>
@@ -603,14 +749,15 @@ function filterBookings() {
     const input = document.getElementById('bookingSearch');
     const filter = input.value.toLowerCase();
     const list = document.getElementById('bookingList');
-    const items = list.getElementsByClassName('booking-item');
+    const items = list.getElementsByClassName('order-group');
 
     for (let i = 0; i < items.length; i++) {
         const item = items[i];
-        const name = item.querySelector('.customer-name').textContent.toLowerCase();
-        const phone = item.querySelector('.customer-phone').textContent.toLowerCase();
+        const customer = item.getAttribute('data-customer') || '';
+        const phone = item.getAttribute('data-phone') || '';
+        const order = item.getAttribute('data-order') || '';
         
-        if (name.includes(filter) || phone.includes(filter)) {
+        if (customer.includes(filter) || phone.includes(filter) || order.toLowerCase().includes(filter)) {
             item.style.display = "";
         } else {
             item.style.display = "none";
@@ -618,72 +765,79 @@ function filterBookings() {
     }
 }
 
-function checkin(bookingId) {
-    if (!confirm('Xác nhận check-in?')) return;
-    fetch(`{{ url('admin/receptionist/checkin') }}/${bookingId}`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-        }
-    })
-    .then(r => r.json())
-    .then(data => {
-        if (data.success) {
-            Botble.showSuccess(data.message);
-            setTimeout(() => location.reload(), 500);
-        } else {
-            Botble.showError(data.message);
-        }
-    })
-    .catch(() => Botble.showError('Có lỗi xảy ra!'));
-}
-
-function checkout(bookingId) {
-    if (!confirm('Xác nhận check-out?')) return;
-    fetch(`{{ url('admin/receptionist/checkout') }}/${bookingId}`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-        }
-    })
-    .then(r => r.json())
-    .then(data => {
-        if (data.success) {
-            Botble.showSuccess(data.message);
-            setTimeout(() => location.reload(), 500);
-        } else {
-            Botble.showError(data.message);
-        }
-    })
-    .catch(() => Botble.showError('Có lỗi xảy ra!'));
-}
-
-function openPayment(bookingId, remaining) {
-    document.getElementById('payment_booking_id').value = bookingId;
-    document.getElementById('remaining_display').value = new Intl.NumberFormat('vi-VN').format(remaining) + ' đ';
-    document.getElementById('payment_amount').value = remaining;
-    new bootstrap.Modal(document.getElementById('paymentModal')).show();
-}
-
-function submitPayment() {
-    const bookingId = document.getElementById('payment_booking_id').value;
-    const amount = document.getElementById('payment_amount').value;
-    const method = document.getElementById('payment_method').value;
-    
-    fetch(`{{ url('admin/receptionist/payment') }}/${bookingId}`, {
+// Batch Check-In
+function batchCheckin(orderCode) {
+    if (!confirm('Xác nhận check-in tất cả slot của đơn ' + orderCode + '?')) return;
+    fetch(`{{ url('admin/receptionist/batch-checkin') }}`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
             'X-CSRF-TOKEN': '{{ csrf_token() }}'
         },
-        body: JSON.stringify({ amount, payment_method: method })
+        body: JSON.stringify({ order_code: orderCode })
     })
     .then(r => r.json())
     .then(data => {
         if (data.success) {
-            bootstrap.Modal.getInstance(document.getElementById('paymentModal')).hide();
+            Botble.showSuccess(data.message);
+            setTimeout(() => location.reload(), 500);
+        } else {
+            Botble.showError(data.message);
+        }
+    })
+    .catch(() => Botble.showError('Có lỗi xảy ra!'));
+}
+
+// Batch Check-Out
+function batchCheckout(orderCode) {
+    if (!confirm('Xác nhận check-out tất cả slot của đơn ' + orderCode + '?')) return;
+    fetch(`{{ url('admin/receptionist/batch-checkout') }}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify({ order_code: orderCode })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            Botble.showSuccess(data.message);
+            setTimeout(() => location.reload(), 500);
+        } else {
+            Botble.showError(data.message);
+        }
+    })
+    .catch(() => Botble.showError('Có lỗi xảy ra!'));
+}
+
+// Open Batch Payment Modal
+function openBatchPayment(orderCode, remaining) {
+    document.getElementById('batch_order_code').value = orderCode;
+    document.getElementById('batch_order_display').value = orderCode;
+    document.getElementById('batch_remaining_display').value = new Intl.NumberFormat('vi-VN').format(remaining) + ' đ';
+    document.getElementById('batch_payment_amount').value = remaining;
+    new bootstrap.Modal(document.getElementById('batchPaymentModal')).show();
+}
+
+// Submit Batch Payment
+function submitBatchPayment() {
+    const orderCode = document.getElementById('batch_order_code').value;
+    const amount = document.getElementById('batch_payment_amount').value;
+    const method = document.getElementById('batch_payment_method').value;
+    
+    fetch(`{{ url('admin/receptionist/batch-payment') }}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+        },
+        body: JSON.stringify({ order_code: orderCode, amount: amount, payment_method: method })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            bootstrap.Modal.getInstance(document.getElementById('batchPaymentModal')).hide();
             Botble.showSuccess(data.message);
             setTimeout(() => location.reload(), 500);
         } else {

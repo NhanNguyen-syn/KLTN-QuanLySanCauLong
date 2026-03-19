@@ -31,6 +31,9 @@ class ReceptionistDashboardController extends BaseController
             ->orderBy('start_time')
             ->get();
 
+        // Group bookings by order_code for batch operations
+        $groupedBookings = $todayBookings->groupBy('order_code');
+
         // Statistics
         $stats = [
             'total_today' => $todayBookings->count(),
@@ -38,7 +41,7 @@ class ReceptionistDashboardController extends BaseController
             'pending_payment' => $todayBookings->filter(function ($b) {
                 return !$b->isFullyPaid() && !in_array($b->status, ['cancelled']);
             })->count(),
-            'waiting_checkin' => $todayBookings->where('status', 'confirmed')->count(),
+            'waiting_checkin' => $todayBookings->whereIn('status', ['pending', 'processing'])->count(),
         ];
 
         // Revenue for selected date
@@ -66,6 +69,7 @@ class ReceptionistDashboardController extends BaseController
 
         return view('plugins/receptionist-portal::dashboard', compact(
             'todayBookings',
+            'groupedBookings',
             'stats',
             'upcomingBookings',
             'pendingPayments',
@@ -118,8 +122,6 @@ class ReceptionistDashboardController extends BaseController
     {
         $today = Carbon::today();
 
-        // We can't easily filter by computed properties in SQL, so get potential candidates and filter in PHP
-        // Get all active bookings for today
         $activeBookings = BookingList::whereDate('date', $today)
             ->whereNotIn('status', ['cancelled', 'completed'])
             ->orderBy('start_time')
@@ -160,6 +162,39 @@ class ReceptionistDashboardController extends BaseController
     }
 
     /**
+     * Batch check-in: check-in all bookings with the same order_code
+     */
+    public function batchCheckin(Request $request): JsonResponse
+    {
+        $request->validate(['order_code' => 'required|string']);
+        $orderCode = $request->input('order_code');
+
+        $bookings = BookingList::where('order_code', $orderCode)
+            ->whereNotIn('status', ['cancelled', 'completed'])
+            ->get();
+
+        if ($bookings->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Không tìm thấy đơn hợp lệ để check-in.',
+            ], 400);
+        }
+
+        $timestamp = Carbon::now()->format('H:i d/m/Y');
+        foreach ($bookings as $booking) {
+            $booking->update([
+                'status' => 'confirmed',
+                'notes' => ($booking->notes ?? '') . "\n[Check-in: {$timestamp}]",
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Check-in thành công cho ' . $bookings->count() . ' mục!',
+        ]);
+    }
+
+    /**
      * Check-out a booking (mark as completed)
      */
     public function checkout(BookingList $booking): JsonResponse
@@ -185,6 +220,50 @@ class ReceptionistDashboardController extends BaseController
     }
 
     /**
+     * Batch check-out: check-out all bookings with the same order_code
+     */
+    public function batchCheckout(Request $request): JsonResponse
+    {
+        $request->validate(['order_code' => 'required|string']);
+        $orderCode = $request->input('order_code');
+
+        $bookings = BookingList::where('order_code', $orderCode)
+            ->whereNotIn('status', ['cancelled', 'completed'])
+            ->get();
+
+        if ($bookings->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Không tìm thấy đơn hợp lệ để check-out.',
+            ], 400);
+        }
+
+        // Check if all bookings are fully paid
+        $unpaid = $bookings->filter(fn($b) => !$b->isFullyPaid());
+        if ($unpaid->isNotEmpty()) {
+            $totalRemaining = $unpaid->sum(fn($b) => $b->remaining_amount);
+            return response()->json([
+                'success' => false,
+                'message' => 'Đơn chưa thanh toán đủ. Còn ' . number_format($totalRemaining) . 'đ chưa thanh toán.',
+                'remaining' => $totalRemaining,
+            ], 400);
+        }
+
+        $timestamp = Carbon::now()->format('H:i d/m/Y');
+        foreach ($bookings as $booking) {
+            $booking->update([
+                'status' => 'completed',
+                'notes' => ($booking->notes ?? '') . "\n[Check-out: {$timestamp}]",
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Check-out thành công cho ' . $bookings->count() . ' mục!',
+        ]);
+    }
+
+    /**
      * Process payment for a booking
      */
     public function processPayment(Request $request, BookingList $booking): JsonResponse
@@ -197,9 +276,11 @@ class ReceptionistDashboardController extends BaseController
         $amount = (float) $request->input('amount');
         $newPaidAmount = ($booking->paid_amount ?? 0) + $amount;
 
+        $newStatus = $newPaidAmount >= $booking->grand_total ? 'paid' : $booking->status;
+
         $booking->update([
             'paid_amount' => $newPaidAmount,
-            'status' => $newPaidAmount >= $booking->grand_total ? 'paid' : $booking->status,
+            'status' => $newStatus,
             'notes' => ($booking->notes ?? '') . "\n[Thanh toán: " . number_format($amount) . "đ - " . strtoupper($request->payment_method) . " - " . Carbon::now()->format('H:i d/m/Y') . "]",
         ]);
 
@@ -208,6 +289,87 @@ class ReceptionistDashboardController extends BaseController
             'message' => 'Thanh toán thành công!',
             'booking' => $booking->fresh(),
             'is_fully_paid' => $newPaidAmount >= $booking->grand_total,
+        ]);
+    }
+
+    /**
+     * Batch payment: pay for all bookings with the same order_code at once
+     */
+    public function batchPayment(Request $request): JsonResponse
+    {
+        $request->validate([
+            'order_code' => 'required|string',
+            'amount' => 'required|numeric|min:0',
+            'payment_method' => 'required|in:cash,transfer,card',
+        ]);
+
+        $orderCode = $request->input('order_code');
+        $totalAmount = (float) $request->input('amount');
+        $paymentMethod = $request->input('payment_method');
+
+        $bookings = BookingList::where('order_code', $orderCode)
+            ->whereNotIn('status', ['cancelled'])
+            ->orderBy('date')
+            ->orderBy('start_time')
+            ->get();
+
+        if ($bookings->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Không tìm thấy đơn hợp lệ.',
+            ], 400);
+        }
+
+        // Calculate total remaining across all bookings
+        $totalRemaining = $bookings->sum(fn($b) => $b->remaining_amount);
+
+        if ($totalAmount > $totalRemaining) {
+            $totalAmount = $totalRemaining; // Cap at remaining
+        }
+
+        // Distribute payment proportionally across bookings
+        $totalPrice = $bookings->sum('price');
+        $allocatedSoFar = 0;
+        $timestamp = Carbon::now()->format('H:i d/m/Y');
+        $count = $bookings->count();
+
+        foreach ($bookings as $idx => $booking) {
+            $remaining = $booking->remaining_amount;
+            if ($remaining <= 0) continue;
+
+            // Proportional allocation
+            if ($totalPrice > 0) {
+                $alloc = round($totalAmount * ($booking->price / $totalPrice), 0);
+            } else {
+                $alloc = round($totalAmount / $count, 0);
+            }
+
+            // Last item gets the remainder
+            if ($idx === ($count - 1)) {
+                $alloc = max(0, $totalAmount - $allocatedSoFar);
+            }
+
+            // Cap allocation at remaining amount for this booking
+            $alloc = min($alloc, $remaining);
+            $allocatedSoFar += $alloc;
+
+            $newPaidAmount = ($booking->paid_amount ?? 0) + $alloc;
+            $newStatus = $newPaidAmount >= $booking->grand_total ? 'paid' : $booking->status;
+
+            $booking->update([
+                'paid_amount' => $newPaidAmount,
+                'status' => $newStatus,
+                'notes' => ($booking->notes ?? '') . "\n[Thanh toán: " . number_format($alloc) . "đ - " . strtoupper($paymentMethod) . " - {$timestamp}]",
+            ]);
+        }
+
+        // Check if all bookings are now fully paid
+        $allPaid = $bookings->fresh()->every(fn($b) => $b->isFullyPaid());
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Thanh toán thành công ' . number_format($allocatedSoFar) . 'đ cho ' . $count . ' mục!',
+            'all_paid' => $allPaid,
         ]);
     }
 }

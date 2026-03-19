@@ -36,6 +36,19 @@ Route::group(['namespace' => 'Botble\ReceptionistPortal\Http\Controllers', 'midd
                 ->name('payment')
                 ->permission('receptionist.payment');
 
+            // Batch operations
+            Route::post('/batch-checkin', [ReceptionistDashboardController::class, 'batchCheckin'])
+                ->name('batch-checkin')
+                ->permission('receptionist.checkin');
+
+            Route::post('/batch-checkout', [ReceptionistDashboardController::class, 'batchCheckout'])
+                ->name('batch-checkout')
+                ->permission('receptionist.checkin');
+
+            Route::post('/batch-payment', [ReceptionistDashboardController::class, 'batchPayment'])
+                ->name('batch-payment')
+                ->permission('receptionist.payment');
+
             // Quick Booking
             Route::get('/quick-booking', [QuickBookingController::class, 'index'])
                 ->name('quick-booking')
