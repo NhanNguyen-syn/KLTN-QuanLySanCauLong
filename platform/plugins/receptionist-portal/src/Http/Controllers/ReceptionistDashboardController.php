@@ -199,11 +199,10 @@ class ReceptionistDashboardController extends BaseController
      */
     public function checkout(BookingList $booking): JsonResponse
     {
-        if (!$booking->isFullyPaid()) {
+        if (in_array($booking->status, ['cancelled', 'completed'])) {
             return response()->json([
                 'success' => false,
-                'message' => 'Đơn chưa thanh toán đủ. Vui lòng thanh toán trước khi check-out.',
-                'remaining' => $booking->remaining_amount,
+                'message' => 'Đơn không thể check-out.',
             ], 400);
         }
 
@@ -238,16 +237,7 @@ class ReceptionistDashboardController extends BaseController
             ], 400);
         }
 
-        // Check if all bookings are fully paid
-        $unpaid = $bookings->filter(fn($b) => !$b->isFullyPaid());
-        if ($unpaid->isNotEmpty()) {
-            $totalRemaining = $unpaid->sum(fn($b) => $b->remaining_amount);
-            return response()->json([
-                'success' => false,
-                'message' => 'Đơn chưa thanh toán đủ. Còn ' . number_format($totalRemaining) . 'đ chưa thanh toán.',
-                'remaining' => $totalRemaining,
-            ], 400);
-        }
+        // No longer require full payment for checkout
 
         $timestamp = Carbon::now()->format('H:i d/m/Y');
         foreach ($bookings as $booking) {
@@ -276,7 +266,10 @@ class ReceptionistDashboardController extends BaseController
         $amount = (float) $request->input('amount');
         $newPaidAmount = ($booking->paid_amount ?? 0) + $amount;
 
-        $newStatus = $newPaidAmount >= $booking->grand_total ? 'paid' : $booking->status;
+        $newStatus = $booking->status;
+        if ($newPaidAmount >= $booking->grand_total && in_array($booking->status, ['pending', 'processing'])) {
+            $newStatus = 'paid';
+        }
 
         $booking->update([
             'paid_amount' => $newPaidAmount,
@@ -327,34 +320,28 @@ class ReceptionistDashboardController extends BaseController
             $totalAmount = $totalRemaining; // Cap at remaining
         }
 
-        // Distribute payment proportionally across bookings
-        $totalPrice = $bookings->sum('price');
+        // Distribute payment completely greedily across bookings
+        $amountLeftToAllocate = $totalAmount;
         $allocatedSoFar = 0;
         $timestamp = Carbon::now()->format('H:i d/m/Y');
         $count = $bookings->count();
 
-        foreach ($bookings as $idx => $booking) {
+        foreach ($bookings as $booking) {
+            if ($amountLeftToAllocate <= 0) break;
+            
             $remaining = $booking->remaining_amount;
             if ($remaining <= 0) continue;
 
-            // Proportional allocation
-            if ($totalPrice > 0) {
-                $alloc = round($totalAmount * ($booking->price / $totalPrice), 0);
-            } else {
-                $alloc = round($totalAmount / $count, 0);
-            }
-
-            // Last item gets the remainder
-            if ($idx === ($count - 1)) {
-                $alloc = max(0, $totalAmount - $allocatedSoFar);
-            }
-
-            // Cap allocation at remaining amount for this booking
-            $alloc = min($alloc, $remaining);
+            $alloc = min($remaining, $amountLeftToAllocate);
+            $amountLeftToAllocate -= $alloc;
             $allocatedSoFar += $alloc;
 
             $newPaidAmount = ($booking->paid_amount ?? 0) + $alloc;
-            $newStatus = $newPaidAmount >= $booking->grand_total ? 'paid' : $booking->status;
+            
+            $newStatus = $booking->status;
+            if ($newPaidAmount >= $booking->grand_total && in_array($booking->status, ['pending', 'processing'])) {
+                $newStatus = 'paid';
+            }
 
             $booking->update([
                 'paid_amount' => $newPaidAmount,

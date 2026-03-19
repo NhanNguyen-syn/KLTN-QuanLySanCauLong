@@ -531,7 +531,7 @@
                         $allPaid = $bookings->every(fn($b) => $b->isFullyPaid());
                         $hasUnpaid = $bookings->contains(fn($b) => $b->remaining_amount > 0);
                         $needsCheckIn = $bookings->contains(fn($b) => in_array($b->status, ['pending', 'processing', 'paid']));
-                        $canCheckOut = $allPaid && !$allCompleted && $bookings->contains(fn($b) => in_array($b->status, ['confirmed', 'paid']));
+                        $canCheckOut = !$allCompleted && $bookings->contains(fn($b) => $b->status === 'confirmed');
                         $allCancelled = $bookings->every(fn($b) => $b->status === 'cancelled');
                         
                         // Determine overall order status
@@ -541,12 +541,12 @@
                         } elseif ($allCancelled) {
                             $orderStatus = 'cancelled';
                             $orderStatusLabel = 'Đã hủy';
-                        } elseif ($allPaid) {
-                            $orderStatus = 'paid';
-                            $orderStatusLabel = 'Đã Thanh Toán';
                         } elseif ($bookings->contains(fn($b) => $b->status === 'confirmed')) {
                             $orderStatus = 'confirmed';
                             $orderStatusLabel = 'Đã Check-in';
+                        } elseif ($allPaid) {
+                            $orderStatus = 'paid';
+                            $orderStatusLabel = 'Đã Thanh Toán';
                         } else {
                             $orderStatus = 'pending';
                             $orderStatusLabel = 'Chờ xử lý';

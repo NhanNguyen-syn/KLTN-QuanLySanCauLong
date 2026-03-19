@@ -9,6 +9,7 @@
         $statusLabels = [
             'pending' => 'Chờ xử lý',
             'processing' => 'Đang xử lý',
+            'confirmed' => 'Đã Check-in',
             'paid' => 'Đã cọc',
             'completed' => 'Hoàn tất',
             'cancelled' => 'Đã hủy',
@@ -18,6 +19,7 @@
         $statusColors = [
             'pending' => 'warning',
             'processing' => 'warning',
+            'confirmed' => 'primary',
             'paid' => 'info',
             'completed' => 'success',
             'cancelled' => 'danger',
