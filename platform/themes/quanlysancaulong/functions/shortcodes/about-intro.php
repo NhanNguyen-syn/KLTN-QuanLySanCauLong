@@ -167,7 +167,23 @@ Shortcode::setAdminConfig('about-intro', function (array $attributes) {
             TextField::class,
             TextFieldOption::make()
                 ->label(__('Button Link'))
-                ->defaultValue('#')
+                ->defaultValue('/')
+                ->toArray()
+        )
+        ->add(
+            'button_bg_color',
+            \Botble\Shortcode\Forms\Fields\ShortcodeColorField::class,
+            \Botble\Base\Forms\FieldOptions\InputFieldOption::make()
+                ->label(__('Button Background Color'))
+                ->defaultValue('#065e45')
+                ->toArray()
+        )
+        ->add(
+            'button_text_color',
+            \Botble\Shortcode\Forms\Fields\ShortcodeColorField::class,
+            \Botble\Base\Forms\FieldOptions\InputFieldOption::make()
+                ->label(__('Button Text Color'))
+                ->defaultValue('#ffffff')
                 ->toArray()
         );
 });
