@@ -119,7 +119,7 @@
                             <div class="muted" style="font-size:15px">Bảo mật cao với mã hóa SSL</div>
                             <div style="margin-top:18px; display:flex; flex-direction:column; align-items:center; gap:12px;">
                                 <div id="vnpay-qr-box" style="width:100%; max-width:420px; aspect-ratio:1; background:#fff; border:2px solid #2563eb; border-radius:14px; display:flex; flex-direction:column; align-items:center; justify-content:space-between; gap:8px; padding:12px;">
-                                    <span class="muted" style="font-size:14px">Đang tải QR...</span>
+                                    <span class="muted" style="font-size:14px; margin-top: 40%">Vui lòng nhấp "Tạo QR" để bắt đầu...</span>
                                 </div>
                                 <div style="width:100%; text-align:center;">
                                     <div class="muted" style="font-size:15px; display:flex; align-items:center; justify-content:center; gap:6px; flex-wrap:wrap;">
@@ -316,22 +316,15 @@ const syncPaymentDetails = () => {
                 if (!box) return;
                 box.innerHTML = '<span class="muted" style="font-size:14px">' + text + '</span>';
             };
-            const fetchVnpayQr = async () => {
+            const fetchVnpayQr = async (orderCode) => {
                 const box = qs('#vnpay-qr-box');
                 if (!box) return;
                 const amount = getPayAmount();
-                const orderCode = await ensureOrderCode();
-                if (!orderCode) {
-                    setVnpayStatus('Khong the tao don.');
-                    vnpayState.loading = false;
-                    return;
-                }
                 if (!amount || amount <= 0 || vnpayState.loading) return;
-                if (vnpayState.lastAmount === amount && box.querySelector('img')) return;
 
                 vnpayState.loading = true;
                 vnpayState.lastAmount = amount;
-                setVnpayStatus('Dang tai QR...');
+                setVnpayStatus('Đang tải QR...');
 
                 const link = qs('#vnpay-pay-link');
                 if (link) {
@@ -340,11 +333,11 @@ const syncPaymentDetails = () => {
                 }
 
                 try {
-                    const res = await fetch('{{ url('/ajax/vnpay/qr') }}', {
+                    const res = await fetch('/ajax/vnpay/qr', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
                         },
                         body: JSON.stringify({
                             amount: amount,
@@ -393,7 +386,7 @@ const syncPaymentDetails = () => {
                         link.setAttribute('href', data.payment_url);
                     }
                 } catch (err) {
-                    setVnpayStatus('Khong the tao QR.');
+                    setVnpayStatus('Lỗi tải QR. Vui lòng thử lại.');
                 } finally {
                     vnpayState.loading = false;
                 }
@@ -541,7 +534,6 @@ const syncPaymentDetails = () => {
                 }
             });
 
-// Radio interactions
             qsa('.radio-opt[data-method]').forEach(el=>{
                 el.addEventListener('click',()=>{
                     qsa('.radio-opt[data-method]').forEach(i=>i.classList.remove('is-active'));
@@ -554,15 +546,12 @@ const syncPaymentDetails = () => {
                         bankDetailCard.style.display = val==='bank-transfer'?'block':'none';
                     }
                     qs('#vnpay-card').style.display = val==='vnpay'?'block':'none';
-                    if (val === 'vnpay') {
-                        syncPaymentDetails();
-                        fetchVnpayQr();
-                    } else {
-                        syncPaymentDetails();
-                    }
+                    syncPaymentDetails();
+                    
                     const payBtn = qs('#pay-btn');
                     if (payBtn) {
-                        payBtn.style.display = val === 'vnpay' ? 'none' : 'block';
+                        payBtn.style.display = 'block';
+                        payBtn.textContent = val === 'vnpay' ? 'Tạo QR & Thanh toán VNPay' : 'Xác Nhận Đặt Sân';
                     }
                 });
             });
@@ -574,11 +563,7 @@ const syncPaymentDetails = () => {
                     state.type = val;
                     qs('input[name="paymentType"][value="'+val+'"]').checked = true;
                     updateSummary();
-                    if (state.method === 'vnpay') {
-                        vnpayState.lastAmount = null;
-                        setVnpayStatus('Dang tai QR...');
-                        fetchVnpayQr();
-                    }
+                    // We don't auto-fetch QR anymore on type change
                 });
             });
 
@@ -587,10 +572,18 @@ const syncPaymentDetails = () => {
             qsa('.radio-opt[data-type]')[0]?.classList.add('is-active');
 
             updateSummary();
+            
+            // Fix initial button text if VNPay is default (it's not but just in case)
+            if (state.method === 'vnpay' && qs('#pay-btn')) qs('#pay-btn').textContent = 'Tạo QR & Thanh toán VNPay';
 
-            // Submit -> redirect to confirmation page
-            qs('#checkout-form').addEventListener('submit', function(e){
+            // Submit -> save booking and redirect or show QR
+            qs('#checkout-form').addEventListener('submit', async function(e){
                 e.preventDefault();
+
+                const payBtn = qs('#pay-btn');
+                const origText = payBtn.textContent;
+                payBtn.disabled = true;
+                payBtn.textContent = 'Đang xử lý...';
 
                 const payType = state.type;
                 const showDeposit = payType === 'deposit';
@@ -607,7 +600,79 @@ const syncPaymentDetails = () => {
 
                 localStorage.setItem('paymentDetails', JSON.stringify(paymentDetails));
 
-                window.location.href = '/xac-nhan';
+                // BUILD PAYLOAD FOR DB RESERVATION
+                const orderCode = await ensureOrderCode();
+                if (!orderCode) {
+                    alert('Lỗi khởi tạo mã đơn hàng. Vui lòng thử lại.');
+                    payBtn.disabled = false;
+                    payBtn.textContent = origText;
+                    return;
+                }
+
+                const payload = buildBookingPayload();
+                payload.order_code = orderCode;
+                payload.payment_method = state.method;
+                payload.status = 'processing';
+                payload.paid_amount = amountPaid;
+
+                try {
+                    const res = await fetch('/api/booking-list', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
+                        },
+                        body: JSON.stringify(payload)
+                    });
+
+                    const responseText = await res.text();
+                    
+                    if (res.status === 409) {
+                        let errorMsg = 'Khung giờ này đã bị người khác đặt trước. Vui lòng chọn giờ khác.';
+                        try {
+                            const errData = JSON.parse(responseText);
+                            if (errData.message) errorMsg = errData.message;
+                        } catch(err) {}
+
+                        // Custom modal error
+                        const overlay = document.createElement('div');
+                        overlay.style.cssText = 'position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.5);backdrop-filter:blur(4px);';
+                        overlay.innerHTML = `
+                            <div style="background:#fff;border-radius:16px;padding:32px 28px;max-width:420px;width:90%;text-align:center;">
+                                <div style="font-size:32px;margin-bottom:16px;">⚠️</div>
+                                <h3 style="margin:0 0 8px;font-size:18px;">Đặt sân không thành công</h3>
+                                <p style="margin:0 0 24px;color:#6b7280;">${errorMsg}</p>
+                                <button onclick="window.location.href='/dat-san'" style="background:#3b82f6;color:#fff;border:none;padding:12px 32px;border-radius:10px;cursor:pointer;">← Quay lại chọn sân</button>
+                            </div>`;
+                        document.body.appendChild(overlay);
+                        
+                        payBtn.disabled = false;
+                        payBtn.textContent = origText;
+                        return;
+                    }
+
+                    if (!res.ok) throw new Error('API Error: ' + responseText);
+
+                    const data = JSON.parse(responseText);
+                    if (data.success) {
+                        localStorage.setItem('booking_created', '1');
+                        
+                        if (state.method === 'vnpay') {
+                            payBtn.style.display = 'none';
+                            // now fetch and build QR
+                            await fetchVnpayQr(orderCode); 
+                        } else {
+                            window.location.href = '/xac-nhan';
+                        }
+                    } else {
+                         throw new Error('Server returned logical failure without 409: ' + responseText);
+                    }
+                } catch(err) {
+                    alert('Lỗi hệ thống khi đặt sân. Vui lòng làm mới trang (F5) để thử lại.');
+                    console.error('Checkout error:', err);
+                    payBtn.disabled = false;
+                    payBtn.textContent = origText;
+                }
             });
         })();
     </script>

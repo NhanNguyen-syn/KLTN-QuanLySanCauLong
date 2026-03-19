@@ -181,20 +181,22 @@ Route::get('invoice/download/{code}', function ($code) {
             return response()->json(['message' => 'Invalid date.'], 422);
         }
 
-        $orderCode = DB::transaction(function () use ($date) {
-            $prefix = 'BD-' . $date->format('Ymd') . '-';
-            $latest = BookingList::query()
-                ->where('order_code', 'like', $prefix . '%')
-                ->lockForUpdate()
-                ->orderBy('order_code', 'desc')
-                ->value('order_code');
+        $prefix = 'BD-' . $date->format('Ymd') . '-';
+        $cacheKey = 'booking_seq_v4_' . $date->format('Ymd');
 
-            $nextSeq = 1;
-            if ($latest) {
-                $lastSeqStr = substr($latest, strrpos($latest, '-') + 1);
-                $nextSeq = ((int) $lastSeqStr) + 1;
+        $orderCode = \Illuminate\Support\Facades\Cache::lock('generate_order_code_lock', 10)->block(5, function () use ($prefix, $cacheKey) {
+            if (!\Illuminate\Support\Facades\Cache::has($cacheKey)) {
+                $latest = BookingList::query()
+                    ->where('order_code', 'like', $prefix . '%')
+                    ->orderBy('order_code', 'desc')
+                    ->value('order_code');
+                $start = 0;
+                if ($latest) {
+                    $start = ((int) substr($latest, strrpos($latest, '-') + 1));
+                }
+                \Illuminate\Support\Facades\Cache::forever($cacheKey, $start);
             }
-
+            $nextSeq = \Illuminate\Support\Facades\Cache::increment($cacheKey);
             return $prefix . str_pad((string) $nextSeq, 3, '0', STR_PAD_LEFT);
         });
 

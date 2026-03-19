@@ -103,6 +103,16 @@ class BookingListController extends BaseController
                     });
 
                     if ($incomingKeys === $storedKeys) {
+                        // Check if it belongs to the exact same user to prevent cross-user order code collision
+                        $existingContact = (string) $existingRows->first()->contact;
+                        $existingEmail = (string) $existingRows->first()->email;
+                        $reqContact = (string) $request->input('contact', '');
+                        $reqEmail = (string) $request->input('email', '');
+
+                        if ($existingContact !== $reqContact || $existingEmail !== $reqEmail) {
+                            throw new \RuntimeException("⚠️ Giao dịch của bạn đang trùng với người khác. Bạn vừa bị mất slot này, vui lòng chọn slot khác.");
+                        }
+
                         return response()->json([
                             'success' => true,
                             'order_code' => $requestedOrderCode,
@@ -262,20 +272,22 @@ class BookingListController extends BaseController
     protected function generateSequentialOrderCodeForDate(Carbon $date): string
     {
         $prefix = 'BD-' . $date->format('Ymd') . '-'; // Format: BD-YYYYMMDD-
+        $cacheKey = 'booking_seq_v4_' . $date->format('Ymd');
 
-        // Khóa hàng để tránh trùng số khi nhiều request cùng lúc
-        $latest = BookingList::query()
-            ->where('order_code', 'like', $prefix . '%')
-            ->lockForUpdate()
-            ->orderBy('order_code', 'desc')
-            ->value('order_code');
-
-        $nextSeq = 1;
-        if ($latest) {
-            $lastSeqStr = substr($latest, strrpos($latest, '-') + 1);
-            $nextSeq = ((int) $lastSeqStr) + 1;
-        }
-
-        return $prefix . str_pad((string) $nextSeq, 3, '0', STR_PAD_LEFT);
+        return \Illuminate\Support\Facades\Cache::lock('generate_order_code_lock', 10)->block(5, function () use ($prefix, $cacheKey) {
+            if (!\Illuminate\Support\Facades\Cache::has($cacheKey)) {
+                $latest = BookingList::query()
+                    ->where('order_code', 'like', $prefix . '%')
+                    ->orderBy('order_code', 'desc')
+                    ->value('order_code');
+                $start = 0;
+                if ($latest) {
+                    $start = ((int) substr($latest, strrpos($latest, '-') + 1));
+                }
+                \Illuminate\Support\Facades\Cache::forever($cacheKey, $start);
+            }
+            $nextSeq = \Illuminate\Support\Facades\Cache::increment($cacheKey);
+            return $prefix . str_pad((string) $nextSeq, 3, '0', STR_PAD_LEFT);
+        });
     }
 }
