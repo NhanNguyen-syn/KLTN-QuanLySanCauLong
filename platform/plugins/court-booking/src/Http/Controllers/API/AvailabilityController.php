@@ -47,7 +47,7 @@ class AvailabilityController extends BaseController
             $bookedSlots = DB::table('court_bookings_list')
                 ->whereDate('date', $date) // dùng whereDate để so khớp đúng ngày & tối ưu index
                 ->where(function ($query) {
-                    $query->whereIn('status', ['paid', 'completed', 'confirmed'])
+                    $query->whereIn('status', ['paid', 'completed', 'confirmed', 'pending'])
                           ->orWhere(function ($sub) {
                               $sub->where('status', 'processing')
                                   ->where('created_at', '>=', now()->subMinutes(15));

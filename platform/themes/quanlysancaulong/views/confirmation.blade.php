@@ -205,6 +205,19 @@ if (paymentDetails) {
 
         // Persist to server (idempotent) and get invoice/order code BD-YYYYMMDD-XXX
         let orderCode = localStorage.getItem('order_code') || null;
+
+        // === BUG 1 FIX: Khi VNPay return, luôn ưu tiên lấy order_code từ vnp_TxnRef trong URL ===
+        // Trước đây nếu localStorage['order_code'] null → tạo order_code MỚI → gọi /api/booking-list
+        // → conflict với record cũ (đã tạo lúc quét QR) → 409 → modal "đã có người đặt" sai.
+        if (vnpIsReturn) {
+            const vnpTxnRef = params.get('vnp_TxnRef');
+            if (vnpTxnRef) {
+                orderCode = vnpTxnRef;
+                try { localStorage.setItem('order_code', vnpTxnRef); } catch(e) {}
+            }
+        }
+        // === END BUG 1 FIX ===
+
         let bookingCreated = localStorage.getItem('booking_created') === '1' && !!orderCode;
         if (!bookingCreated && localStorage.getItem('booking_created') === '1' && !orderCode) {
             try { localStorage.removeItem('booking_created'); } catch(e) {}
@@ -269,7 +282,12 @@ if (paymentDetails) {
         const placeholderCode = `BD-${String(tmpDate).replace(/-/g,'')}-...`;
         qs('#order-code').textContent = localStorage.getItem('order_code') || placeholderCode;
 
-        if ((payload.items||[]).length && (!vnpIsReturn ? !bookingCreated : vnpSuccess)){
+        // Gọi /api/booking-list khi:
+        // 1. Bank transfer: !vnpIsReturn && !bookingCreated  
+        // 2. VNPay return thành công: vnpIsReturn && vnpSuccess && !bookingCreated
+        // (Vì fetchVnpayQr() KHÔNG còn tạo record nữa, record được tạo ở đây)
+        const shouldCreateBooking = (payload.items||[]).length && !bookingCreated && (!vnpIsReturn || vnpSuccess);
+        if (shouldCreateBooking){
             // Gọi đúng base URL theo APP_URL để hỗ trợ khi app chạy trong sub-folder
             fetch('{{ url('/api/booking-list') }}', {
               method: 'POST',

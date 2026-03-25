@@ -649,10 +649,20 @@ class AiChatService
             }
 
             // Get booked slots for this court today
+            // BUG 3 FIX: Đồng bộ với BookingListController conflict check:
+            // - 'confirmed', 'completed', 'paid' → luôn booked
+            // - 'processing' → chỉ booked nếu created_at trong 15 phút gần nhất (tránh block slot do VNPay bỏ dở)
+            // - 'pending', 'failed' → không block slot
             $bookedSlots = DB::table('court_bookings_list')
                 ->where('court_id', $court->id)
                 ->where('date', $date)
-                ->whereIn('status', ['confirmed', 'completed', 'paid', 'processing', 'pending'])
+                ->where(function ($q) {
+                    $q->whereIn('status', ['confirmed', 'completed', 'paid', 'pending'])
+                      ->orWhere(function ($sub) {
+                          $sub->where('status', 'processing')
+                              ->where('created_at', '>=', now()->subMinutes(15));
+                      });
+                })
                 ->orderBy('start_time')
                 ->get(['start_time', 'end_time']);
 

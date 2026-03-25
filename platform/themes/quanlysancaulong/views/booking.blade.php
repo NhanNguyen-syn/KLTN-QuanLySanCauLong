@@ -206,3 +206,7 @@
         <div id="booking-page-app" data-courts='@json($courts ?? [])'></div>
     @endguest
 </main>
+
+@auth('member')
+<script src="{{ Theme::asset()->url('js/booking.js') }}"></script>
+@endauth

@@ -27981,6 +27981,7 @@ __webpack_require__.r(__webpack_exports__);
     var getButtonClass = function getButtonClass(status) {
       var base = 'slot-button';
       if (status === 'booked') return "".concat(base, " booked");
+      if (status === 'processing') return "".concat(base, " processing");
       if (status === 'closed') return "".concat(base, " closed");
       if (status === 'selected') return "".concat(base, " selected");
       return "".concat(base, " available");
@@ -28040,6 +28041,7 @@ __webpack_require__.r(__webpack_exports__);
           var status = props.getSlotStatus(court.id, time);
           var isSelected = status === 'selected';
           var isBooked = status === 'booked';
+          var isProcessing = status === 'processing';
           var isClosed = status === 'closed';
           return (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)("td", {
             "key": slotKey,
@@ -28054,7 +28056,7 @@ __webpack_require__.r(__webpack_exports__);
             "onMouseleave": function onMouseleave() {
               return hoveredSlot.value = null;
             },
-            "disabled": isBooked || isClosed,
+            "disabled": isBooked || isProcessing || isClosed,
             "class": getButtonClass(status),
             "aria-label": "".concat(court.name, " at ").concat(time, " - ").concat(status),
             "aria-pressed": isSelected
@@ -28062,9 +28064,11 @@ __webpack_require__.r(__webpack_exports__);
             "class": "slot-icon"
           }, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)("\u2713")]), isBooked && (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)("span", {
             "class": "slot-text"
-          }, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)("\u0110\xE3 \u0111\u1EB7t")]), isClosed && (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)("span", {
+          }, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)("\u0110\xE3 \u0111\u1EB7t")]), isProcessing && (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)("span", {
             "class": "slot-text"
-          }, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)("\u0110\xF3ng")]), !isBooked && !isClosed && !isSelected && hoveredSlot.value === slotKey && (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)("span", {
+          }, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)("\u0110ang gi\u1EEF ch\u1ED7")]), isClosed && (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)("span", {
+            "class": "slot-text"
+          }, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)("\u0110\xF3ng")]), !isBooked && !isProcessing && !isClosed && !isSelected && hoveredSlot.value === slotKey && (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)("span", {
             "class": "slot-icon"
           }, [(0,vue__WEBPACK_IMPORTED_MODULE_0__.createTextVNode)("+")])])]);
         })]);
@@ -28076,6 +28080,9 @@ __webpack_require__.r(__webpack_exports__);
       }, null), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(LegendItem, {
         "className": "booked",
         "text": "\u0110\xE3 \u0111\u1EB7t"
+      }, null), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(LegendItem, {
+        "className": "processing",
+        "text": "\u0110ang gi\u1EEF ch\u1ED7"
       }, null), (0,vue__WEBPACK_IMPORTED_MODULE_0__.createVNode)(LegendItem, {
         "className": "selected",
         "text": "\u0110\xE3 ch\u1ECDn"
@@ -28367,7 +28374,7 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
                 return "".concat(Number(h).toString().padStart(2, '0'), ":").concat(m.padStart(2, '0'));
               };
               bookedSlots.value = slotsArr.filter(function (s) {
-                return s.status === 'booked';
+                return s.status === 'booked' || s.status === 'processing';
               }).map(function (s) {
                 var _s$court_id, _s$court, _String$split$;
                 var courtId = (_s$court_id = s.court_id) !== null && _s$court_id !== void 0 ? _s$court_id : (_s$court = s.court) === null || _s$court === void 0 ? void 0 : _s$court.id;
@@ -28420,7 +28427,6 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
         alert('Vui lòng chọn ít nhất một khung giờ');
         return;
       }
-      var slotCount = selectedSlots.value.length;
       var bookingData = selectedSlots.value.map(function (slot) {
         var lastDashIndex = slot.lastIndexOf('-');
         var courtId = slot.substring(0, lastDashIndex);
@@ -28428,24 +28434,15 @@ function _asyncToGenerator(n) { return function () { var t = this, e = arguments
         var court = courts.value.find(function (c) {
           return c.id === courtId;
         });
-        var originalSlotPrice = ((court === null || court === void 0 ? void 0 : court.price) || 0) / 2;
-        var slotPrice = originalSlotPrice;
-        if (slotCount >= 4 && originalSlotPrice > 0) {
-          slotPrice = Math.max(0, originalSlotPrice - 10000);
-        }
         return {
           court: court === null || court === void 0 ? void 0 : court.name,
           courtId: courtId,
           type: court === null || court === void 0 ? void 0 : court.type,
           date: selectedDate.value,
           time: time,
-          price: slotPrice
+          price: ((court === null || court === void 0 ? void 0 : court.price) || 0) / 2
         };
       });
-      // Clear old booking flags so the checkout page treats this as a fresh booking
-      localStorage.removeItem('booking_created');
-      localStorage.removeItem('order_code');
-      localStorage.removeItem('paymentDetails');
       localStorage.setItem('tempBooking', JSON.stringify(bookingData));
       window.location.href = '/thong-tin-ca-nhan';
     };

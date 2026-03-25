@@ -284,11 +284,9 @@ const syncPaymentDetails = () => {
             };
             const ensureOrderCode = async () => {
                 const existing = localStorage.getItem('order_code');
-                const isLocked = localStorage.getItem('booking_created') === '1';
-                if (existing && isLocked) return existing;
-                if (existing && !isLocked) {
-                    localStorage.removeItem('order_code');
-                }
+                // Nếu đã có order_code (dù chưa locked), giữ lại và reuse
+                // Không xóa để tránh tạo order_code mới khi switch payment method
+                if (existing) return existing;
 
                 const payload = buildBookingPayload();
                 if (!payload.items.length) return null;
@@ -325,7 +323,7 @@ const syncPaymentDetails = () => {
 
                 vnpayState.loading = true;
                 vnpayState.lastAmount = amount;
-                setVnpayStatus('Đang kiểm tra lịch trống...');
+                setVnpayStatus('Đang kết nối Server VNPay...');
 
                 const link = qs('#vnpay-pay-link');
                 if (link) {
@@ -337,52 +335,9 @@ const syncPaymentDetails = () => {
                     const orderCode = await ensureOrderCode();
                     if (!orderCode) throw new Error('Lỗi khởi tạo mã đơn hàng');
 
-                    // 1. Lock slot in DB securely before showing VNPay QR
-                    const payload = buildBookingPayload();
-                    payload.order_code = orderCode;
-                    payload.payment_method = 'vnpay';
-                    payload.status = 'processing';
-                    payload.paid_amount = amount;
-
-                    const resDb = await fetch('/api/booking-list', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || ''
-                        },
-                        body: JSON.stringify(payload)
-                    });
-
-                    const dbText = await resDb.text();
-                    if (resDb.status === 409) {
-                        let errorMsg = 'Slot đã bị người khác đặt mất.';
-                        try { const errData = JSON.parse(dbText); if (errData.message) errorMsg = errData.message; } catch(err) {}
-                        
-                        // Show modal
-                        const overlay = document.createElement('div');
-                        overlay.style.cssText = 'position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.5);backdrop-filter:blur(4px);';
-                        overlay.innerHTML = `
-                            <div style="background:#fff;border-radius:16px;padding:32px 28px;max-width:420px;width:90%;text-align:center;">
-                                <div style="font-size:32px;margin-bottom:16px;">⚠️</div>
-                                <h3 style="margin:0 0 8px;font-size:18px;">Thất bại</h3>
-                                <p style="margin:0 0 24px;color:#6b7280;">${errorMsg}</p>
-                                <button onclick="window.location.href='/dat-san'" style="background:#3b82f6;color:#fff;border:none;padding:12px 32px;border-radius:10px;cursor:pointer;">← Quay lại chọn sân</button>
-                            </div>`;
-                        document.body.appendChild(overlay);
-                        
-                        setVnpayStatus('<span style="color:#ef4444">' + errorMsg + '</span>');
-                        vnpayState.loading = false;
-                        return;
-                    }
-                    if (!resDb.ok) throw new Error('DB error');
-                    
-                    const dbData = JSON.parse(dbText);
-                    if (!dbData.success) throw new Error('Logic error');
-
-                    localStorage.setItem('booking_created', '1');
-                    setVnpayStatus('Đang kết nối Server VNPay...');
-
-                    // 2. Fetch QR
+                    // CHỈ fetch QR code, KHÔNG gọi /api/booking-list
+                    // Record sẽ được tạo khi VNPay callback thành công (tại /xac-nhan)
+                    // Điều này ngăn việc tạo record "processing" rác khi user chỉ xem QR
                     const resQr = await fetch('/ajax/vnpay/qr', {
                         method: 'POST',
                         headers: {
@@ -566,7 +521,9 @@ const syncPaymentDetails = () => {
                     window.location.replace('/dat-san');
                 });
             } else if (localStorage.getItem('booking_created') === '1' && state.booking.length > 0) {
-                // User started a new booking — clear old flags
+                // User đã hoàn tất 1 đơn hàng (booking_created=1) nhưng nay lại có giỏ hàng mới (length>0)
+                // Có nghĩa là họ đã chọn sân mới để đặt thêm.
+                // Ta PHẢI xóa order_code và booking_created cũ để đơn mới được tạo mã mới tinh.
                 localStorage.removeItem('booking_created');
                 localStorage.removeItem('order_code');
             }
@@ -670,7 +627,9 @@ const syncPaymentDetails = () => {
                 const payload = buildBookingPayload();
                 payload.order_code = orderCode;
                 payload.payment_method = state.method;
-                payload.status = 'processing';
+                // Dùng 'pending' cho bank transfer (chờ xác nhận thanh toán, slot blocked vĩnh viễn).
+                // KHÔNG dùng 'processing' vì processing chỉ block slot trong 15 phút (dành cho VNPay QR)
+                payload.status = 'pending';
                 payload.paid_amount = amountPaid;
 
                 try {
@@ -714,6 +673,13 @@ const syncPaymentDetails = () => {
                     const data = JSON.parse(responseText);
                     if (data.success) {
                         localStorage.setItem('booking_created', '1');
+                        if (data.order_code) {
+                            localStorage.setItem('order_code', data.order_code);
+                        }
+                        // KHÔNG xóa tempBooking ở đây! Trang /xac-nhan cần tempBooking để
+                        // hiển thị thông tin sân (tên sân, ngày, giờ, giá).
+                        // Việc ngăn re-submit đã được xử lý bởi bookingCreated check tại /xac-nhan:
+                        // nếu booking_created='1' && order_code tồn tại → không gọi lại /api/booking-list.
                         window.location.href = '/xac-nhan';
                     } else {
                          throw new Error('Server returned logical failure without 409: ' + responseText);

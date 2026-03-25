@@ -309,6 +309,14 @@ Route::post('ajax/vnpay/qr', function (Request $request) {
                 $isSuccess = $responseCode === '00' && $transactionStatus === '00';
 
                 if (! $isSuccess) {
+                    // Khi VNPay thất bại, update record 'processing' → 'failed' để unblock slot ngay
+                    // Nếu không, record 'processing' sẽ block slot thêm 15 phút (conflict window)
+                    if ($txnRef ?? null) {
+                        BookingList::query()
+                            ->where('order_code', $txnRef)
+                            ->where('status', 'processing')
+                            ->update(['status' => 'failed', 'invoice_updated_at' => now()]);
+                    }
                     return redirect()->to(url('/dat-san'));
                 }
 

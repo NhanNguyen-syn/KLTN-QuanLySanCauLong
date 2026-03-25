@@ -31,7 +31,7 @@ class BookingListController extends BaseController
             'email'              => 'nullable|email',
             'notes'              => 'nullable|string',
             'paid_amount'        => 'nullable|numeric',
-            'status'             => 'nullable|in:processing,paid,failed,completed',
+            'status'             => 'nullable|in:pending,processing,paid,failed,completed',
         ]);
 
         if ($validator->fails()) {
@@ -57,25 +57,35 @@ class BookingListController extends BaseController
                     ->get(['court_id', 'court_name', 'date', 'start_time', 'end_time', 'price', 'status']);
 
                 if ($existingRows->isNotEmpty()) {
-                    $normalizeItem = function (array $item): array {
+                    // Helper: chuẩn hóa thời gian về H:i (strip giây nếu có)
+                    // DB lưu '15:00:00', frontend gửi '15:00' → cần về cùng dạng để so sánh đúng
+                    $normalizeTime = function (string $t): string {
+                        // Nếu có dạng H:i:s hoặc H:i:s.xxx → chỉ lấy H:i
+                        if (preg_match('/^(\d{1,2}:\d{2})/', trim($t), $m)) {
+                            return $m[1];
+                        }
+                        return trim($t);
+                    };
+
+                    $normalizeItem = function (array $item) use ($normalizeTime): array {
                         return [
-                            'court_id' => $item['court_id'] ?? null,
+                            'court_id'   => $item['court_id'] ?? null,
                             'court_name' => $item['court_name'] ?? null,
-                            'date' => (string) ($item['date'] ?? ''),
-                            'start_time' => (string) ($item['start_time'] ?? ''),
-                            'end_time' => (string) ($item['end_time'] ?? ''),
-                            'price' => (float) ($item['price'] ?? 0),
+                            'date'       => (string) ($item['date'] ?? ''),
+                            'start_time' => $normalizeTime((string) ($item['start_time'] ?? '')),
+                            'end_time'   => $normalizeTime((string) ($item['end_time'] ?? '')),
+                            'price'      => (float) ($item['price'] ?? 0),
                         ];
                     };
 
-                    $normalizeRow = function (BookingList $row): array {
+                    $normalizeRow = function (BookingList $row) use ($normalizeTime): array {
                         return [
-                            'court_id' => $row->court_id,
+                            'court_id'   => $row->court_id,
                             'court_name' => $row->court_name,
-                            'date' => (string) $row->date,
-                            'start_time' => (string) $row->start_time,
-                            'end_time' => (string) $row->end_time,
-                            'price' => (float) ($row->price ?? 0),
+                            'date'       => (string) $row->date,
+                            'start_time' => $normalizeTime((string) $row->start_time),
+                            'end_time'   => $normalizeTime((string) $row->end_time),
+                            'price'      => (float) ($row->price ?? 0),
                         ];
                     };
 
@@ -111,6 +121,23 @@ class BookingListController extends BaseController
 
                         if ($existingContact !== $reqContact || $existingEmail !== $reqEmail) {
                             throw new \RuntimeException("⚠️ Giao dịch của bạn đang trùng với người khác. Bạn vừa bị mất slot này, vui lòng chọn slot khác.");
+                        }
+
+                        // Update status & payment_method if user switched payment method
+                        // e.g. VNPay created 'processing' → user switches to bank transfer → update to 'pending'
+                        $newStatus = $request->input('status');
+                        $newPaymentMethod = $request->input('payment_method');
+                        if ($newStatus || $newPaymentMethod) {
+                            $updateData = [];
+                            if ($newStatus && !$hasFinalStatus) {
+                                $updateData['status'] = $newStatus;
+                            }
+                            if ($newPaymentMethod) {
+                                $updateData['payment_method'] = $newPaymentMethod;
+                            }
+                            if (!empty($updateData)) {
+                                BookingList::where('order_code', $requestedOrderCode)->update($updateData);
+                            }
                         }
 
                         return response()->json([
@@ -153,7 +180,7 @@ class BookingListController extends BaseController
             // CHECK FOR CONFLICTS BEFORE CREATING ANY RECORDS
             // Query existing bookings in court_bookings_list to detect overlaps
             foreach ($items as $item) {
-                $conflictingBookings = BookingList::where('court_id', $item['court_id'])
+                $conflictQuery = BookingList::where('court_id', $item['court_id'])
                     ->whereDate('date', $item['date'])
                     ->where(function ($query) use ($item) {
                         // Overlap condition: StartA < EndB && EndA > StartB
@@ -161,12 +188,19 @@ class BookingListController extends BaseController
                               ->where('end_time', '>', $item['start_time']);
                     })
                     ->where(function ($query) {
-                        $query->whereIn('status', ['paid', 'completed', 'confirmed'])
+                        $query->whereIn('status', ['paid', 'completed', 'confirmed', 'pending'])
                               ->orWhere(function ($sub) {
                                   $sub->where('status', 'processing')
                                       ->where('created_at', '>=', now()->subMinutes(15));
                               });
-                    })
+                    });
+
+                // Exclude records from current order (same user switching payment method)
+                if ($orderCode !== '') {
+                    $conflictQuery->where('order_code', '!=', $orderCode);
+                }
+
+                $conflictingBookings = $conflictQuery
                     ->lockForUpdate()
                     ->first();
 
